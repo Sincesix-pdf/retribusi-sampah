@@ -1,8 +1,98 @@
-@import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&family=Poppins:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&family=Poppins:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
 
 body {
+    margin: 0;
     font-family: "Nunito", serif;
+    background-color: #ffffff;
 }
 h1 {
-    font-family: 'Poppins', serif;
+    font-family: "Poppins", serif;
+}
+
+.navbar {
+    position: sticky;
+    top: 0;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    padding: 10px 100px;
+    background-color: #ffffff;
+    color: #000000;
+    box-shadow: 0px 0px 5px;
+    font-family: "Poppins", serif;
+    font-size: 1em;
+    font-weight: bold;
+}
+
+.navbar img {
+    width: 50px;
+    height: auto;
+}
+
+.navbar .title {
+    font-size: 1.5em;
+}
+
+.navbar .left-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.navbar .right-content {
+    display: flex;
+    align-items: center;
+    justify-self: end;
+}
+
+.navbar a {
+    text-decoration: none;
+    color: #0099ff;
+    font-weight: 300;
+    padding: 3px 10px;
+}
+
+.navbar a:hover {
+    text-decoration: underline;
+}
+
+.navbar .login-btn {
+    background-color: transparent;
+    color: #0099ff;
+    border: 2px solid #0099ff;
+    padding: 1px 20px;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-family: "Poppins", serif;
+    font-weight: 300;
+}
+
+.navbar .login-btn:hover {
+    text-decoration: none;
+    background-color: #0099ff;
+    color: white;
+    font-weight: 300;
+}
+
+/* body */
+.hero {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 50px 100px;
+}
+.hero-text h3 {
+}
+.hero-text h1 {
+    font-size: 2.5em;
+    color: #222;
+}
+.hero-text p {
+    font-size: 1.2em;
+    color: #666;
+    font-family: "Poppins", serif;
+}
+.hero-image img {
+    width: 400px;
 }

@@ -1,25 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Retribusi Online</title>
-    <link rel="stylesheet" href="{{ asset(path: 'css/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
 </head>
-
 <body>
-    <nav class="navbar">
+    <nav class="navbar" id="navbar">
         <div class="left-content">
             <img src="/gambar/GEH.png" alt="logo">
-            <div class="tittle">Retribusi Online</div>
+            <div class="title">Retribusi Online</div>
         </div>
         <div class="right-content">
-            <a href="">
+            <a href="#">
                 <span class="contact">Contact us</span>
             </a>
-            <a href="" class="login-btn">Login</a>
+            <a href="#" class="login-btn">Login</a>
         </div>
     </nav>
 
@@ -27,15 +25,13 @@
         <div class="hero-text">
             <h3>Selamat Datang di</h3>
             <h1>Retribusi <br> Online Sistem</h1>
-            <p>Change For The Better</p>
+            <p>Dishub Kab. Malang</p>
         </div>
         <div class="hero-image">
-            <img src="/gambar/dashb.jpg" alt="Illustration">
+            <img src="/gambar/dashb.jpg" alt="gambar">
         </div>
     </header>
-
     <x-waves></x-waves>
-
+    <script src="{{ asset('js/script.js') }}"></script>
 </body>
-
 </html>

@@ -8,10 +8,10 @@ use Illuminate\Support\Facades\Auth;
 
 class RoleMiddleware
 {
-    public function handle(Request $request, Closure $next, $role)
+    public function handle(Request $request, Closure $next, ...$roles) // Bisa multiple role
     {
-        if (!Auth::check() || Auth::user()->role->nama_role !== $role) {
-            return abort(403, 'Unauthorized'); // Akses ditolak jika bukan role yang sesuai
+        if (!Auth::check() || !in_array(Auth::user()->role->nama_role, $roles)) {
+            return redirect('/login')->with('error', 'Akses ditolak!');
         }
 
         return $next($request);

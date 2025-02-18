@@ -30,7 +30,7 @@ class AuthController extends Controller
             // Redirect berdasarkan role
             switch ($user->role->nama_role) {
                 case 'pendataan':
-                    return redirect()->route('datawarga.index'); // Halaman pendataan
+                    return redirect()->route('pendataan.index'); // Halaman pendataan
                 case 'keuangan':
                     return redirect()->route('keuangan.index'); // Halaman keuangan
                 case 'kepala_dinas':
@@ -54,4 +54,25 @@ class AuthController extends Controller
 
         return redirect('/login')->with('success', 'Anda telah logout.');
     }
+
+    public function admin()
+    {
+        return view('dashboard', ['role' => Auth::user()->role->nama_role]);
+    }
+
+    public function kepaladinas()
+    {
+        return view('dashboard', ['role' => Auth::user()->role->nama_role]);
+    }
+
+    public function keuangan()
+    {
+        return view('dashboard', ['role' => Auth::user()->role->nama_role]);
+    }
+
+    public function pendataan()
+    {
+        return view('dashboard', ['role' => Auth::user()->role->nama_role]);
+    }
+
 }

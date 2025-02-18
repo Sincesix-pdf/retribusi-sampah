@@ -34,4 +34,3 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 Route::middleware(['auth', 'role:warga'])->group(function () {
     Route::get('/histori', [WargaController::class, 'index'])->name('histori.index');
 });
-

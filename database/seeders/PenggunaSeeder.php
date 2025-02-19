@@ -10,18 +10,18 @@ use Illuminate\Support\Facades\Hash;
 class PenggunaSeeder extends Seeder {
     public function run() {
         // Cari ID role pendataan
-        $rolePendataan = DB::table('role')->where('nama_role', 'pendataan')->first();
+        $rolePendataan = DB::table('role')->where('nama_role', 'keuangan')->first();
 
         if ($rolePendataan) {
             DB::table('pengguna')->insert([
-                'nama' => 'Faizal pendataan2',
+                'nama' => 'Faizal keuangan2',
                 'jenis_kelamin' => 'Laki-laki',
                 'tanggal_lahir' => '2004-01-01',
-                'email' => 'pendataan2@test.com',
+                'email' => 'keuangan2@test.com',
                 'alamat' => 'Jl. Kediri No. 666',
                 'no_hp' => '089111222333',
                 'password' => Hash::make('abc123'),
-                'role_id' => $rolePendataan->id, // Menggunakan ID dari role pendataan
+                'role_id' => $rolePendataan->id, 
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);

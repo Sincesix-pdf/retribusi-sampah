@@ -37,6 +37,8 @@ class AuthController extends Controller
                     return redirect()->route('kepala_dinas.index'); // Halaman kepala dinas
                 case 'admin':
                     return redirect()->route('admin.index'); // Halaman admin
+                case 'warga':
+                    return redirect()->route('warga.index'); // Halaman warga
                 default:
                     return redirect('/'); // Redirect default jika role tidak dikenali
             }
@@ -54,6 +56,7 @@ class AuthController extends Controller
 
         return redirect('/login')->with('success', 'Anda telah logout.');
     }
+
 
     public function admin()
     {
@@ -73,6 +76,11 @@ class AuthController extends Controller
     public function pendataan()
     {
         return view('dashboard', ['role' => Auth::user()->role->nama_role]);
+    }
+    
+    public function warga()
+    {
+        return view('warga.index', ['warga' => Auth::user()->warga->jenis_retribusi]);
     }
 
 }

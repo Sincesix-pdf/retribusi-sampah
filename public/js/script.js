@@ -8,3 +8,16 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 });
+
+function togglePassword(fieldId, iconId) {
+    let passwordField = document.getElementById(fieldId);
+    let icon = document.getElementById(iconId);
+
+    if (passwordField.type === "password") {
+        passwordField.type = "text";
+        icon.textContent = "visibility_off";
+    } else {
+        passwordField.type = "password";
+        icon.textContent = "visibility";
+    }
+}

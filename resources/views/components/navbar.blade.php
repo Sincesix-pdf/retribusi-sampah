@@ -15,16 +15,27 @@
     <nav class="sidebar-nav">
         <!-- Primary top nav -->
         <ul class="nav-list primary-nav">
+            @php
+                $dashboardRoute = match (Auth::user()->role->nama_role ?? null) {
+                    'admin' => route('admin.index'),
+                    'pendataan' => route('pendataan.index'),
+                    'keuangan' => route('keuangan.index'),
+                    'kepala_dinas' => route('kepala_dinas.index'),
+                    default => '#',
+                };
+            @endphp
+
             <li class="nav-item">
-                <a href="#" class="nav-link">
+                <a href="{{ $dashboardRoute }}" class="nav-link">
                     <span class="nav-icon material-symbols-rounded">dashboard</span>
                     <span class="nav-label">Dashboard</span>
                 </a>
                 <span class="nav-tooltip">Dashboard</span>
             </li>
+
             @if(Auth::user()->role->nama_role == 'pendataan')
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
+                    <a href="{{ route(name: 'datawarga.index') }}" class="nav-link">
                         <span class="material-symbols-rounded">patient_list</span>
                         <span class="nav-label">Kelola WR</span>
                     </a>
@@ -64,7 +75,7 @@
 
             @if(Auth::user()->role->nama_role == 'admin')
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
+                    <a href="{{ route(name: 'log-aktivitas.index') }}" class="nav-link">
                         <span class="nav-icon material-symbols-rounded">history</span>
                         <span class="nav-label">Log Aktivitas</span>
                     </a>

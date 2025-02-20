@@ -3,21 +3,42 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Warga;
 use App\Models\Pengguna;
+use App\Models\Kecamatan;
+use App\Models\Kelurahan;
+use App\Models\Warga;
 use Illuminate\Support\Facades\Hash;
 
 class DataWargaController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $warga = Warga::with('pengguna')->get();
-        return view('datawarga.index', compact('warga'));
+        $kecamatan_id = $request->kecamatan_id;
+        $kelurahan_id = $request->kelurahan_id;
+
+        // Ambil semua kecamatan untuk opsi filter
+        $kecamatan = Kecamatan::all();
+
+        // Query warga dengan filter
+        $warga = Warga::with(['pengguna', 'kelurahan.kecamatan'])
+            ->when($kecamatan_id, function ($query) use ($kecamatan_id) {
+                return $query->whereHas('kelurahan', function ($q) use ($kecamatan_id) {
+                    $q->where('kecamatan_id', $kecamatan_id);
+                });
+            })
+            ->when($kelurahan_id, function ($query) use ($kelurahan_id) {
+                return $query->where('kelurahan_id', $kelurahan_id);
+            })
+            ->paginate(1); // Hanya tampilkan 10 data per halaman
+
+        return view('datawarga.index', compact('warga', 'kecamatan', 'kecamatan_id', 'kelurahan_id'));
     }
+
 
     public function create()
     {
-        return view('datawarga.create');
+        $kecamatan = Kecamatan::all();
+        return view('datawarga.create', compact('kecamatan'));
     }
 
     public function store(Request $request)
@@ -31,13 +52,15 @@ class DataWargaController extends Controller
             'jenis_kelamin' => 'required',
             'tanggal_lahir' => 'required|date',
             'NIK' => 'required|digits:16|numeric|unique:warga,NIK',
-            'jenis_retribusi' => 'required'
+            'jenis_retribusi' => 'required',
+            'kecamatan_id' => 'required|exists:kecamatan,id',
+            'kelurahan_id' => 'required|exists:kelurahan,id',
         ]);
 
         $pengguna = Pengguna::create([
             'nama' => $validatedData['nama'],
             'email' => $validatedData['email'],
-            'password' => $validatedData['password'],
+            'password' => Hash::make($validatedData['password']),
             'alamat' => $validatedData['alamat'],
             'no_hp' => $validatedData['no_hp'],
             'jenis_kelamin' => $validatedData['jenis_kelamin'],
@@ -48,7 +71,8 @@ class DataWargaController extends Controller
         Warga::create([
             'NIK' => $validatedData['NIK'],
             'pengguna_id' => $pengguna->id,
-            'jenis_retribusi' => $validatedData['jenis_retribusi']
+            'jenis_retribusi' => $validatedData['jenis_retribusi'],
+            'kelurahan_id' => $validatedData['kelurahan_id'],
         ]);
 
         return redirect()->route('datawarga.index')->with('success', 'Warga berhasil ditambahkan!');
@@ -56,7 +80,10 @@ class DataWargaController extends Controller
 
     public function edit(Warga $warga)
     {
-        return view('datawarga.edit', compact('warga'));
+        $kecamatan = Kecamatan::all();
+        $kelurahan = Kelurahan::where('kecamatan_id', $warga->kelurahan->kecamatan_id)->get();
+
+        return view('datawarga.edit', compact('warga', 'kecamatan', 'kelurahan'));
     }
 
     public function update(Request $request, Warga $warga)
@@ -67,7 +94,8 @@ class DataWargaController extends Controller
             'no_hp' => 'required|string',
             'jenis_kelamin' => 'required',
             'tanggal_lahir' => 'required|date',
-            'jenis_retribusi' => 'required'
+            'jenis_retribusi' => 'required',
+            'kelurahan_id' => 'required|exists:kelurahan,id',
         ]);
 
         $warga->pengguna->update([
@@ -79,7 +107,8 @@ class DataWargaController extends Controller
         ]);
 
         $warga->update([
-            'jenis_retribusi' => $validatedData['jenis_retribusi']
+            'jenis_retribusi' => $validatedData['jenis_retribusi'],
+            'kelurahan_id' => $validatedData['kelurahan_id'],
         ]);
 
         return redirect()->route('datawarga.index')->with('success', 'Data warga berhasil diperbarui!');
@@ -90,5 +119,12 @@ class DataWargaController extends Controller
         $warga->pengguna->delete();
         $warga->delete();
         return redirect()->route('datawarga.index')->with('success', 'Data warga berhasil dihapus!');
+    }
+
+    // **AJAX untuk mengambil kelurahan berdasarkan kecamatan**
+    public function getKelurahan($kecamatan_id)
+    {
+        $kelurahan = Kelurahan::where('kecamatan_id', $kecamatan_id)->get();
+        return response()->json($kelurahan);
     }
 }

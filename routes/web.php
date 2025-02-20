@@ -1,9 +1,11 @@
 <?php
 
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DataWargaController;
 use App\Http\Controllers\LogAktivitasController;
+use App\Models\Kelurahan;
 
 // Halaman utama
 Route::view('/', 'index');
@@ -44,6 +46,10 @@ Route::middleware(['auth', 'role:pendataan'])->group(function () {
     Route::get('/pendataan/datawarga/{warga}/edit', [DataWargaController::class, 'edit'])->name('datawarga.edit');
     Route::put('/pendataan/datawarga/{warga}', [DataWargaController::class, 'update'])->name('datawarga.update');
     Route::delete('/pendataan/datawarga/{warga}', [DataWargaController::class, 'destroy'])->name('datawarga.destroy');
+    Route::get('/get-kelurahan', function (Request $request) {
+        $kelurahan = Kelurahan::where('kecamatan_id', $request->kecamatan_id)->get();
+        return response()->json($kelurahan);
+    });
 });
 
 // Warga

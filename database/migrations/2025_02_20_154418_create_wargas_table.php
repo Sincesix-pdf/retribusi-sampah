@@ -11,15 +11,16 @@ return new class extends Migration {
             $table->string('NIK', 16)->primary();
             $table->foreignId('pengguna_id')->unique()->constrained('pengguna')->onDelete('cascade');
             $table->enum('jenis_retribusi', ['Tetap', 'Tidak Tetap']);
+            $table->foreignId('kelurahan_id')->constrained('kelurahan')->onDelete('cascade');
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('warga');
+        Schema::table('warga', function (Blueprint $table) {
+            $table->dropForeign(['kelurahan_id']);
+            $table->dropColumn('kelurahan_id');
+        });
     }
 };

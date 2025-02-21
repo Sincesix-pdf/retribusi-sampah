@@ -23,39 +23,24 @@
             <label>Password:</label>
             <div class="input-group">
                 <input type="password" id="password" name="password" class="form-control" required>
-                <span class="input-group-text" onclick="togglePassword('password', 'togglePasswordIcon1')" style="cursor: pointer;">
+                <span class="input-group-text" onclick="togglePassword('password', 'togglePasswordIcon1')"
+                    style="cursor: pointer;">
                     <span id="togglePasswordIcon1" class="material-symbols-rounded">visibility</span>
                 </span>
             </div>
 
             <label>Ulangi Password:</label>
             <div class="input-group">
-                <input type="password" id="password_confirmation" name="password_confirmation" class="form-control" required>
-                <span class="input-group-text" onclick="togglePassword('password_confirmation', 'togglePasswordIcon2')" style="cursor: pointer;">
+                <input type="password" id="password_confirmation" name="password_confirmation" class="form-control"
+                    required>
+                <span class="input-group-text" onclick="togglePassword('password_confirmation', 'togglePasswordIcon2')"
+                    style="cursor: pointer;">
                     <span id="togglePasswordIcon2" class="material-symbols-rounded">visibility</span>
                 </span>
             </div>
 
             <label>Alamat:</label>
             <input type="text" name="alamat" class="form-control" required>
-
-            <label>No HP:</label>
-            <input type="text" name="no_hp" class="form-control" required>
-
-            <label>Jenis Kelamin:</label>
-            <select name="jenis_kelamin" class="form-control">
-                <option value="Laki-laki">Laki-laki</option>
-                <option value="Perempuan">Perempuan</option>
-            </select>
-
-            <label>Tanggal Lahir:</label>
-            <input type="date" name="tanggal_lahir" class="form-control" required>
-
-            <label>NIK:</label>
-            <input type="text" name="NIK" class="form-control @error('NIK') is-invalid @enderror" value="{{ old('NIK') }}">
-            @error('NIK')
-                <div class="text-danger">{{ $message }}</div>
-            @enderror
 
             <!-- Dropdown Kecamatan -->
             <label>Kecamatan:</label>
@@ -71,6 +56,25 @@
             <select name="kelurahan_id" id="kelurahan_id" class="form-control">
                 <option value="">Pilih Kelurahan</option>
             </select>
+
+            <label>No HP:</label>
+            <input type="text" name="no_hp" class="form-control" required>
+
+            <label>Jenis Kelamin:</label>
+            <select name="jenis_kelamin" class="form-control">
+                <option value="Laki-laki">Laki-laki</option>
+                <option value="Perempuan">Perempuan</option>
+            </select>
+
+            <label>Tanggal Lahir:</label>
+            <input type="date" name="tanggal_lahir" class="form-control" required>
+
+            <label>NIK:</label>
+            <input type="text" name="NIK" class="form-control @error('NIK') is-invalid @enderror"
+                value="{{ old('NIK') }}">
+            @error('NIK')
+                <div class="text-danger">{{ $message }}</div>
+            @enderror
 
             <label>Jenis Retribusi:</label>
             <select name="jenis_retribusi" class="form-control">

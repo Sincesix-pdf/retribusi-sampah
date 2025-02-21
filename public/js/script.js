@@ -58,3 +58,16 @@ document.addEventListener("DOMContentLoaded", function () {
         loadKelurahan(kecamatanSelect.value);
     }
 });
+
+$(document).ready(function () {
+    $("#wargaTable").DataTable({
+        paging: true,
+        searching: true,
+        ordering: true,
+        info: true,
+        lengthMenu: [
+            [10, 25, 50, -1],
+            [10, 25, 50, "All"],
+        ],
+    });
+});

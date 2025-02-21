@@ -29,7 +29,7 @@ class DataWargaController extends Controller
             ->when($kelurahan_id, function ($query) use ($kelurahan_id) {
                 return $query->where('kelurahan_id', $kelurahan_id);
             })
-            ->paginate(1); // Hanya tampilkan 10 data per halaman
+            ->paginate(10); // Hanya tampilkan 10 data per halaman
 
         return view('datawarga.index', compact('warga', 'kecamatan', 'kecamatan_id', 'kelurahan_id'));
     }
@@ -60,7 +60,7 @@ class DataWargaController extends Controller
         $pengguna = Pengguna::create([
             'nama' => $validatedData['nama'],
             'email' => $validatedData['email'],
-            'password' => Hash::make($validatedData['password']),
+            'password' => $validatedData['password'],
             'alamat' => $validatedData['alamat'],
             'no_hp' => $validatedData['no_hp'],
             'jenis_kelamin' => $validatedData['jenis_kelamin'],

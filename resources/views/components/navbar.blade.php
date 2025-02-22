@@ -1,7 +1,17 @@
 <aside class="sidebar">
+    @php
+        $dashboardRoute = match (Auth::user()->role->nama_role ?? null) {
+            'admin' => route('admin.index'),
+            'pendataan' => route('pendataan.index'),
+            'keuangan' => route('keuangan.index'),
+            'kepala_dinas' => route('kepala_dinas.index'),
+            'warga' => route('warga.index'),
+            default => '#',
+        };
+    @endphp
     <!-- Sidebar header -->
     <header class="sidebar-header">
-        <a href="#" class="header-logo">
+        <a href="{{ $dashboardRoute }}" class="header-logo">
             <img src="/gambar/GEH.png" alt="logo">
         </a>
         <button class="toggler sidebar-toggler">
@@ -15,16 +25,6 @@
     <nav class="sidebar-nav">
         <!-- Primary top nav -->
         <ul class="nav-list primary-nav">
-            @php
-                $dashboardRoute = match (Auth::user()->role->nama_role ?? null) {
-                    'admin' => route('admin.index'),
-                    'pendataan' => route('pendataan.index'),
-                    'keuangan' => route('keuangan.index'),
-                    'kepala_dinas' => route('kepala_dinas.index'),
-                    default => '#',
-                };
-            @endphp
-
             <li class="nav-item">
                 <a href="{{ $dashboardRoute }}" class="nav-link">
                     <span class="nav-icon material-symbols-rounded">dashboard</span>
@@ -44,12 +44,27 @@
             @endif
 
             @if(Auth::user()->role->nama_role == 'pendataan')
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
+                <li class="nav-item dropdown">
+                    <a href="#" class="nav-link dropdown-toggle" id="tagihanDropdown" role="button"
+                        data-bs-toggle="dropdown" aria-expanded="false">
                         <span class="material-symbols-rounded">credit_card_gear</span>
                         <span class="nav-label">Kelola Tagihan</span>
                     </a>
-                    <span class="nav-tooltip">Kelola Tagihan</span>
+                    <ul class="dropdown-menu" aria-labelledby="tagihanDropdown">
+                        <li><a class="dropdown-item" href="{{ route('tagihan.index.tetap') }}">Tagihan Tetap</a></li>
+                        <li><a class="dropdown-item" href="{{ route('tagihan.index.tidak_tetap') }}">Tagihan Tidak Tetap</a>
+                        </li>
+                    </ul>
+                </li>
+            @endif
+
+            @if(Auth::user()->role->nama_role == 'pendataan')
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <span class="material-symbols-rounded">attach_money</span>
+                        <span class="nav-label">Transaksi</span>
+                    </a>
+                    <span class="nav-tooltip">Transaksi</span>
                 </li>
             @endif
 
@@ -60,6 +75,16 @@
                         <span class="nav-label">Laporan Keuangan</span>
                     </a>
                     <span class="nav-tooltip">Laporan Keuangan</span>
+                </li>
+            @endif
+
+            @if(Auth::user()->role->nama_role == 'kepala_dinas')
+                <li class="nav-item">
+                    <a href="{{ route(name: 'tagihan.daftartagihan') }}" class="nav-link">
+                        <span class="material-symbols-rounded">credit_card_clock</span>
+                        <span class="nav-label">Daftar Tagihan</span>
+                    </a>
+                    <span class="nav-tooltip">Daftar Tagihan</span>
                 </li>
             @endif
 
@@ -86,24 +111,23 @@
 
 
         <!-- Secondary bottom nav -->
-        <ul class="nav-list secondary-nav">
+        <!-- <ul class="nav-list secondary-nav">
             <li class="nav-item">
                 <a href="#" class="nav-link">
                     <span class="nav-icon material-symbols-rounded">account_circle</span>
                     <span class="nav-label">Profile</span>
                 </a>
                 <span class="nav-tooltip">Profile</span>
-            </li>
-            <li class="nav-item">
-                <a href="#" class="nav-link"
-                    onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                    <span class="nav-icon material-symbols-rounded">logout</span>
-                    <span class="nav-label">Logout</span>
-                </a>
-                <span class="nav-tooltip">Logout</span>
-            </li>
+            </li> -->
+        <li class="nav-list secondary-nav">
+            <a href="#" class="nav-link"
+                onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                <span class="nav-icon material-symbols-rounded">logout</span>
+                <span class="nav-label">Logout</span>
+            </a>
+            <span class="nav-tooltip">Logout</span>
+        </li>
         </ul>
-
         <!-- Hidden Logout Form -->
         <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
             @csrf

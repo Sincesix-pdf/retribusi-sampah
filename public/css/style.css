@@ -11,6 +11,7 @@ body {
     flex-direction: column;
     min-height: 100vh;
     background: linear-gradient(#f1faff, #cbe4ff);
+    /* background: #ddd; */
 }
 .main-container {
     display: flex;

@@ -59,15 +59,26 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 });
 
+// template data tabel
 $(document).ready(function () {
-    $("#wargaTable").DataTable({
-        paging: true,
-        searching: true,
-        ordering: true,
-        info: true,
-        lengthMenu: [
-            [10, 25, 50, -1],
-            [10, 25, 50, "All"],
-        ],
+    $('#ViewTable').DataTable({
+        "paging": true,
+        "searching": true,
+        "ordering": true,
+        "info": true,
+        "language": {
+            "search": "Cari:",
+            "lengthMenu": "Tampilkan _MENU_ data per halaman",
+            "info": "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
+            "infoEmpty": "Tidak ada data tersedia",
+            "zeroRecords": "Data tidak ditemukan",
+            "paginate": {
+                "first": "Pertama",
+                "last": "Terakhir",
+                "next": "→",
+                "previous": "←"
+            }
+        }
     });
 });
+

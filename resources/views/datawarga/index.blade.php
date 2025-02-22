@@ -1,44 +1,51 @@
 <x-layout>
     <div class="content-container">
-        <h1>Halaman Kelola WR</h1>
-        <div class="">
-            <h2>Daftar Warga</h2>
+        <h1 class="mb-4">Halaman Kelola Warga</h1>
 
-            <!-- Filter Form -->
-            <form action="{{ route('datawarga.index') }}" method="GET" class="mb-3">
-                <div class="row">
-                    <div class="col-md-4">
-                        <label for="kecamatan_id">Pilih Kecamatan:</label>
-                        <select name="kecamatan_id" id="kecamatan_id" class="form-control">
-                            <option value="">Semua Kecamatan</option>
-                            @foreach ($kecamatan as $kec)
-                                <option value="{{ $kec->id }}" {{ $kec->id == request('kecamatan_id') ? 'selected' : '' }}>
-                                    {{ $kec->nama }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <label for="kelurahan_id">Pilih Kelurahan:</label>
-                        <select name="kelurahan_id" id="kelurahan_id" class="form-control">
-                            <option value="">Semua Kelurahan</option>
-                        </select>
-                    </div>
-                    <div class="col-md-4 d-flex align-items-end gap-2">
-                        <button type="submit" class="btn btn-primary">Filter</button>
-                        <a href="{{ route('datawarga.index') }}" class="btn btn-secondary">Reset</a>
-                    </div>
+        <!-- Filter Form -->
+        <form action="{{ route('datawarga.index') }}" method="GET" class="mb-3">
+            <div class="row g-3">
+                <!-- Pilih Kecamatan -->
+                <div class="col-md-4">
+                    <label for="kecamatan_id" class="form-label">Pilih Kecamatan:</label>
+                    <select name="kecamatan_id" id="kecamatan_id" class="form-select">
+                        <option value="">Semua Kecamatan</option>
+                        @foreach ($kecamatan as $kec)
+                            <option value="{{ $kec->id }}" {{ $kec->id == request('kecamatan_id') ? 'selected' : '' }}>
+                                {{ $kec->nama }}
+                            </option>
+                        @endforeach
+                    </select>
                 </div>
-            </form>
 
-            <a class="btn btn-success mb-3" href="{{ route('datawarga.create') }}">Tambah Warga</a>
+                <!-- Pilih Kelurahan -->
+                <div class="col-md-4">
+                    <label for="kelurahan_id" class="form-label">Pilih Kelurahan:</label>
+                    <select name="kelurahan_id" id="kelurahan_id" class="form-select">
+                        <option value="">Semua Kelurahan</option>
+                    </select>
+                </div>
 
-            @if(session('success'))
-                <div class="alert alert-success">{{ session('success') }}</div>
-            @endif
+                <div class="col-md-4 d-flex align-items-end gap-2">
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-filter"></i> Filter</button>
+                    <a href="{{ route('datawarga.index') }}" class="btn btn-secondary"><i class="fas fa-sync"></i>
+                        Reset</a>
+                </div>
+            </div>
+        </form>
 
-            <table id="wargaTable" class="table table-striped table-bordered" style="width:100%">
-                <thead>
+        <a class="btn btn-success mb-3" href="{{ route('datawarga.create') }}">
+            <i class="fas fa-plus"></i> Tambah Warga
+        </a>
+
+        @if(session('success'))
+            <div class="alert alert-success">{{ session('success') }}</div>
+        @endif
+
+        <!-- Tabel Data -->
+        <div class="table-responsive">
+            <table id="ViewTable" class="table table-striped table-hover table-bordered">
+                <thead class="table-dark">
                     <tr>
                         <th>NIK</th>
                         <th>Nama</th>
@@ -64,14 +71,16 @@
                             <td>{{ $w->pengguna->no_hp }}</td>
                             <td>{{ $w->pengguna->jenis_kelamin }}</td>
                             <td>{{ $w->jenis_retribusi }}</td>
-                            <td class="text-center d-flex justify-content-center align-items-center gap-1">
-                                <a href="{{ route('datawarga.edit', $w->NIK) }}" class="btn btn-sm btn-warning">
+                            <td class="text-center">
+                                <a href="{{ route('datawarga.edit', $w->NIK) }}" class="btn btn-sm btn-primary">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                <form action="{{ route('datawarga.destroy', $w->NIK) }}" method="POST">
+
+                                <form action="{{ route('datawarga.destroy', $w->NIK) }}" method="POST" class="d-inline"
+                                    onsubmit="return confirm('Yakin ingin menghapus?');">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Yakin hapus?')">
+                                    <button type="submit" class="btn btn-sm btn-danger">
                                         <i class="fas fa-trash-alt"></i>
                                     </button>
                                 </form>

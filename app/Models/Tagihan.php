@@ -10,7 +10,8 @@ class Tagihan extends Model
     use HasFactory;
 
     protected $table = 'tagihan';
-    protected $fillable = ['NIK', 'jenis_retribusi', 'tarif', 'bulan', 'volume', 'total_tagihan', 'tanggal_tagihan'];
+    protected $fillable = ['NIK', 'jenis_retribusi', 'tarif', 'bulan', 'tahun', 'volume', 'total_tagihan', 'tanggal_tagihan'];
+
 
     public function warga()
     {

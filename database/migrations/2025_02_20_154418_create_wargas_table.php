@@ -10,7 +10,7 @@ return new class extends Migration {
         Schema::create('warga', function (Blueprint $table) {
             $table->string('NIK', 16)->primary();
             $table->foreignId('pengguna_id')->unique()->constrained('pengguna')->onDelete('cascade');
-            $table->enum('jenis_retribusi', ['Tetap', 'Tidak Tetap']);
+            $table->enum('jenis_retribusi', ['tetap', 'tidak_tetap']);
             $table->foreignId('kelurahan_id')->constrained('kelurahan')->onDelete('cascade');
             $table->timestamps();
         });

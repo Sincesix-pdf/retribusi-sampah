@@ -39,9 +39,8 @@
                     <tr>
                         <th>NIK</th>
                         <th>Nama</th>
-                        <th>Bulan</th>
+                        <th>Bulan/Tahun</th>
                         <th>Jumlah Tagihan</th>
-                        <th>Jatuh Tempo</th>
                         <th>Aksi</th>
                     </tr>
                 </thead>
@@ -50,9 +49,8 @@
                         <tr>
                             <td>{{ $t->NIK }}</td>
                             <td>{{ $t->warga->pengguna->nama }}</td>
-                            <td>{{ date('F', mktime(0, 0, 0, $t->bulan, 1)) }}</td>
+                            <td>{{ date('F', mktime(0, 0, 0, $t->bulan, 1))}} {{ $t->tahun }}</td>
                             <td>Rp{{ number_format($t->total_tagihan) }}</td>
-                            <td>{{ $t->tanggal_tagihan }}</td>
                             <td class="text-center">
                                 <a href="{{ route('tagihan.edit', $t->id) }}" class="btn btn-sm btn-primary">
                                     <i class="fas fa-edit"></i>

@@ -78,41 +78,56 @@ class DataWargaController extends Controller
         return redirect()->route('datawarga.index')->with('success', 'Warga berhasil ditambahkan!');
     }
 
-    public function edit(Warga $warga)
-    {
-        $kecamatan = Kecamatan::all();
-        $kelurahan = Kelurahan::where('kecamatan_id', $warga->kelurahan->kecamatan_id)->get();
+    public function edit($NIK)
+{
+    $warga = Warga::where('NIK', $NIK)->with('kelurahan')->firstOrFail();
+    $kecamatan = Kecamatan::all();
+    $kelurahan = Kelurahan::where('kecamatan_id', $warga->kelurahan->kecamatan_id ?? $warga->kecamatan_id)->get();
 
-        return view('datawarga.edit', compact('warga', 'kecamatan', 'kelurahan'));
-    }
+    return view('datawarga.edit', compact('warga', 'kecamatan', 'kelurahan'));
+}
 
-    public function update(Request $request, Warga $warga)
-    {
-        $validatedData = $request->validate([
-            'nama' => 'required|string|max:255',
-            'alamat' => 'required|string',
-            'no_hp' => 'required|string',
-            'jenis_kelamin' => 'required',
-            'tanggal_lahir' => 'required|date',
-            'jenis_retribusi' => 'required',
-            'kelurahan_id' => 'required|exists:kelurahan,id',
-        ]);
 
-        $warga->pengguna->update([
-            'nama' => $validatedData['nama'],
-            'alamat' => $validatedData['alamat'],
-            'no_hp' => $validatedData['no_hp'],
-            'jenis_kelamin' => $validatedData['jenis_kelamin'],
-            'tanggal_lahir' => $validatedData['tanggal_lahir'],
-        ]);
 
-        $warga->update([
-            'jenis_retribusi' => $validatedData['jenis_retribusi'],
-            'kelurahan_id' => $validatedData['kelurahan_id'],
-        ]);
+    public function update(Request $request, $NIK)
+{
+    // Cari data warga berdasarkan NIK
+    $warga = Warga::where('NIK', $NIK)->firstOrFail();
+    $pengguna = $warga->pengguna; // Ambil data pengguna terkait
 
-        return redirect()->route('datawarga.index')->with('success', 'Data warga berhasil diperbarui!');
-    }
+    // Validasi data
+    $validatedData = $request->validate([
+        'nama' => 'required|string|max:255',
+        'email' => 'required|email|unique:pengguna,email,' . $pengguna->id,
+        'alamat' => 'required|string|max:255',
+        'kecamatan_id' => 'required|exists:kecamatan,id',
+        'kelurahan_id' => 'required|exists:kelurahan,id',
+        'no_hp' => 'required|string|max:15',
+        'jenis_kelamin' => 'required|in:Laki-laki,Perempuan',
+        'tanggal_lahir' => 'required|date',
+        'jenis_retribusi' => 'required|in:Tetap,Tidak Tetap',
+    ]);
+
+    // Update tabel `pengguna`
+    $pengguna->update([
+        'nama' => $validatedData['nama'],
+        'email' => $validatedData['email'],
+        'alamat' => $validatedData['alamat'],
+        'no_hp' => $validatedData['no_hp'],
+        'jenis_kelamin' => $validatedData['jenis_kelamin'],
+        'tanggal_lahir' => $validatedData['tanggal_lahir'],
+    ]);
+
+    // Update tabel `warga`
+    $warga->update([
+        'jenis_retribusi' => $validatedData['jenis_retribusi'],
+        'kelurahan_id' => $validatedData['kelurahan_id'],
+    ]);
+
+    return redirect()->route('datawarga.index')->with('success', 'Data Warga berhasil diperbarui.');
+}
+
+
 
     public function destroy(Warga $warga)
     {

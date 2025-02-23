@@ -45,7 +45,7 @@ class TambahWargaSeeder extends Seeder
             $dataWarga[] = [
                 'NIK' => $faker->unique()->numerify('################'),
                 'pengguna_id' => $penggunaId,
-                'jenis_retribusi' => $i <= 5 ? 'tetap' : 'tidak tetap',
+                'jenis_retribusi' => $i <= 5 ? 'tetap' : 'tidak_tetap',
                 'kelurahan_id' => $kel->id,
                 'created_at' => now(),
                 'updated_at' => now(),

@@ -12,10 +12,11 @@ return new class extends Migration {
             $table->string('NIK'); // Relasi ke warga
             $table->enum('jenis_retribusi', ['tetap', 'tidak_tetap']);
             $table->decimal('tarif', 10, 2);
-            $table->string('bulan')->nullable(); // Hanya digunakan jika tipe 'tetap'
+            $table->string('bulan')->nullable();
+            $table->year('tahun')->nullable();
             $table->decimal('volume', 10, 2)->nullable(); // Hanya digunakan jika tipe 'tidak_tetap'
             $table->decimal('total_tagihan', 10, 2);
-            $table->date('tanggal_tagihan');
+            $table->date('tanggal_tagihan')->nullable();
             $table->timestamps();
 
             // Foreign key ke tabel warga

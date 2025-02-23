@@ -41,12 +41,15 @@ Route::middleware(['auth', 'role:keuangan'])->group(function () {
 Route::middleware(['auth', 'role:pendataan'])->group(function () {
     // akses halaman dashboard
     Route::get('/pendataan/dashboard', [AuthController::class, 'pendataan'])->name('pendataan.index');
+
     // Akses halaman Kelola Warga
     Route::get('/pendataan/datawarga', [DataWargaController::class, 'index'])->name('datawarga.index');
     Route::get('/pendataan/datawarga/create', [DataWargaController::class, 'create'])->name('datawarga.create');
     Route::post('/pendataan/datawarga', [DataWargaController::class, 'store'])->name('datawarga.store');
-    Route::get('/pendataan/datawarga/{warga}/edit', [DataWargaController::class, 'edit'])->name('datawarga.edit');
-    Route::put('/pendataan/datawarga/{warga}', [DataWargaController::class, 'update'])->name('datawarga.update');
+
+    Route::get('/pendataan/datawarga/{NIK}/edit', [DataWargaController::class, 'edit'])->name('datawarga.edit');
+    Route::put('/pendataan/datawarga/{NIK}', [DataWargaController::class, 'update'])->name('datawarga.update');
+
     Route::delete('/pendataan/datawarga/{warga}', [DataWargaController::class, 'destroy'])->name('datawarga.destroy');
     Route::get('/get-kelurahan', function (Request $request) {
         $kelurahan = Kelurahan::where('kecamatan_id', $request->kecamatan_id)->get();
@@ -62,10 +65,11 @@ Route::middleware(['auth', 'role:pendataan'])->group(function () {
     Route::get('/pendataan/kelolatagihan/tidak_tetap', [TagihanController::class, 'indexTidakTetap'])->name('tagihan.index.tidak_tetap');
     Route::get('/pendataan/kelolatagihan/tidak_tetap/create', [TagihanController::class, 'createTidakTetap'])->name('tagihan.create.tidak_tetap');
 
-    // Store Data (Tetap & Tidak Tetap, sama-sama masuk ke DB yang sama)
+    // Store
     Route::post('/pendataan/kelolatagihan/tetap', [TagihanController::class, 'storeTetap'])->name('tagihan.store.tetap');
     Route::post('/pendataan/kelolatagihan/tidak_tetap', [TagihanController::class, 'storeTidakTetap'])->name('tagihan.store.tidak_tetap');
 
+    // Edit update hapus
     Route::get('/pendataan/kelolatagihan/{id}/edit', [TagihanController::class, 'edit'])->name('tagihan.edit');
     Route::put('/pendataan/kelolatagihan/{id}', [TagihanController::class, 'update'])->name('tagihan.update');
     Route::delete('/pendataan/kelolatagihan/{id}', [TagihanController::class, 'destroy'])->name('tagihan.destroy');

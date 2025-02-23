@@ -23,7 +23,12 @@
             <label>Tanggal Tagihan</label>
             <input type="date" name="tanggal_tagihan" class="form-control" required>
 
-            <button type="submit" class="btn btn-primary mt-3">Buat Tagihan</button>
+            <div class="col-md-6">
+                <div class="mt-3">
+                    <button type="submit" class="btn btn-primary">Buat Tagihan</button>
+                    <a href="{{ route('tagihan.index.tidak_tetap') }}" class="btn btn-secondary">Kembali</a>
+                </div>
+            </div>
         </form>
     </div>
 </x-layout>

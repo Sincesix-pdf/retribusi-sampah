@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Models\Tagihan;
 use App\Models\Warga;
@@ -26,6 +26,35 @@ class TagihanController extends Controller
     {
         $tagihan = Tagihan::where('jenis_retribusi', 'tidak_tetap')->with('warga.pengguna')->paginate(10);
         return view('tagihan.index_tidak_tetap', compact('tagihan'));
+    }
+
+    public function generateTetap()
+    {
+        $bulanIni = Carbon::now()->month;
+        $tahunIni = Carbon::now()->year;
+        $wargaTetap = Warga::where('jenis_retribusi', 'tetap')->get();
+
+        foreach ($wargaTetap as $warga) {
+            // Cek apakah tagihan bulan ini sudah ada
+            $tagihanExist = Tagihan::where('NIK', $warga->NIK)
+                ->where('bulan', $bulanIni)
+                ->where('tahun', $tahunIni)
+                ->exists();
+
+            if (!$tagihanExist) {
+                // Simpan tagihan baru
+                Tagihan::create([
+                    'NIK' => $warga->NIK,
+                    'jenis_retribusi' => 'tetap',
+                    'tarif' => 50000,
+                    'bulan' => $bulanIni,
+                    'tahun' => $tahunIni,
+                    'total_tagihan' => 50000,
+                ]);
+            }
+        }
+
+        return redirect()->route('tagihan.index.tetap')->with('success', 'Tagihan berhasil dibuat!');
     }
 
     public function createTetap()

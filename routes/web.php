@@ -60,6 +60,8 @@ Route::middleware(['auth', 'role:pendataan'])->group(function () {
     // Index dan Create untuk Tagihan Tetap
     Route::get('/pendataan/kelolatagihan/tetap', [TagihanController::class, 'indexTetap'])->name('tagihan.index.tetap');
     Route::get('/pendataan/kelolatagihan/tetap/create', [TagihanController::class, 'createTetap'])->name('tagihan.create.tetap');
+    Route::post('/pendataan/kelolatagihan/generate-tetap', [TagihanController::class, 'generateTetap'])->name('tagihan.generate.tetap');
+
 
     // Index dan Create untuk Tagihan Tidak Tetap
     Route::get('/pendataan/kelolatagihan/tidak_tetap', [TagihanController::class, 'indexTidakTetap'])->name('tagihan.index.tidak_tetap');

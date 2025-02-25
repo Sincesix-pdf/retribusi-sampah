@@ -24,9 +24,20 @@
             </div>
         </form>
 
-        <a class="btn btn-success mb-3" href="{{ route('tagihan.create.tetap') }}">
-            <i class="fas fa-plus"></i> Tambah Tagihan Tetap
-        </a>
+        <div class="d-inline-block me-3">
+            <a class="btn btn-success mb-3" href="{{ route('tagihan.create.tetap') }}">
+                <i class="fas fa-plus"></i> Tambah Tagihan Tetap
+            </a>
+        </div>
+
+        <div class="d-inline-block me-3">
+            <form action="{{ route('tagihan.generate.tetap') }}" method="POST">
+                @csrf
+                <button type="submit" class="btn btn-warning mb-3">
+                    <i class="fas fa-file-invoice-dollar"></i> Buat Tagihan Bulan Ini
+                </button>
+            </form>
+        </div>
 
         @if(session('success'))
             <div class="alert alert-success">{{ session('success') }}</div>

@@ -11,6 +11,7 @@ return new class extends Migration {
             $table->string('NIK', 16)->primary();
             $table->foreignId('pengguna_id')->unique()->constrained('pengguna')->onDelete('cascade');
             $table->enum('jenis_retribusi', ['tetap', 'tidak_tetap']);
+            $table->foreignId('jenis_layanan_id')->nullable()->constrained('jenis_layanan');
             $table->foreignId('kelurahan_id')->constrained('kelurahan')->onDelete('cascade');
             $table->timestamps();
         });
@@ -18,9 +19,6 @@ return new class extends Migration {
 
     public function down(): void
     {
-        Schema::table('warga', function (Blueprint $table) {
-            $table->dropForeign(['kelurahan_id']);
-            $table->dropColumn('kelurahan_id');
-        });
+        Schema::dropIfExists('warga');
     }
 };

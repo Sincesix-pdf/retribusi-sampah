@@ -29,7 +29,9 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 // Kepala Dinas
 Route::middleware(['auth', 'role:kepala_dinas'])->group(function () {
     Route::get('/kepala-dinas/dashboard', [AuthController::class, 'kepaladinas'])->name('kepala_dinas.index');
-    Route::get('/kepala-dinas/daftar-tagihan', [TagihanController::class, 'daftarTagihan'])->name('tagihan.daftartagihan');
+    Route::get('/kepala-dinas/daftarTagihan', [TagihanController::class, 'daftarTagihan'])->name('kepala_dinas.tagihan');
+    Route::get('/kepala-dinas/grafik', [TagihanController::class, 'grafik'])->name('kepala_dinas.grafik');
+    Route::post('/kepala-dinas/tagihan/setujui', [TagihanController::class, 'setujuiTagihan'])->name('kepala_dinas.tagihan.setujui');
 });
 
 // Keuangan
@@ -61,6 +63,7 @@ Route::middleware(['auth', 'role:pendataan'])->group(function () {
     Route::get('/pendataan/kelolatagihan/tetap', [TagihanController::class, 'indexTetap'])->name('tagihan.index.tetap');
     Route::get('/pendataan/kelolatagihan/tetap/create', [TagihanController::class, 'createTetap'])->name('tagihan.create.tetap');
     Route::post('/pendataan/kelolatagihan/generate-tetap', [TagihanController::class, 'generateTetap'])->name('tagihan.generate.tetap');
+    Route::post('/pendataan/kelolatagihan/ajukan', [TagihanController::class, 'ajukanTagihan'])->name('tagihan.ajukan');
 
 
     // Index dan Create untuk Tagihan Tidak Tetap
@@ -81,4 +84,20 @@ Route::middleware(['auth', 'role:pendataan'])->group(function () {
 // Warga
 Route::middleware(['auth', 'role:warga'])->group(function () {
     Route::get('/warga/dashboard', [AuthController::class, 'warga'])->name('warga.index');
+});
+
+
+Route::get('/kirim-whatsapp', function () {
+    $apiKey = 'mb5Vs3fJcZpJFj7ePNq6'; // Ganti dengan API Key Fonnte kamu
+    $nohp  = '089515946334'; // Ganti dengan nomor tujuan
+    $pesan  = 'Halo, ini pesan dari Laravel!';
+
+    $response = Http::withHeaders([
+        'Authorization' => $apiKey,
+    ])->post('https://api.fonnte.com/send', [
+        'target'  => $nohp,
+        'message' => $pesan,
+    ]);
+
+    return $response->json();
 });

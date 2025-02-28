@@ -58,7 +58,7 @@
                 </li>
             @endif
 
-            @if(Auth::user()->role->nama_role == 'pendataan')
+            @if(Auth::user()->role->nama_role == 'keuangan')
                 <li class="nav-item">
                     <a href="#" class="nav-link">
                         <span class="material-symbols-rounded">attach_money</span>

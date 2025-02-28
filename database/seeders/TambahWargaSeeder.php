@@ -18,14 +18,24 @@ class TambahWargaSeeder extends Seeder
     {
         $faker = Faker::create('id_ID');
 
-        // Ambil daftar kelurahan
+        // Ambil daftar kelurahan dan jenis layanan
         $kelurahan = DB::table('kelurahan')->get();
+        $jenis_layanan = DB::table('jenis_layanan')->get();
 
         $dataWarga = [];
 
-        // Buat 200 data warga
+        // Buat 10 data warga
         for ($i = 1; $i <= 10; $i++) {
             $kel = $kelurahan->random();
+            $jenis_retribusi = $i <= 5 ? 'tetap' : 'tidak_tetap';
+
+            // Filter jenis_layanan agar tidak termasuk id 4
+            $jenis_layanan_terfilter = $jenis_layanan->filter(function ($item) {
+                return $item->id != 4;
+            });
+
+            $jenis_layanan_id = ($jenis_retribusi == 'tidak_tetap') ? 4 : $jenis_layanan_terfilter->random()->id;
+
 
             // Insert ke tabel pengguna dulu
             $penggunaId = DB::table('pengguna')->insertGetId([
@@ -45,7 +55,8 @@ class TambahWargaSeeder extends Seeder
             $dataWarga[] = [
                 'NIK' => $faker->unique()->numerify('################'),
                 'pengguna_id' => $penggunaId,
-                'jenis_retribusi' => $i <= 5 ? 'tetap' : 'tidak_tetap',
+                'jenis_retribusi' => $jenis_retribusi,
+                'jenis_layanan_id' => $jenis_layanan_id,
                 'kelurahan_id' => $kel->id,
                 'created_at' => now(),
                 'updated_at' => now(),

@@ -14,8 +14,7 @@ return new class extends Migration {
             $table->decimal('tarif', 10, 2);
             $table->string('bulan')->nullable();
             $table->year('tahun')->nullable();
-            $table->decimal('volume', 10, 2)->nullable(); // Hanya digunakan jika tipe 'tidak_tetap'
-            $table->decimal('total_tagihan', 10, 2);
+            $table->decimal('volume', 10, 2)->nullable();
             $table->date('tanggal_tagihan')->nullable();
             $table->timestamps();
 

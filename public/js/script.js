@@ -1,3 +1,11 @@
+
+//checklis daftar tagihan
+document.getElementById("checkAll").addEventListener("change", function () {
+    let checkboxes = document.querySelectorAll('input[name="tagihan_id[]"]');
+    checkboxes.forEach((checkbox) => (checkbox.checked = this.checked));
+});
+
+// navbar
 document.addEventListener("DOMContentLoaded", function () {
     window.addEventListener("scroll", function () {
         var navbar = document.getElementById("navbar");
@@ -143,3 +151,4 @@ window.onload = function () {
         jenisLayananSelect.setAttribute("readonly", "readonly");
     }
 };
+

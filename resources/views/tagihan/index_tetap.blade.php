@@ -24,11 +24,11 @@
             </div>
         </form>
 
-        <div class="d-inline-block me-3">
+        <!-- <div class="d-inline-block me-3">
             <a class="btn btn-success mb-3" href="{{ route('tagihan.create.tetap') }}">
                 <i class="fas fa-plus"></i> Tambah Tagihan Tetap
             </a>
-        </div>
+        </div> -->
 
         <div class="d-inline-block me-3">
             <form action="{{ route('tagihan.generate.tetap') }}" method="POST">
@@ -38,6 +38,16 @@
                 </button>
             </form>
         </div>
+
+        <div class="d-inline-block me-3">
+            <form action="{{ route('tagihan.ajukan') }}" method="POST">
+                @csrf
+                <button type="submit" class="btn btn-info mb-3">
+                    <i class="fas fa-paper-plane"></i> Ajukan Tagihan
+                </button>
+            </form>
+        </div>
+
 
         @if(session('success'))
             <div class="alert alert-success">{{ session('success') }}</div>
@@ -52,7 +62,9 @@
                         <th>Nama</th>
                         <th>Bulan/Tahun</th>
                         <th>Jumlah Tagihan</th>
-                        <th>Aksi</th>
+                        <th>Jenis Retribusi</th>
+                        <th>Status</th>
+                        <!-- <th>Aksi</th> -->
                     </tr>
                 </thead>
                 <tbody>
@@ -61,11 +73,21 @@
                             <td>{{ $t->NIK }}</td>
                             <td>{{ $t->warga->pengguna->nama }}</td>
                             <td>{{ date('F', mktime(0, 0, 0, $t->bulan, 1))}} {{ $t->tahun }}</td>
-                            <td>Rp{{ number_format($t->total_tagihan) }}</td>
-                            <td class="text-center">
+                            <td>Rp{{ number_format($t->tarif) }}</td>
+                            <td>{{ $t->warga->jenisLayanan->nama_paket }}</td>
+                            <td>
+                                @if ($t->status === 'diajukan')
+                                    <span class="badge bg-warning">Diajukan</span>
+                                @elseif ($t->status === 'disetujui')
+                                    <span class="badge bg-success">Disetujui</span>
+                                @else
+                                    <span class="badge bg-secondary">Belum Diajukan</span>
+                                @endif
+                            </td>
+                            <!-- <td class="text-center">
                                 <a href="{{ route('tagihan.edit', $t->id) }}" class="btn btn-sm btn-primary">
-                                    <i class="fas fa-edit"></i>
-                                </a>
+                                            <i class="fas fa-edit"></i>
+                                        </a>
 
                                 <a href="https://wa.me/?text=Tagihan%20Rp{{ number_format($t->total_tagihan) }}%20untuk%20{{ $t->warga->pengguna->nama }}"
                                     class="btn btn-sm btn-success" target="_blank">
@@ -80,7 +102,7 @@
                                         <i class="fas fa-trash-alt"></i>
                                     </button>
                                 </form>
-                            </td>
+                            </td> -->
                         </tr>
                     @endforeach
                 </tbody>

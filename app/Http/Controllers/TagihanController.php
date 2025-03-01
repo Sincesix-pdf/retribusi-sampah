@@ -5,6 +5,8 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Models\Tagihan;
 use App\Models\Warga;
+use Illuminate\Support\Facades\Http;
+use App\Services\WhatsAppService;
 
 class TagihanController extends Controller
 {
@@ -32,7 +34,7 @@ class TagihanController extends Controller
     {
         $bulanIni = Carbon::now()->month;
         $tahunIni = Carbon::now()->year;
-        $wargaTetap = Warga::where('jenis_retribusi', 'tetap')->get();
+        $wargaTetap = Warga::where('jenis_retribusi', 'tetap')->with('jenisLayanan')->get(); // Pastikan ada relasi jenis_layanan
 
         foreach ($wargaTetap as $warga) {
             // Cek apakah tagihan bulan ini sudah ada
@@ -42,20 +44,38 @@ class TagihanController extends Controller
                 ->exists();
 
             if (!$tagihanExist) {
+                // Ambil tarif dari jenis layanan
+                $tarif = $warga->jenisLayanan->tarif ?? 0; // Pastikan ada tarif, jika null set default 0
+
                 // Simpan tagihan baru
                 Tagihan::create([
                     'NIK' => $warga->NIK,
                     'jenis_retribusi' => 'tetap',
-                    'tarif' => 50000,
+                    'tarif' => $tarif,
                     'bulan' => $bulanIni,
                     'tahun' => $tahunIni,
-                    'total_tagihan' => 50000,
                 ]);
             }
         }
 
         return redirect()->route('tagihan.index.tetap')->with('success', 'Tagihan berhasil dibuat!');
     }
+
+    public function ajukanTagihan()
+    {
+        // Ambil semua tagihan yang belum diajukan
+        $tagihan = Tagihan::whereNull('status')->get();
+
+        if ($tagihan->isEmpty()) {
+            return redirect()->back()->with('error', 'Tidak ada tagihan yang dapat diajukan.');
+        }
+
+        // Ubah status tagihan menjadi 'diajukan'
+        Tagihan::whereNull('status')->update(['status' => 'diajukan']);
+
+        return redirect()->back()->with('success', 'Tagihan berhasil diajukan ke Kepala Dinas.');
+    }
+
 
     public function createTetap()
     {
@@ -84,7 +104,6 @@ class TagihanController extends Controller
             'tarif' => $request->tarif,
             'bulan' => $request->bulan,
             'tahun' => $request->tahun,
-            'total_tagihan' => $request->tarif,
         ]);
 
         return redirect()->route('tagihan.index.tetap')->with('success', 'Tagihan Tetap Berhasil Dibuat');
@@ -105,7 +124,6 @@ class TagihanController extends Controller
             'jenis_retribusi' => 'tidak_tetap',
             'tarif' => $request->tarif,
             'volume' => $request->volume,
-            'total_tagihan' => $request->tarif * $request->volume, // Total = tarif * volume
             'tanggal_tagihan' => $request->tanggal_tagihan
         ]);
 
@@ -183,10 +201,46 @@ class TagihanController extends Controller
         return redirect()->back()->with('error', 'Tagihan tidak dapat dihapus');
     }
 
+    // Fungsi untuk menampilkan daftar tagihan di Kepala Dinas
     public function daftarTagihan()
     {
-        return view('tagihan.daftartagihan');
+        $tagihan = Tagihan::where('status', 'diajukan')->get();
+        return view('tagihan.daftar_tagihan', compact('tagihan'));
     }
 
+    // Fungsi untuk menyetujui tagihan dan mengirim WhatsApp
+    public function setujuiTagihan(Request $request)
+    {
+        $apiKey = 'mb5Vs3fJcZpJFj7ePNq6'; // Ganti dengan API Key Fonnte
 
+        $tagihan = Tagihan::whereIn('id', $request->tagihan_id)->get();
+
+        foreach ($tagihan as $t) {
+            // Update status tagihan menjadi 'disetujui'
+            $t->update(['status' => 'disetujui']);
+
+            // Ambil nomor HP warga
+            $no_hp = $t->warga->pengguna->no_hp;
+            $nama = $t->warga->pengguna->nama;
+            $tarif = number_format($t->tarif, 0, ',', '.');
+
+            // Pesan WhatsApp yang dikirim
+            $pesan = "Halo *$nama*,\n\nTagihan Anda sebesar *Rp$tarif* telah disetujui.\n\nSilakan lakukan pembayaran tepat waktu. Terima kasih!";
+
+            // Kirim pesan ke WhatsApp menggunakan Fonnte
+            Http::withHeaders([
+                'Authorization' => $apiKey,
+            ])->post('https://api.fonnte.com/send', [
+                        'target' => $no_hp,
+                        'message' => $pesan,
+                    ]);
+        }
+
+        return redirect()->back()->with('success', 'Tagihan telah disetujui dan dikirim ke warga melalui WhatsApp.');
+    }
+
+    public function grafik()
+    {
+        return view('log-aktivitas.index');
+    }
 }

@@ -89,15 +89,15 @@ Route::middleware(['auth', 'role:warga'])->group(function () {
 
 Route::get('/kirim-whatsapp', function () {
     $apiKey = 'mb5Vs3fJcZpJFj7ePNq6'; // Ganti dengan API Key Fonnte kamu
-    $nohp  = '089515946334'; // Ganti dengan nomor tujuan
-    $pesan  = 'Halo, ini pesan dari Laravel!';
+    $nohp = '089515946334'; // Ganti dengan nomor tujuan
+    $pesan = 'Halo, ini pesan dari Laravel!';
 
     $response = Http::withHeaders([
         'Authorization' => $apiKey,
     ])->post('https://api.fonnte.com/send', [
-        'target'  => $nohp,
-        'message' => $pesan,
-    ]);
+                'target' => $nohp,
+                'message' => $pesan,
+            ]);
 
     return $response->json();
 });

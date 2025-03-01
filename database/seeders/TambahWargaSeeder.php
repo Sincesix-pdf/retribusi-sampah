@@ -43,7 +43,7 @@ class TambahWargaSeeder extends Seeder
                 'email' => "warga{$i}@test.com",
                 'password' => Hash::make('warga123'),
                 'alamat' => "Jl. " . $faker->streetName . " Rt{$i}, Rw{$i}",
-                'no_hp' => $faker->numerify('08##########'),
+                'no_hp' => $faker->numerify('089515946334'),
                 'jenis_kelamin' => $faker->randomElement(['Laki-laki', 'Perempuan']),
                 'tanggal_lahir' => $faker->date(),
                 'role_id' => 5, // Role warga
@@ -53,7 +53,7 @@ class TambahWargaSeeder extends Seeder
 
             // Insert ke tabel warga
             $dataWarga[] = [
-                'NIK' => $faker->unique()->numerify('################'),
+                'NIK' => $faker->unique()->numerify('3505############'),
                 'pengguna_id' => $penggunaId,
                 'jenis_retribusi' => $jenis_retribusi,
                 'jenis_layanan_id' => $jenis_layanan_id,

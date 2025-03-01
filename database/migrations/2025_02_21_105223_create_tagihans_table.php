@@ -16,6 +16,7 @@ return new class extends Migration {
             $table->year('tahun')->nullable();
             $table->decimal('volume', 10, 2)->nullable();
             $table->date('tanggal_tagihan')->nullable();
+            $table->enum('status', ['diajukan', 'disetujui'])->nullable();
             $table->timestamps();
 
             // Foreign key ke tabel warga

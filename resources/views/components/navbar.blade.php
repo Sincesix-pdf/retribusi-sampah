@@ -80,7 +80,7 @@
 
             @if(Auth::user()->role->nama_role == 'kepala_dinas')
                 <li class="nav-item">
-                    <a href="{{ route(name: 'tagihan.daftartagihan') }}" class="nav-link">
+                    <a href="{{ route(name: 'kepala_dinas.tagihan') }}" class="nav-link">
                         <span class="material-symbols-rounded">credit_card_clock</span>
                         <span class="nav-label">Daftar Tagihan</span>
                     </a>

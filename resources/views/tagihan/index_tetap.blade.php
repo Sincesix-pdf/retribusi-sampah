@@ -2,6 +2,12 @@
     <div class="content-container">
         <h1 class="mb-4">Daftar Tagihan Tetap</h1>
 
+        @if(session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
         <!-- Filter Form -->
         <form action="{{ route('tagihan.index.tetap') }}" method="GET" class="mb-3">
             <div class="row g-3">
@@ -24,12 +30,7 @@
             </div>
         </form>
 
-        <!-- <div class="d-inline-block me-3">
-            <a class="btn btn-success mb-3" href="{{ route('tagihan.create.tetap') }}">
-                <i class="fas fa-plus"></i> Tambah Tagihan Tetap
-            </a>
-        </div> -->
-
+        <!-- Button Generate Tagihan -->
         <div class="d-inline-block me-3">
             <form action="{{ route('tagihan.generate.tetap') }}" method="POST">
                 @csrf
@@ -39,74 +40,89 @@
             </form>
         </div>
 
-        <div class="d-inline-block me-3">
-            <form action="{{ route('tagihan.ajukan') }}" method="POST">
-                @csrf
-                <button type="submit" class="btn btn-info mb-3">
-                    <i class="fas fa-paper-plane"></i> Ajukan Tagihan
-                </button>
-            </form>
+        
+
+        <!-- Card untuk Draft Tagihan Diajukan -->
+        <div class="card mb-4">
+            <div class="card-header bg-warning text-white">
+                <h4 class="card-title mb-0">Draft Tagihan Diajukan</h4>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                    <table class="table table-striped table-hover table-bordered mb-0">
+                        <thead class="table-warning sticky-top">
+                            <tr>
+                                <th>No</th>
+                                <th>NIK</th>
+                                <th>Nama</th>
+                                <th>Bulan/Tahun</th>
+                                <th>Jumlah Tagihan</th>
+                                <th>Jenis Retribusi</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse ($tagihanDiajukan as $t)
+                                <tr>
+                                    <td>{{ $loop->iteration }}</td>
+                                    <td>{{ $t->NIK }}</td>
+                                    <td>{{ $t->warga->pengguna->nama }}</td>
+                                    <td>{{ date('F', mktime(0, 0, 0, $t->bulan, 1)) }} {{ $t->tahun }}</td>
+                                    <td class="text-end">{{ number_format($t->tarif) }}</td>
+                                    <td>{{ $t->warga->jenisLayanan->nama_paket }}</td>
+                                    <td><span class="badge bg-warning">Diajukan</span></td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="7" class="text-center">Tidak ada tagihan diajukan.</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
 
-
-        @if(session('success'))
-            <div class="alert alert-success">{{ session('success') }}</div>
-        @endif
-
-        <!-- Tabel Data -->
-        <div class="table-responsive">
-            <table id="ViewTable" class="table table-striped table-hover table-bordered">
-                <thead class="table-dark">
-                    <tr>
-                        <th>NIK</th>
-                        <th>Nama</th>
-                        <th>Bulan/Tahun</th>
-                        <th>Jumlah Tagihan</th>
-                        <th>Jenis Retribusi</th>
-                        <th>Status</th>
-                        <!-- <th>Aksi</th> -->
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($tagihan as $t)
-                        <tr>
-                            <td>{{ $t->NIK }}</td>
-                            <td>{{ $t->warga->pengguna->nama }}</td>
-                            <td>{{ date('F', mktime(0, 0, 0, $t->bulan, 1))}} {{ $t->tahun }}</td>
-                            <td>Rp{{ number_format($t->tarif) }}</td>
-                            <td>{{ $t->warga->jenisLayanan->nama_paket }}</td>
-                            <td>
-                                @if ($t->status === 'diajukan')
-                                    <span class="badge bg-warning">Diajukan</span>
-                                @elseif ($t->status === 'disetujui')
-                                    <span class="badge bg-success">Disetujui</span>
-                                @else
-                                    <span class="badge bg-secondary">Belum Diajukan</span>
-                                @endif
-                            </td>
-                            <!-- <td class="text-center">
-                                <a href="{{ route('tagihan.edit', $t->id) }}" class="btn btn-sm btn-primary">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-
-                                <a href="https://wa.me/?text=Tagihan%20Rp{{ number_format($t->total_tagihan) }}%20untuk%20{{ $t->warga->pengguna->nama }}"
-                                    class="btn btn-sm btn-success" target="_blank">
-                                    <i class="fab fa-whatsapp"></i>
-                                </a>
-
-                                <form action="{{ route('tagihan.destroy', $t->id) }}" method="POST" class="d-inline"
-                                    onsubmit="return confirm('Yakin ingin menghapus tagihan ini?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-danger">
-                                        <i class="fas fa-trash-alt"></i>
-                                    </button>
-                                </form>
-                            </td> -->
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
+        <!-- Card untuk Draft Tagihan Disetujui -->
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h4 class="card-title mb-0">Draft Tagihan Disetujui</h4>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                    <table class="table table-striped table-hover table-bordered mb-0">
+                        <thead class="table-success sticky-top">
+                            <tr>
+                                <th>No</th>
+                                <th>NIK</th>
+                                <th>Nama</th>
+                                <th>Bulan/Tahun</th>
+                                <th>Jumlah Tagihan</th>
+                                <th>Jenis Retribusi</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse ($tagihanDisetujui as $t)
+                                <tr>
+                                    <td>{{ $loop->iteration }}</td>
+                                    <td>{{ $t->NIK }}</td>
+                                    <td>{{ $t->warga->pengguna->nama }}</td>
+                                    <td>{{ date('F', mktime(0, 0, 0, $t->bulan, 1)) }} {{ $t->tahun }}</td>
+                                    <td class="text-end">{{ number_format($t->tarif) }}</td>
+                                    <td>{{ $t->warga->jenisLayanan->nama_paket }}</td>
+                                    <td><span class="badge bg-success">Disetujui</span></td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="7" class="text-center">Tidak ada tagihan disetujui.</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
+
     </div>
 </x-layout>

@@ -72,3 +72,10 @@ body {
 
 
 /* index */
+.table tbody tr td {
+    font-size: 17px; /* Sesuaikan ukuran font */
+}
+
+.table thead tr th {
+    font-size: 20px; /* Sedikit lebih besar untuk header */
+}

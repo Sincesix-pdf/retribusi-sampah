@@ -1,10 +1,4 @@
 
-//checklis daftar tagihan
-document.getElementById("checkAll").addEventListener("change", function () {
-    let checkboxes = document.querySelectorAll('input[name="tagihan_id[]"]');
-    checkboxes.forEach((checkbox) => (checkbox.checked = this.checked));
-});
-
 // navbar
 document.addEventListener("DOMContentLoaded", function () {
     window.addEventListener("scroll", function () {
@@ -89,6 +83,7 @@ $(document).ready(function () {
         },
     });
 });
+
 
 document.addEventListener("DOMContentLoaded", function () {
     let kecamatanSelect = document.getElementById("kecamatan_id");

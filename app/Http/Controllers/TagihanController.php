@@ -6,22 +6,33 @@ use Illuminate\Http\Request;
 use App\Models\Tagihan;
 use App\Models\Warga;
 use Illuminate\Support\Facades\Http;
-use App\Services\WhatsAppService;
 
 class TagihanController extends Controller
 {
     public function indexTetap(Request $request)
     {
-        $query = Tagihan::with('warga.pengguna')->where('jenis_retribusi', 'tetap');
+        $bulan = $request->input('bulan');
 
-        if ($request->has('bulan') && !empty($request->bulan)) {
-            $query->where('bulan', $request->bulan);
-        }
+        // Filter tagihan berdasarkan status
+        $tagihanDiajukan = Tagihan::where('jenis_retribusi', 'tetap')
+            ->where('status', 'diajukan')
+            ->when($bulan, function ($query) use ($bulan) {
+                return $query->where('bulan', $bulan);
+            })
+            ->with(['warga.pengguna', 'warga.jenisLayanan'])
+            ->get();
 
-        $tagihan = $query->paginate(10);
+        $tagihanDisetujui = Tagihan::where('jenis_retribusi', 'tetap')
+            ->where('status', 'disetujui')
+            ->when($bulan, function ($query) use ($bulan) {
+                return $query->where('bulan', $bulan);
+            })
+            ->with(['warga.pengguna', 'warga.jenisLayanan'])
+            ->get();
 
-        return view('tagihan.index_tetap', compact('tagihan'));
+        return view('tagihan.index_tetap', compact('tagihanDiajukan', 'tagihanDisetujui'));
     }
+
 
 
     public function indexTidakTetap()
@@ -34,53 +45,37 @@ class TagihanController extends Controller
     {
         $bulanIni = Carbon::now()->month;
         $tahunIni = Carbon::now()->year;
-        $wargaTetap = Warga::where('jenis_retribusi', 'tetap')->with('jenisLayanan')->get(); // Pastikan ada relasi jenis_layanan
+        $wargaTetap = Warga::where('jenis_retribusi', 'tetap')->with('jenisLayanan')->get();
 
         foreach ($wargaTetap as $warga) {
-            // Cek apakah tagihan bulan ini sudah ada
             $tagihanExist = Tagihan::where('NIK', $warga->NIK)
                 ->where('bulan', $bulanIni)
                 ->where('tahun', $tahunIni)
-                ->exists();
+                ->first();
 
             if (!$tagihanExist) {
                 // Ambil tarif dari jenis layanan
-                $tarif = $warga->jenisLayanan->tarif ?? 0; // Pastikan ada tarif, jika null set default 0
+                $tarif = $warga->jenisLayanan->tarif ?? 0;
 
-                // Simpan tagihan baru
+                // Simpan tagihan baru dan langsung ajukan
                 Tagihan::create([
                     'NIK' => $warga->NIK,
                     'jenis_retribusi' => 'tetap',
                     'tarif' => $tarif,
                     'bulan' => $bulanIni,
                     'tahun' => $tahunIni,
+                    'status' => 'diajukan' // Langsung ubah status menjadi "diajukan"
                 ]);
+            } else {
+                // Jika tagihan sudah ada tetapi belum diajukan, maka ubah statusnya
+                if ($tagihanExist->status === null) {
+                    $tagihanExist->update(['status' => 'diajukan']);
+                }
             }
+            
         }
 
-        return redirect()->route('tagihan.index.tetap')->with('success', 'Tagihan berhasil dibuat!');
-    }
-
-    public function ajukanTagihan()
-    {
-        // Ambil semua tagihan yang belum diajukan
-        $tagihan = Tagihan::whereNull('status')->get();
-
-        if ($tagihan->isEmpty()) {
-            return redirect()->back()->with('error', 'Tidak ada tagihan yang dapat diajukan.');
-        }
-
-        // Ubah status tagihan menjadi 'diajukan'
-        Tagihan::whereNull('status')->update(['status' => 'diajukan']);
-
-        return redirect()->back()->with('success', 'Tagihan berhasil diajukan ke Kepala Dinas.');
-    }
-
-
-    public function createTetap()
-    {
-        $warga = Warga::where('jenis_retribusi', 'tetap')->get();
-        return view('tagihan.create_tetap', compact('warga'));
+        return redirect()->route('tagihan.index.tetap')->with('success', 'Tagihan berhasil dibuat dan diajukan!');
     }
 
     public function createTidakTetap()
@@ -88,27 +83,6 @@ class TagihanController extends Controller
         $warga = Warga::where('jenis_retribusi', 'tidak_tetap')->get();
         return view('tagihan.create_tidak_tetap', compact('warga'));
     }
-
-    public function storeTetap(Request $request)
-    {
-        $request->validate([
-            'NIK' => 'required|exists:warga,NIK',
-            'tarif' => 'required|numeric',
-            'bulan' => 'required|numeric|min:1|max:12',
-            'tahun' => 'required|numeric|min:2020',
-        ]);
-
-        Tagihan::create([
-            'NIK' => $request->NIK,
-            'jenis_retribusi' => 'tetap',
-            'tarif' => $request->tarif,
-            'bulan' => $request->bulan,
-            'tahun' => $request->tahun,
-        ]);
-
-        return redirect()->route('tagihan.index.tetap')->with('success', 'Tagihan Tetap Berhasil Dibuat');
-    }
-
 
     public function storeTidakTetap(Request $request)
     {
@@ -222,10 +196,15 @@ class TagihanController extends Controller
             // Ambil nomor HP warga
             $no_hp = $t->warga->pengguna->no_hp;
             $nama = $t->warga->pengguna->nama;
+            $NIK = $t->warga->NIK;
+            $bulan = $t->bulan;
+            $tahun = $t->tahun;
             $tarif = number_format($t->tarif, 0, ',', '.');
 
+            // Gunakan strtotime untuk mendapatkan nama bulan
+            $nama_bulan = date('F', strtotime("$tahun-$bulan-01"));
             // Pesan WhatsApp yang dikirim
-            $pesan = "Halo *$nama*,\n\nTagihan Anda sebesar *Rp$tarif* telah disetujui.\n\nSilakan lakukan pembayaran tepat waktu. Terima kasih!";
+            $pesan = "Halo *$nama* *$NIK*,\n\nTagihan Anda sebesar *Rp$tarif* untuk periode *$nama_bulan, $tahun*.\n\nSilakan lakukan pembayaran tepat waktu. Terima kasih!";
 
             // Kirim pesan ke WhatsApp menggunakan Fonnte
             Http::withHeaders([

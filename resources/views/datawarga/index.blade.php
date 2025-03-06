@@ -1,6 +1,12 @@
 <x-layout>
     <div class="content-container">
         <h1 class="mb-4">Halaman Kelola Warga</h1>
+        @if(session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
 
         <!-- Filter Form -->
         <form action="{{ route('datawarga.index') }}" method="GET" class="mb-3">
@@ -37,11 +43,6 @@
         <a class="btn btn-success mb-3" href="{{ route('datawarga.create') }}">
             <i class="fas fa-plus"></i> Tambah Warga
         </a>
-
-        @if(session('success'))
-            <div class="alert alert-success">{{ session('success') }}</div>
-        @endif
-
         <!-- Tabel Data -->
         <div class="table-responsive">
             <table id="ViewTable" class="table table-striped table-hover table-bordered">

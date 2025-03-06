@@ -47,3 +47,12 @@ window.addEventListener("resize", () => {
     }
     adjustContentMargin();
 });
+
+
+//checklis daftar tagihan
+document.getElementById("checkAll").addEventListener("change", function () {
+    let checkboxes = document.querySelectorAll('input[name="tagihan_id[]"]');
+    checkboxes.forEach((checkbox) => (checkbox.checked = this.checked));
+});
+
+

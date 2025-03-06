@@ -22,7 +22,7 @@
                             <td>{{ $t->NIK }}</td>
                             <td>{{ $t->warga->pengguna->nama }}</td>
                             <td>{{ date('F', mktime(0, 0, 0, $t->bulan, 1)) }} {{ $t->tahun }}</td>
-                            <td>Rp{{ number_format($t->tarif) }}</td>
+                            <td class="text-end">{{ number_format($t->tarif) }}</td>
                             <td>{{ ucfirst($t->status) }}</td>
                         </tr>
                     @endforeach

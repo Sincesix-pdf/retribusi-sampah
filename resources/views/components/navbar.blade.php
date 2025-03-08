@@ -60,7 +60,7 @@
 
             @if(Auth::user()->role->nama_role == 'keuangan')
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
+                    <a href="{{ route('transaksi.index') }}" class="nav-link">
                         <span class="material-symbols-rounded">attach_money</span>
                         <span class="nav-label">Transaksi</span>
                     </a>
@@ -105,6 +105,16 @@
                         <span class="nav-label">Log Aktivitas</span>
                     </a>
                     <span class="nav-tooltip">Log Aktivitas</span>
+                </li>
+            @endif
+            
+            @if(Auth::user()->role->nama_role == 'warga')
+                <li class="nav-item">
+                    <a href="{{ route(name: 'transaksi.history') }}" class="nav-link">
+                        <span class="nav-icon material-symbols-rounded">history</span>
+                        <span class="nav-label">Riwayat Transaksi</span>
+                    </a>
+                    <span class="nav-tooltip">Riwayat Transaksi</span>
                 </li>
             @endif
         </ul>

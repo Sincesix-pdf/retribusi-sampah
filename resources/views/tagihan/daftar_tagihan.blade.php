@@ -1,7 +1,12 @@
 <x-layout>
     <div class="content-container">
         <h1 class="mb-4">Daftar Tagihan yang Diajukan</h1>
-
+        @if(session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
         <form action="{{ route('kepala_dinas.tagihan.setujui') }}" method="POST">
             @csrf
             <table class="table table-bordered">

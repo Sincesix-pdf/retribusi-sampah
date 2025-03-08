@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DataWargaController;
 use App\Http\Controllers\TagihanController;
+use App\Http\Controllers\TransaksiController;
 use App\Http\Controllers\LogAktivitasController;
 use App\Models\Kelurahan;
 
@@ -37,6 +38,7 @@ Route::middleware(['auth', 'role:kepala_dinas'])->group(function () {
 // Keuangan
 Route::middleware(['auth', 'role:keuangan'])->group(function () {
     Route::get('/keuangan/dashboard', [AuthController::class, 'keuangan'])->name('keuangan.index');
+    Route::get('/keuangan/transaksi', [TransaksiController::class, 'index'])->name('transaksi.index');
 });
 
 // Pendataan
@@ -84,9 +86,14 @@ Route::middleware(['auth', 'role:pendataan'])->group(function () {
 // Warga
 Route::middleware(['auth', 'role:warga'])->group(function () {
     Route::get('/warga/dashboard', [AuthController::class, 'warga'])->name('warga.index');
+    Route::get('/warga/riwayat-transaksi', [TransaksiController::class, 'history'])->name('transaksi.history');
+    Route::post('/warga/transaksi/cek-status/{order_id}', [TransaksiController::class, 'cekStatus'])->name('transaksi.cekStatus');
 });
 
+// Webhook Midtrans untuk sinkronisasi status transaksi
+Route::post('/midtrans/webhook', [TransaksiController::class, 'handleWebhook']);
 
+// Test fonnte
 Route::get('/kirim-whatsapp', function () {
     $apiKey = 'mb5Vs3fJcZpJFj7ePNq6'; // Ganti dengan API Key Fonnte kamu
     $nohp = '089515946334'; // Ganti dengan nomor tujuan

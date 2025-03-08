@@ -4,8 +4,15 @@ namespace App\Http\Controllers;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Models\Tagihan;
+use App\Models\Transaksi;
 use App\Models\Warga;
 use Illuminate\Support\Facades\Http;
+use Midtrans\Snap;
+use Midtrans\Config;
+use Endroid\QrCode\QrCode;
+use Endroid\QrCode\Writer\PngWriter;
+use Illuminate\Support\Facades\Storage;
+
 
 class TagihanController extends Controller
 {
@@ -33,8 +40,6 @@ class TagihanController extends Controller
         return view('tagihan.index_tetap', compact('tagihanDiajukan', 'tagihanDisetujui'));
     }
 
-
-
     public function indexTidakTetap()
     {
         $tagihan = Tagihan::where('jenis_retribusi', 'tidak_tetap')->with('warga.pengguna')->paginate(10);
@@ -57,7 +62,7 @@ class TagihanController extends Controller
                 // Ambil tarif dari jenis layanan
                 $tarif = $warga->jenisLayanan->tarif ?? 0;
 
-                // Simpan tagihan baru dan langsung ajukan
+                // Simpan tagihan baru dan langsung ajukan => tabel Tagihan
                 Tagihan::create([
                     'NIK' => $warga->NIK,
                     'jenis_retribusi' => 'tetap',
@@ -72,7 +77,7 @@ class TagihanController extends Controller
                     $tagihanExist->update(['status' => 'diajukan']);
                 }
             }
-            
+
         }
 
         return redirect()->route('tagihan.index.tetap')->with('success', 'Tagihan berhasil dibuat dan diajukan!');
@@ -157,7 +162,6 @@ class TagihanController extends Controller
         }
     }
 
-
     public function destroy($id)
     {
         $tagihan = Tagihan::findOrFail($id);
@@ -175,6 +179,46 @@ class TagihanController extends Controller
         return redirect()->back()->with('error', 'Tagihan tidak dapat dihapus');
     }
 
+    public function generateMidtransSnapUrl($tagihan)
+    {
+        // Konfigurasi Midtrans
+        Config::$serverKey = env('MIDTRANS_SERVER_KEY');
+        Config::$isProduction = env('MIDTRANS_IS_PRODUCTION', false);
+        Config::$isSanitized = env('MIDTRANS_IS_SANITIZED', true);
+        Config::$is3ds = env('MIDTRANS_IS_3DS', true);
+
+        // Buat order_id unik
+        $order_id = 'INV-' . $tagihan->id . '-' . time();
+
+        // Data transaksi Midtrans
+        $params = [
+            'transaction_details' => [
+                'order_id' => $order_id,
+                'gross_amount' => $tagihan->tarif,
+            ],
+            'customer_details' => [
+                'first_name' => $tagihan->warga->pengguna->nama,
+                'email' => $tagihan->warga->pengguna->email,
+                'phone' => $tagihan->warga->pengguna->no_hp,
+            ],
+        ];
+
+        // Generate Snap URL
+        $snapUrl = Snap::createTransaction($params)->redirect_url;
+
+        // Simpan data transaksi ke tabel 'transaksi'
+        Transaksi::create([
+            'order_id' => $order_id,
+            'tagihan_id' => $tagihan->id,
+            'amount' => $tagihan->tarif,
+            'status' => 'pending', // Awalnya set "pending"
+            'snap_url' => $snapUrl,
+            'qr_code' => null, // Tidak digunakan
+        ]);
+
+        return $snapUrl;
+    }
+
     // Fungsi untuk menampilkan daftar tagihan di Kepala Dinas
     public function daftarTagihan()
     {
@@ -185,7 +229,7 @@ class TagihanController extends Controller
     // Fungsi untuk menyetujui tagihan dan mengirim WhatsApp
     public function setujuiTagihan(Request $request)
     {
-        $apiKey = 'mb5Vs3fJcZpJFj7ePNq6'; // Ganti dengan API Key Fonnte
+        $apiKey = env('FONNTE_API_KEY'); // API Key Fonnte
 
         $tagihan = Tagihan::whereIn('id', $request->tagihan_id)->get();
 
@@ -201,10 +245,14 @@ class TagihanController extends Controller
             $tahun = $t->tahun;
             $tarif = number_format($t->tarif, 0, ',', '.');
 
+            // Ambil Snap URL Midtrans
+            $snapUrl = $this->generateMidtransSnapUrl($t);
+
             // Gunakan strtotime untuk mendapatkan nama bulan
             $nama_bulan = date('F', strtotime("$tahun-$bulan-01"));
+
             // Pesan WhatsApp yang dikirim
-            $pesan = "Halo *$nama* *$NIK*,\n\nTagihan Anda sebesar *Rp$tarif* untuk periode *$nama_bulan, $tahun*.\n\nSilakan lakukan pembayaran tepat waktu. Terima kasih!";
+            $pesan = "Halo *$nama* *$NIK*,\n\nTagihan Anda sebesar *Rp$tarif* untuk periode *$nama_bulan, $tahun*.\n\nSilakan lakukan pembayaran melalui link berikut:\n$snapUrl\n\nTerima kasih.";
 
             // Kirim pesan ke WhatsApp menggunakan Fonnte
             Http::withHeaders([
@@ -215,8 +263,9 @@ class TagihanController extends Controller
                     ]);
         }
 
-        return redirect()->back()->with('success', 'Tagihan telah disetujui dan dikirim ke warga melalui WhatsApp.');
+        return redirect()->back()->with('success', 'Tagihan telah disetujui dan Snap URL dikirim ke warga melalui WhatsApp.');
     }
+
 
     public function grafik()
     {

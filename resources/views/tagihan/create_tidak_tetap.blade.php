@@ -6,26 +6,36 @@
             <label>Pilih Warga</label>
             <select name="NIK" id="wargaSelect" class="form-control">
                 @foreach($warga as $w)
-                    <option value="{{ $w->NIK }}" data-retribusi="{{ $w->jenis_retribusi }}">
+                    <option value="{{ $w->NIK }}">
                         {{ $w->NIK }} - {{ $w->pengguna->nama }}
                     </option>
                 @endforeach
             </select>
 
-            <input type="hidden" name="jenis_retribusi" value="tidak_tetap">
+            <label>Pilih Jenis Tarif</label>
+            <select name="jenis_tarif" id="jenisTarifSelect" class="form-control">
+                @foreach($tarif as $t)
+                    <option value="{{ $t->jenis_tarif }}" data-tarif="{{ $t->tarif_per_kubik }}">
+                        {{ ucfirst(str_replace('_', ' ', $t->jenis_tarif)) }} - Rp
+                        {{ number_format($t->tarif_per_kubik, 0, ',', '.') }} / m³
+                    </option>
+                @endforeach
+            </select>
 
-            <label>Volume</label>
-            <input type="number" name="volume" class="form-control" required>
+            <label>Volume (m³)</label>
+            <input type="number" name="volume" id="volumeInput" class="form-control" required>
 
-            <label>Tarif</label>
-            <input type="number" name="tarif" class="form-control" required>
+            <label>Tarif (per m³)</label>
+            <input type="number" name="tarif" id="tarifInput" class="form-control" readonly>
 
-            <label>Tanggal Tagihan</label>
-            <input type="date" name="tanggal_tagihan" class="form-control" required>
+            <label>Total (otomatis dihitung)</label>
+            <input type="number" id="totalInput" class="form-control" readonly>
+
 
             <div class="col-md-6">
                 <div class="mt-3">
-                    <button type="submit" class="btn btn-primary">Buat Tagihan</button>
+                    <button type="submit" class="btn btn-primary">Buat dan Ajukan Tagihan</button>
+
                     <a href="{{ route('tagihan.index.tidak_tetap') }}" class="btn btn-secondary">Kembali</a>
                 </div>
             </div>

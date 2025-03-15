@@ -16,10 +16,10 @@ return new class extends Migration {
 
         // Tambah paket default
         DB::table('jenis_layanan')->insert([
-            ['nama_paket' => 'Paket A', 'tarif' => 10000],
-            ['nama_paket' => 'Paket B', 'tarif' => 20000],
-            ['nama_paket' => 'Paket C', 'tarif' => 30000],
-            ['nama_paket' => 'Tidak Tetap', 'tarif' => 0],
+            ['nama_paket' => 'Paket A', 'tarif' => 10000,'created_at' => now(), 'updated_at' => now()],
+            ['nama_paket' => 'Paket B', 'tarif' => 20000, 'created_at' => now(), 'updated_at' => now()],
+            ['nama_paket' => 'Paket C', 'tarif' => 30000, 'created_at' => now(), 'updated_at' => now()],
+            ['nama_paket' => 'Tidak Tetap', 'tarif' => 0, 'created_at' => now(), 'updated_at' => now()],
         ]);
     }
 

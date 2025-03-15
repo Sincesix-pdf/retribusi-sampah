@@ -19,7 +19,6 @@
                     <th>Jumlah</th>
                     <th>Status</th>
                     <th>Tanggal</th>
-                    <th>Aksi</th>
                 </tr>
             </thead>
             <tbody>
@@ -38,14 +37,6 @@
                             @endif
                         </td>
                         <td>{{ $t->created_at->format('d-m-Y H:i') }}</td>
-                        <td>
-                            @if ($t->status == 'pending')
-                                <form action="{{ route('transaksi.cekStatus', $t->order_id) }}" method="POST">
-                                    @csrf
-                                    <button type="submit" class="btn btn-primary btn-sm">Cek Status</button>
-                                </form>
-                            @endif
-                        </td>
                     </tr>
                 @endforeach
             </tbody>

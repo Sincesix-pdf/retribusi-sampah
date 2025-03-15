@@ -10,9 +10,12 @@ class Tagihan extends Model
     use HasFactory;
 
     protected $table = 'tagihan';
-    protected $fillable = ['NIK', 'jenis_retribusi', 'tarif', 'bulan', 'tahun', 'volume', 'tanggal_tagihan', 'status'];
-
-
+    protected $fillable = ['NIK', 'jenis_retribusi', 'tarif', 'bulan', 'tahun', 'volume', 'total_tagihan','tanggal_tagihan', 'status'];
+    
+    public function tarif()
+    {
+        return $this->belongsTo(TarifRetribusi::class, 'jenis_tarif', 'jenis_tarif');
+    }
     public function warga()
     {
         return $this->belongsTo(Warga::class, 'NIK', 'NIK');

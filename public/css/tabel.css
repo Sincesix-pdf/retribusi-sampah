@@ -1,0 +1,16 @@
+.card.custom-card .card-header {
+    background-color: #151a2d;
+    color: white;
+}
+
+
+.custom-card {
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.custom-table {
+    border-radius: 5px;
+    overflow: hidden;
+}
+

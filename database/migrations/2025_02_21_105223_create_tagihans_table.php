@@ -15,6 +15,7 @@ return new class extends Migration {
             $table->string('bulan')->nullable();
             $table->year('tahun')->nullable();
             $table->decimal('volume', 10, 2)->nullable();
+            $table->decimal('total_tagihan', 10, 2)->nullable();
             $table->date('tanggal_tagihan')->nullable();
             $table->enum('status', ['diajukan', 'disetujui'])->nullable();
             $table->timestamps();

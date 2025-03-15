@@ -5,6 +5,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Models\Tagihan;
 use App\Models\Transaksi;
+use App\Models\TarifRetribusi;
 use App\Models\Warga;
 use Illuminate\Support\Facades\Http;
 use Midtrans\Snap;
@@ -40,53 +41,70 @@ class TagihanController extends Controller
         return view('tagihan.index_tetap', compact('tagihanDiajukan', 'tagihanDisetujui'));
     }
 
-    public function indexTidakTetap()
+    public function indexTidakTetap(Request $request)
     {
-        $tagihan = Tagihan::where('jenis_retribusi', 'tidak_tetap')->with('warga.pengguna')->paginate(10);
-        return view('tagihan.index_tidak_tetap', compact('tagihan'));
+        $tanggal_tagihan = $request->input('tanggal_tagihan');
+
+        // Filter tagihan tidak tetap berdasarkan status
+        $tagihanDiajukan = Tagihan::where('jenis_retribusi', 'tidak_tetap')
+            ->where('status', 'diajukan')
+            ->when($tanggal_tagihan, function ($query) use ($tanggal_tagihan) {
+                return $query->whereDate('tanggal_tagihan', $tanggal_tagihan);
+            })
+            ->with(['warga.pengguna', 'warga.jenisLayanan'])
+            ->get();
+
+        $tagihanDisetujui = Tagihan::where('jenis_retribusi', 'tidak_tetap')
+            ->where('status', 'disetujui')
+            ->when($tanggal_tagihan, function ($query) use ($tanggal_tagihan) {
+                return $query->whereDate('tanggal_tagihan', $tanggal_tagihan);
+            })
+            ->with(['warga.pengguna', 'warga.jenisLayanan'])
+            ->get();
+
+        return view('tagihan.index_tidak_tetap', compact('tagihanDiajukan', 'tagihanDisetujui'));
     }
 
-    public function generateTetap()
-    {
-        $bulanIni = Carbon::now()->month;
-        $tahunIni = Carbon::now()->year;
-        $wargaTetap = Warga::where('jenis_retribusi', 'tetap')->with('jenisLayanan')->get();
+    public function generateTetap(Request $request)
+{
+    $bulan = $request->input('bulan', Carbon::now()->month);
+    $tahun = $request->input('tahun', Carbon::now()->year);
+    
+    $wargaTetap = Warga::where('jenis_retribusi', 'tetap')->with('jenisLayanan')->get();
 
-        foreach ($wargaTetap as $warga) {
-            $tagihanExist = Tagihan::where('NIK', $warga->NIK)
-                ->where('bulan', $bulanIni)
-                ->where('tahun', $tahunIni)
-                ->first();
+    foreach ($wargaTetap as $warga) {
+        $tagihanExist = Tagihan::where('NIK', $warga->NIK)
+            ->where('bulan', $bulan)
+            ->where('tahun', $tahun)
+            ->first();
 
-            if (!$tagihanExist) {
-                // Ambil tarif dari jenis layanan
-                $tarif = $warga->jenisLayanan->tarif ?? 0;
+        if (!$tagihanExist) {
+            $tarif = $warga->jenisLayanan->tarif ?? 0;
 
-                // Simpan tagihan baru dan langsung ajukan => tabel Tagihan
-                Tagihan::create([
-                    'NIK' => $warga->NIK,
-                    'jenis_retribusi' => 'tetap',
-                    'tarif' => $tarif,
-                    'bulan' => $bulanIni,
-                    'tahun' => $tahunIni,
-                    'status' => 'diajukan' // Langsung ubah status menjadi "diajukan"
-                ]);
-            } else {
-                // Jika tagihan sudah ada tetapi belum diajukan, maka ubah statusnya
-                if ($tagihanExist->status === null) {
-                    $tagihanExist->update(['status' => 'diajukan']);
-                }
+            Tagihan::create([
+                'NIK' => $warga->NIK,
+                'jenis_retribusi' => 'tetap',
+                'tarif' => $tarif,
+                'bulan' => $bulan,
+                'tahun' => $tahun,
+                'status' => 'diajukan'
+            ]);
+        } else {
+            if ($tagihanExist->status === null) {
+                $tagihanExist->update(['status' => 'diajukan']);
             }
-
         }
-
-        return redirect()->route('tagihan.index.tetap')->with('success', 'Tagihan berhasil dibuat dan diajukan!');
     }
+
+    return redirect()->route('tagihan.index.tetap')->with('success', "Tagihan bulan $bulan tahun $tahun berhasil dibuat!");
+}
+
 
     public function createTidakTetap()
     {
         $warga = Warga::where('jenis_retribusi', 'tidak_tetap')->get();
-        return view('tagihan.create_tidak_tetap', compact('warga'));
+        $tarif = TarifRetribusi::all();
+        return view('tagihan.create_tidak_tetap', compact('warga', 'tarif'));
     }
 
     public function storeTidakTetap(Request $request)
@@ -95,19 +113,27 @@ class TagihanController extends Controller
             'NIK' => 'required|exists:warga,NIK',
             'tarif' => 'required|numeric',
             'volume' => 'required|numeric',
-            'tanggal_tagihan' => 'required|date'
         ]);
 
+        // Hitung total tagihan
+        $total_tagihan = $request->tarif * $request->volume;
+
+        // Simpan tagihan baru dan langsung ajukan ke Kepala Dinas
         Tagihan::create([
             'NIK' => $request->NIK,
             'jenis_retribusi' => 'tidak_tetap',
             'tarif' => $request->tarif,
             'volume' => $request->volume,
-            'tanggal_tagihan' => $request->tanggal_tagihan
+            'total_tagihan' => $total_tagihan,
+            'tanggal_tagihan' => now(), // Set tanggal otomatis ke hari ini
+            'status' => 'diajukan', // Langsung ubah status menjadi "diajukan"
         ]);
 
-        return redirect()->route('tagihan.index.tidak_tetap')->with('success', 'Tagihan Tidak Tetap Berhasil Dibuat');
+        return redirect()->route('tagihan.index.tidak_tetap')->with('success', 'Tagihan Tidak Tetap Berhasil Dibuat dan Diajukan ke Kepala Dinas');
     }
+
+
+
 
     public function edit($id)
     {
@@ -190,11 +216,18 @@ class TagihanController extends Controller
         // Buat order_id unik
         $order_id = 'INV-' . $tagihan->id . '-' . time();
 
+        // Tentukan jumlah pembayaran berdasarkan jenis tagihan
+        if ($tagihan->jenis_retribusi == 'tetap') {
+            $gross_amount = $tagihan->tarif;
+        } else {
+            $gross_amount = $tagihan->tarif * $tagihan->volume;
+        }
+
         // Data transaksi Midtrans
         $params = [
             'transaction_details' => [
                 'order_id' => $order_id,
-                'gross_amount' => $tagihan->tarif,
+                'gross_amount' => $gross_amount, // Menggunakan tarif yang sesuai
             ],
             'customer_details' => [
                 'first_name' => $tagihan->warga->pengguna->nama,
@@ -210,7 +243,7 @@ class TagihanController extends Controller
         Transaksi::create([
             'order_id' => $order_id,
             'tagihan_id' => $tagihan->id,
-            'amount' => $tagihan->tarif,
+            'amount' => $gross_amount, // Simpan jumlah yang sesuai
             'status' => 'pending', // Awalnya set "pending"
             'snap_url' => $snapUrl,
             'qr_code' => null, // Tidak digunakan
@@ -219,12 +252,25 @@ class TagihanController extends Controller
         return $snapUrl;
     }
 
+
     // Fungsi untuk menampilkan daftar tagihan di Kepala Dinas
     public function daftarTagihan()
     {
-        $tagihan = Tagihan::where('status', 'diajukan')->get();
-        return view('tagihan.daftar_tagihan', compact('tagihan'));
+        // Ambil data tagihan tetap yang diajukan
+        $tagihanTetap = Tagihan::where('status', 'diajukan')
+            ->where('jenis_retribusi', 'tetap')
+            ->with('warga.pengguna')
+            ->get();
+
+        // Ambil data tagihan tidak tetap yang diajukan
+        $tagihanTidakTetap = Tagihan::where('status', 'diajukan')
+            ->where('jenis_retribusi', 'tidak_tetap')
+            ->with('warga.pengguna')
+            ->get();
+
+        return view('tagihan.daftar_tagihan', compact('tagihanTetap', 'tagihanTidakTetap'));
     }
+
 
     // Fungsi untuk menyetujui tagihan dan mengirim WhatsApp
     public function setujuiTagihan(Request $request)
@@ -241,18 +287,31 @@ class TagihanController extends Controller
             $no_hp = $t->warga->pengguna->no_hp;
             $nama = $t->warga->pengguna->nama;
             $NIK = $t->warga->NIK;
-            $bulan = $t->bulan;
-            $tahun = $t->tahun;
-            $tarif = number_format($t->tarif, 0, ',', '.');
+            $tarif = $t->tarif;
 
             // Ambil Snap URL Midtrans
             $snapUrl = $this->generateMidtransSnapUrl($t);
 
-            // Gunakan strtotime untuk mendapatkan nama bulan
-            $nama_bulan = date('F', strtotime("$tahun-$bulan-01"));
+            // Cek apakah tagihan tetap atau tidak tetap
+            if ($t->jenis_retribusi == 'tetap') {
+                // Tagihan Tetap
+                $bulan = $t->bulan;
+                $tahun = $t->tahun;
+                $nama_bulan = date('F', strtotime("$tahun-$bulan-01"));
+                $total_tagihan = number_format($tarif, 0, ',', '.'); // Tidak ada perhitungan volume
 
-            // Pesan WhatsApp yang dikirim
-            $pesan = "Halo *$nama* *$NIK*,\n\nTagihan Anda sebesar *Rp$tarif* untuk periode *$nama_bulan, $tahun*.\n\nSilakan lakukan pembayaran melalui link berikut:\n$snapUrl\n\nTerima kasih.";
+                $pesan = "Halo *$nama* *$NIK*,\n\nTagihan Anda sebesar *Rp$total_tagihan* untuk periode *$nama_bulan, $tahun*.\n\nSilakan lakukan pembayaran melalui link berikut:\n$snapUrl\n\nTerima kasih.";
+            } else {
+                // Tagihan Tidak Tetap
+                $volume = $t->volume; // Misalnya: 10 kubik
+                $tanggal_tagihan = date('d F Y', strtotime($t->tanggal_tagihan));
+
+                // Hitung total tagihan = tarif * volume
+                $total_tagihan = $tarif * $volume;
+                $total_tagihan_rp = number_format($total_tagihan, 0, ',', '.');
+
+                $pesan = "Halo *$nama* *$NIK*,\n\nTagihan Anda sebesar *Rp$total_tagihan_rp* berdasarkan pemakaian *$volume kubik* pada tanggal *$tanggal_tagihan*.\n\nSilakan lakukan pembayaran melalui link berikut:\n$snapUrl\n\nTerima kasih.";
+            }
 
             // Kirim pesan ke WhatsApp menggunakan Fonnte
             Http::withHeaders([
@@ -265,6 +324,7 @@ class TagihanController extends Controller
 
         return redirect()->back()->with('success', 'Tagihan telah disetujui dan Snap URL dikirim ke warga melalui WhatsApp.');
     }
+
 
 
     public function grafik()

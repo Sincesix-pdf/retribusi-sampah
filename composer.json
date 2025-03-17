@@ -9,6 +9,7 @@
         "php": "^8.2",
         "endroid/qr-code": "^6.0",
         "laravel/framework": "^11.31",
+        "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.9",
         "midtrans/midtrans-php": "^2.6"
     },

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Request;
 use App\Models\Transaksi;
@@ -35,5 +36,65 @@ class TransaksiController extends Controller
 
         return view('transaksi.history', compact('transaksi'));
     }
+
+    //handle status payment
+    public function handleWebhook(Request $request)
+    {
+        $serverKey = config('midtrans.server_key');
+        $hashed = hash('sha512', $request->order_id . $request->status_code . $request->gross_amount . $serverKey);
+
+        if ($hashed === $request->signature_key) {
+            $transaksi = Transaksi::where('order_id', $request->order_id)->first();
+
+            if (!$transaksi) {
+                return response()->json(['message' => 'Transaksi tidak ditemukan'], 404);
+            }
+
+            if ($request->transaction_status === 'settlement') {
+                $transaksi->update(['status' => 'settlement']);
+                $transaksi->update(['created_at' => Carbon::now('Asia/Jakarta')]);
+                $transaksi->update(['updated_at' => Carbon::now('Asia/Jakarta')]);
+
+                // Kirim notifikasi WhatsApp
+                $this->sendWhatsAppNotification($transaksi);
+            } elseif (in_array($request->transaction_status, ['cancel', 'expire', 'failure'])) {
+                $transaksi->update(['status' => 'cancel']);
+            }
+        }
+
+        return response()->json(['message' => 'Webhook Berhasil Cihuyy'], 200);
+    }
+
+    private function sendWhatsAppNotification($transaksi)
+    {
+        $apiKey = env('FONNTE_API_KEY');
+        $warga = $transaksi->tagihan->warga;
+        $no_hp = $warga->pengguna->no_hp;
+        $nama = $warga->pengguna->nama;
+        $invoice = $transaksi->order_id;
+        $amount = number_format($transaksi->amount, 0, ',', '.');
+        $tanggal = Carbon::now('Asia/Jakarta')->translatedFormat('d F Y H:i:s');
+
+        $pesan = "
+============================
+        *BUKTI PEMBAYARAN*
+============================
+Invoice: *$invoice*
+Nama: *$nama*
+Jumlah: *Rp$amount*
+Tanggal: *$tanggal*
+============================
+Terima kasih! Pembayaran Anda telah berhasil. 
+Harap simpan bukti pembayaran ini.
+";
+
+        Http::withHeaders(['Authorization' => $apiKey])
+            ->post('https://api.fonnte.com/send', [
+                'target' => $no_hp,
+                'message' => $pesan,
+            ]);
+    }
+
+
 }
 

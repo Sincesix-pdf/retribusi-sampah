@@ -36,7 +36,7 @@
                                 <span class="badge bg-danger">Gagal</span>
                             @endif
                         </td>
-                        <td>{{ $t->created_at->format('d-m-Y H:i') }}</td>
+                        <td>{{ $t->updated_at->format('d-m-Y H:i') }}</td>
                     </tr>
                 @endforeach
             </tbody>

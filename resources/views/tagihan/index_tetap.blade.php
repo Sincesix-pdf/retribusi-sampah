@@ -36,7 +36,6 @@
 
                 <!-- Button Generate Tagihan -->
                 <div class="d-inline-block mb-3">
-                    <label class="form-label">Buat tagihan bedasarkan bulan dan tahun</label>
                     <form action="{{ route('tagihan.generate.tetap') }}" method="POST">
                         @csrf
                         <div class="row g-2">
@@ -50,13 +49,6 @@
                                 </select>
                             </div>
                             <div class="col-auto">
-                                <select name="tahun" class="form-select">
-                                    @foreach (range(now()->year - 5, now()->year + 1) as $y)
-                                        <option value="{{ $y }}" {{ now()->year == $y ? 'selected' : '' }}>{{ $y }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="col-auto">
                                 <button type="submit" class="btn btn-success">
                                     <i class="fas fa-file-invoice-dollar"></i> Buat Tagihan
                                 </button>
@@ -64,8 +56,6 @@
                         </div>
                     </form>
                 </div>
-
-
                 <!-- Tabs Navigation -->
                 <ul class="nav nav-tabs custom-tabs" id="tagihanTabs" role="tablist">
                     <li class="nav-item" role="presentation">

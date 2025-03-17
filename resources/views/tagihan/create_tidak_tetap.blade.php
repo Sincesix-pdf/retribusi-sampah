@@ -28,7 +28,7 @@
             <label>Tarif (per m³)</label>
             <input type="number" name="tarif" id="tarifInput" class="form-control" readonly>
 
-            <label>Total (otomatis dihitung)</label>
+            <label>Total</label>
             <input type="number" id="totalInput" class="form-control" readonly>
 
 

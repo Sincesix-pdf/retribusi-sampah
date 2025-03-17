@@ -66,39 +66,38 @@ class TagihanController extends Controller
     }
 
     public function generateTetap(Request $request)
-{
-    $bulan = $request->input('bulan', Carbon::now()->month);
-    $tahun = $request->input('tahun', Carbon::now()->year);
-    
-    $wargaTetap = Warga::where('jenis_retribusi', 'tetap')->with('jenisLayanan')->get();
+    {
+        $bulan = $request->input('bulan', Carbon::now()->month);
+        $tahun = Carbon::now()->year;
 
-    foreach ($wargaTetap as $warga) {
-        $tagihanExist = Tagihan::where('NIK', $warga->NIK)
-            ->where('bulan', $bulan)
-            ->where('tahun', $tahun)
-            ->first();
+        $wargaTetap = Warga::where('jenis_retribusi', 'tetap')->with('jenisLayanan')->get();
 
-        if (!$tagihanExist) {
-            $tarif = $warga->jenisLayanan->tarif ?? 0;
+        foreach ($wargaTetap as $warga) {
+            $tagihanExist = Tagihan::where('NIK', $warga->NIK)
+                ->where('bulan', $bulan)
+                ->where('tahun', $tahun)
+                ->first();
 
-            Tagihan::create([
-                'NIK' => $warga->NIK,
-                'jenis_retribusi' => 'tetap',
-                'tarif' => $tarif,
-                'bulan' => $bulan,
-                'tahun' => $tahun,
-                'status' => 'diajukan'
-            ]);
-        } else {
-            if ($tagihanExist->status === null) {
-                $tagihanExist->update(['status' => 'diajukan']);
+            if (!$tagihanExist) {
+                $tarif = $warga->jenisLayanan->tarif ?? 0;
+
+                Tagihan::create([
+                    'NIK' => $warga->NIK,
+                    'jenis_retribusi' => 'tetap',
+                    'tarif' => $tarif,
+                    'bulan' => $bulan,
+                    'tahun' => $tahun,
+                    'status' => 'diajukan'
+                ]);
+            } else {
+                if ($tagihanExist->status === null) {
+                    $tagihanExist->update(['status' => 'diajukan']);
+                }
             }
         }
+
+        return redirect()->route('tagihan.index.tetap')->with('success', "Tagihan bulan $bulan tahun $tahun berhasil dibuat!");
     }
-
-    return redirect()->route('tagihan.index.tetap')->with('success', "Tagihan bulan $bulan tahun $tahun berhasil dibuat!");
-}
-
 
     public function createTidakTetap()
     {
@@ -131,9 +130,6 @@ class TagihanController extends Controller
 
         return redirect()->route('tagihan.index.tidak_tetap')->with('success', 'Tagihan Tidak Tetap Berhasil Dibuat dan Diajukan ke Kepala Dinas');
     }
-
-
-
 
     public function edit($id)
     {
@@ -251,7 +247,6 @@ class TagihanController extends Controller
 
         return $snapUrl;
     }
-
 
     // Fungsi untuk menampilkan daftar tagihan di Kepala Dinas
     public function daftarTagihan()

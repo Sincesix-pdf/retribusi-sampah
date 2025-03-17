@@ -90,8 +90,7 @@ Route::middleware(['auth', 'role:warga'])->group(function () {
     Route::post('/warga/transaksi/cek-status/{order_id}', [TransaksiController::class, 'cekStatus'])->name('transaksi.cekStatus');
 });
 
-// Webhook Midtrans untuk sinkronisasi status transaksi
-Route::post('/midtrans/webhook', [TransaksiController::class, 'handleWebhook']);
+
 
 // Test fonnte
 Route::get('/kirim-whatsapp', function () {

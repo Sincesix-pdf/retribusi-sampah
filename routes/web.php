@@ -39,6 +39,8 @@ Route::middleware(['auth', 'role:kepala_dinas'])->group(function () {
 Route::middleware(['auth', 'role:keuangan'])->group(function () {
     Route::get('/keuangan/dashboard', [AuthController::class, 'keuangan'])->name('keuangan.index');
     Route::get('/keuangan/transaksi', [TransaksiController::class, 'index'])->name('transaksi.index');
+    Route::get('/keuangan/laporan-keuangan', [TransaksiController::class, 'laporan'])->name('transaksi.laporan');
+    Route::get('/transaksi/laporan-keuangan/cetak-laporan', [TransaksiController::class, 'cetakLaporan'])->name('transaksi.cetak');
 });
 
 // Pendataan

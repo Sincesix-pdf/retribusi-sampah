@@ -60,12 +60,7 @@ document.addEventListener("DOMContentLoaded", function () {
             info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
             infoEmpty: "Tidak ada data tersedia",
             zeroRecords: "Data tidak ditemukan",
-            paginate: {
-                first: "Pertama",
-                last: "Terakhir",
-                next: "→",
-                previous: "←",
-            },
+            
         },
     });
 

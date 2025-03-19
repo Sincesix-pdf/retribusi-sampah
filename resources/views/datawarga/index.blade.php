@@ -45,7 +45,7 @@
         </a>
         <!-- Tabel Data -->
         <div class="table-responsive">
-            <table id="ViewTable" class="table table-striped table-hover table-bordered">
+            <table id="ViewTable" class="table table-hover table-bordered">
                 <thead class="table-dark">
                     <tr>
                         <th>NIK</th>

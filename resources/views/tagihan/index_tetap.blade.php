@@ -35,11 +35,11 @@
                 </form>
 
                 <!-- Button Generate Tagihan -->
-                <div class="d-inline-block mb-3">
-                    <form action="{{ route('tagihan.generate.tetap') }}" method="POST">
+                <div class="">
+                    <form action="{{ route('tagihan.generate.tetap') }}" method="POST" class="mb-3">
                         @csrf
-                        <div class="row g-2">
-                            <div class="col-auto">
+                        <div class="row g-3">
+                            <div class="col-md-2">
                                 <select name="bulan" class="form-select">
                                     @foreach (range(1, 12) as $m)
                                         <option value="{{ $m }}" {{ now()->month == $m ? 'selected' : '' }}>

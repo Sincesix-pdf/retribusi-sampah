@@ -65,7 +65,7 @@
                     <span class="nav-tooltip">Transaksi</span>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
+                    <a href="{{ route('transaksi.laporan') }}" class="nav-link">
                         <span class="material-symbols-rounded">receipt</span>
                         <span class="nav-label">Laporan Keuangan</span>
                     </a>

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Request;
@@ -14,13 +15,98 @@ use Midtrans\Transaction;
 use Illuminate\Support\Facades\Log;
 class TransaksiController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        // Ambil semua transaksi dengan tagihan dan warga terkait
-        $transaksi = Transaksi::with(['tagihan.warga'])->orderBy('created_at', 'desc')->get();
+        $bulan = $request->input('bulan');
+        $tahun = $request->input('tahun', date('Y'));
 
-        return view('transaksi.index', compact('transaksi'));
+        // Ambil transaksi berdasarkan filter bulan & tahun
+        $transaksi = Transaksi::with(['tagihan.warga'])
+            ->when($tahun, function ($query) use ($tahun) {
+                $query->whereHas('tagihan', function ($query) use ($tahun) {
+                    $query->where('tahun', $tahun);
+                });
+            })
+            ->when($bulan, function ($query) use ($bulan) {
+                $query->whereHas('tagihan', function ($query) use ($bulan) {
+                    $query->where('bulan', $bulan);
+                });
+            })
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // Statistik pembayaran
+        $sudahBayar = $transaksi->where('status', 'settlement')->count();
+        $belumBayar = $transaksi->where('status', 'pending')->count();
+        $totalPembayaran = $transaksi->where('status', 'settlement')->sum('amount');
+        $totalTransaksi = $transaksi->count();
+
+        return view('transaksi.index', compact(
+            'transaksi',
+            'sudahBayar',
+            'belumBayar',
+            'totalPembayaran',
+            'totalTransaksi'
+        ));
     }
+
+
+
+    public function laporan(Request $request)
+    {
+        $bulan = $request->input('bulan');
+        $tahun = $request->input('tahun', date('Y')); // Default tahun saat ini
+
+        // Ambil transaksi hanya yang "settlement" dengan filter bulan & tahun
+        $transaksi = Transaksi::with(['tagihan.warga'])
+            ->where('status', 'settlement')
+            ->when($tahun, function ($query) use ($tahun) {
+                $query->whereHas('tagihan', function ($query) use ($tahun) {
+                    $query->where('tahun', $tahun);
+                });
+            })
+            ->when($bulan, function ($query) use ($bulan) {
+                $query->whereHas('tagihan', function ($query) use ($bulan) {
+                    $query->where('bulan', $bulan);
+                });
+            })
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // Hitung total pemasukan berdasarkan filter
+        $total_pembayaran = $transaksi->sum('amount');
+
+        return view('transaksi.laporan', compact('transaksi', 'total_pembayaran'));
+    }
+
+    public function cetakLaporan(Request $request)
+    {
+        $bulan = $request->input('bulan');
+        $tahun = $request->input('tahun', date('Y'));
+
+        $transaksi = Transaksi::with(['tagihan.warga'])
+            ->where('status', 'settlement')
+            ->when($tahun, function ($query) use ($tahun) {
+                $query->whereHas('tagihan', function ($query) use ($tahun) {
+                    $query->where('tahun', $tahun);
+                });
+            })
+            ->when($bulan, function ($query) use ($bulan) {
+                $query->whereHas('tagihan', function ($query) use ($bulan) {
+                    $query->where('bulan', $bulan);
+                });
+            })
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $total_pembayaran = $transaksi->sum('amount');
+
+        $pdf = Pdf::loadView('transaksi.rekap_pdf', compact('transaksi', 'total_pembayaran', 'bulan', 'tahun'));
+
+        return $pdf->stream("Laporan_Keuangan_{$bulan}_{$tahun}.pdf");
+    }
+
+
 
     public function history()
     {

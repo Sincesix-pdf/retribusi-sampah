@@ -15,7 +15,11 @@ class Warga extends Model
     protected $keyType = 'string';
     public $incrementing = false;
 
-    protected $fillable = ['NIK', 'pengguna_id', 'jenis_retribusi', 'jenis_layanan_id', 'kelurahan_id'];
+    protected $fillable = ['NIK', 
+    'pengguna_id', 
+    'jenis_retribusi', 
+    'jenis_layanan_id', 
+    'kelurahan_id'];
 
     public function pengguna()
     {

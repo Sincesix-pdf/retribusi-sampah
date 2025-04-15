@@ -10,9 +10,6 @@ use App\Models\Warga;
 use Illuminate\Support\Facades\Http;
 use Midtrans\Snap;
 use Midtrans\Config;
-use Endroid\QrCode\QrCode;
-use Endroid\QrCode\Writer\PngWriter;
-use Illuminate\Support\Facades\Storage;
 
 
 class TagihanController extends Controller
@@ -212,41 +209,49 @@ class TagihanController extends Controller
         // Buat order_id unik
         $order_id = 'INV-' . $tagihan->id . '-' . time();
 
-        // Tentukan jumlah pembayaran berdasarkan jenis tagihan
-        if ($tagihan->jenis_retribusi == 'tetap') {
-            $gross_amount = $tagihan->tarif;
-        } else {
-            $gross_amount = $tagihan->tarif * $tagihan->volume;
-        }
+        // Hitung jumlah tagihan
+        $gross_amount = ($tagihan->jenis_retribusi == 'tetap')
+            ? $tagihan->tarif
+            : $tagihan->tarif * $tagihan->volume;
+
+        // Waktu expired (misalnya 24 jam)
+        $now = now();
+        $expiredAt = $now->copy()->addHours(24);
 
         // Data transaksi Midtrans
         $params = [
             'transaction_details' => [
                 'order_id' => $order_id,
-                'gross_amount' => $gross_amount, // Menggunakan tarif yang sesuai
+                'gross_amount' => $gross_amount,
             ],
             'customer_details' => [
                 'first_name' => $tagihan->warga->pengguna->nama,
                 'email' => $tagihan->warga->pengguna->email,
                 'phone' => $tagihan->warga->pengguna->no_hp,
             ],
+            'expiry' => [
+                'start_time' => $now->format("Y-m-d H:i:s O"),
+                'unit' => 'hour',
+                'duration' => 24,
+            ],
         ];
 
         // Generate Snap URL
         $snapUrl = Snap::createTransaction($params)->redirect_url;
 
-        // Simpan data transaksi ke tabel 'transaksi'
+        // Simpan transaksi
         Transaksi::create([
             'order_id' => $order_id,
             'tagihan_id' => $tagihan->id,
-            'amount' => $gross_amount, // Simpan jumlah yang sesuai
-            'status' => 'pending', // Awalnya set "pending"
+            'amount' => $gross_amount,
+            'status' => 'pending',
             'snap_url' => $snapUrl,
-            'qr_code' => null, // Tidak digunakan
+            'expired_at' => $expiredAt, // Tambahkan ini
         ]);
 
         return $snapUrl;
     }
+
 
     // Fungsi untuk menampilkan daftar tagihan di Kepala Dinas
     public function daftarTagihan()
@@ -319,8 +324,6 @@ class TagihanController extends Controller
 
         return redirect()->back()->with('success', 'Tagihan telah disetujui dan Snap URL dikirim ke warga melalui WhatsApp.');
     }
-
-
 
     public function grafik()
     {

@@ -14,7 +14,7 @@ return new class extends Migration {
             $table->decimal('amount', 15, 2);
             $table->enum('status', ['pending', 'settlement', 'expire', 'cancel'])->default('pending');
             $table->text('snap_url')->nullable();
-            $table->text('qr_code')->nullable();
+            $table->timestamp('expired_at')->nullable();
             $table->timestamps();
 
             // Foreign key ke tabel tagihan

@@ -35,37 +35,55 @@
 </head>
 
 <body>
-    <h2 class="text-center">Laporan Keuangan - {{ date('F Y', mktime(0, 0, 0, $bulan, 1, $tahun)) }}</h2>
+    <h2 class="text-center">
+        Laporan Keuangan -
+        @if(!empty($bulan))
+            {{ DateTime::createFromFormat('!m', $bulan)->format('F') }} {{ $tahun }}
+        @else
+            Tahun {{ $tahun }}
+        @endif
+        @if(!empty($status))
+            - {{ $status == 'settlement' ? 'Lunas' : ($status == 'pending' ? 'Belum Bayar' : ucfirst($status)) }}
+        @endif
+    </h2>
+
+
     <p><strong>Total Pemasukan:</strong> Rp {{ number_format($total_pembayaran, 0, ',', '.') }}</p>
 
-    <table>
+    <table border="1">
         <thead>
             <tr>
-                <th>Order ID</th>
-                <th>Periode</th>
-                <th>NIK</th>
-                <th>Nama</th>
-                <th>Jenis Retribusi</th>
-                <th>Jumlah Bayar</th>
+                <th>No</th>
+                <th>Nama Warga</th>
+                <th>Bulan</th>
+                <th>Tahun</th>
+                <th>Jumlah</th>
                 <th>Status</th>
             </tr>
         </thead>
         <tbody>
-            @foreach ($transaksi as $t)
+            @foreach($transaksi as $key => $trx)
                 <tr>
-                    <td>{{ $t->order_id }}</td>
-                    <td>{{ date('F', mktime(0, 0, 0, $t->tagihan->bulan, 1)) }} {{ $t->tagihan->tahun }}
+                    <td>{{ $key + 1 }}</td>
+                    <td>{{ $trx->tagihan->warga->pengguna->nama ?? '-' }}</td>
+                    <td>{{ date('F', mktime(0, 0, 0, $trx->tagihan->bulan, 1)) }}
                     </td>
-                    <td>{{ $t->tagihan->NIK }}</td>
-                    <td>{{ $t->tagihan->warga->pengguna->nama }}</td>
-                    <td>{{ $t->tagihan->jenis_retribusi }}</td>
-                    <td>Rp {{ number_format($t->amount, 0, ',', '.') }}</td>
+                    <td>{{ $trx->tagihan->tahun }}</td>
+                    <td>Rp {{ number_format($trx->amount, 0, ',', '.') }}</td>
                     <td>
-                        <span class="badge bg-success">Lunas</span>
+                        @if($trx->status == 'settlement')
+                            Lunas
+                        @elseif($trx->status == 'pending')
+                            Belum Bayar
+                        @else
+                            {{ ucfirst($trx->status) }}
+                        @endif
                     </td>
                 </tr>
             @endforeach
         </tbody>
     </table>
+
 </body>
+
 </html>

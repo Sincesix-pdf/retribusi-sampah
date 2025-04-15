@@ -2,11 +2,10 @@
     <div class="content-container pb-3">
         <div class="card custom-card">
             <div class="card-header custom-card-header">
-                <h5 class="mb-0">Kelola Transaksi</h5>
+                <h5 class="mb-0">Kelola Transaksi & Laporan Keuangan</h5>
             </div>
             <div class="card-body">
-
-                {{-- Form Filter Bulan --}}
+                {{-- Form Filter Bulan, Tahun, Status --}}
                 <form action="{{ route('transaksi.index') }}" method="GET" class="mb-3">
                     <div class="row g-3">
                         <div class="col-md-2">
@@ -20,10 +19,34 @@
                                 @endforeach
                             </select>
                         </div>
+                        <div class="col-md-2">
+                            <label for="tahun" class="form-label">Pilih Tahun:</label>
+                            <select name="tahun" id="tahun" class="form-select">
+                                @foreach (range(2023, date('Y')) as $y)
+                                    <option value="{{ $y }}" {{ request('tahun', date('Y')) == $y ? 'selected' : '' }}>
+                                        {{ $y }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="status" class="form-label">Status Pembayaran:</label>
+                            <select name="status" id="status" class="form-select">
+                                <option value="">Semua</option>
+                                <option value="settlement" {{ request('status') == 'settlement' ? 'selected' : '' }}>Lunas
+                                </option>
+                                <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Belum Bayar
+                                </option>
+                            </select>
+                        </div>
+
                         <div class="col-md-4 d-flex align-items-end gap-2">
-                            <button type="submit" class="btn btn-primary"><i class="fas fa-filter"></i> Filter</button>
-                            <a href="{{ route('transaksi.index') }}" class="btn btn-secondary">
-                                <i class="fas fa-sync"></i> Reset
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-file-invoice-dollar"></i> Buat Laporan
+                            </button>
+                            <a href="{{ route('transaksi.cetak', ['bulan' => request('bulan'), 'tahun' => request('tahun'), 'status' => request('status')]) }}"
+                                target="_blank" class="btn btn-danger">
+                                <i class="fas fa-file-pdf"></i> Cetak PDF
                             </a>
                         </div>
                     </div>
@@ -63,50 +86,57 @@
                 {{-- Tabel Transaksi --}}
                 <div class="card">
                     <div class="card-body">
-                        @if ($transaksi->isEmpty())
-                            <div class="alert alert-warning">Belum ada transaksi.</div>
-                        @else
-                            <div class="table-responsive">
-                                <table id="ViewTable" class="table table-striped table-bordered">
-                                    <thead>
-                                        <tr>
-                                            <th>#</th>
-                                            <th>Order ID</th>
-                                            <th>Periode</th>
-                                            <th>NIK</th>
-                                            <th>Nama</th>
-                                            <th>Jumlah</th>
-                                            <th>Status</th>
-                                            <th>Tanggal</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach ($transaksi as $key => $t)
-                                            <tr>
-                                                <td>{{ $key + 1 }}</td>
-                                                <td>{{ $t->order_id }}</td>
-                                                <td>{{ date('F', mktime(0, 0, 0, $t->tagihan->bulan, 1)) }}
-                                                    {{ $t->tagihan->tahun }}
-                                                </td>
-                                                <td>{{ $t->tagihan->warga->NIK ?? '-' }}</td>
-                                                <td>{{ $t->tagihan->warga->pengguna->nama ?? '-' }}</td>
-                                                <td>Rp{{ number_format($t->amount, 0, ',', '.') }}</td>
-                                                <td>
-                                                    @if ($t->status == 'settlement')
-                                                        <span class="badge bg-success">Lunas</span>
-                                                    @elseif ($t->status == 'pending')
-                                                        <span class="badge bg-warning text-dark">Menunggu</span>
-                                                    @else
-                                                        <span class="badge bg-danger">Gagal</span>
-                                                    @endif
-                                                </td>
-                                                <td>{{ $t->updated_at->format('d-m-Y H:i') }}</td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
-                        @endif
+                        <table id="ViewTable" class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Order ID</th>
+                                    <th>Periode</th>
+                                    <th>NIK</th>
+                                    <th>Nama</th>
+                                    <th>Jumlah</th>
+                                    <th>Status</th>
+                                    <th>Tanggal</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($transaksi as $key => $t)
+                                    <tr>
+                                        <td>{{ $key + 1 }}</td>
+                                        <td>{{ $t->order_id }}</td>
+                                        <td>{{ date('F', mktime(0, 0, 0, $t->tagihan->bulan, 1)) }} {{ $t->tagihan->tahun }}
+                                        </td>
+                                        <td>{{ $t->tagihan->warga->NIK ?? '-' }}</td>
+                                        <td>{{ $t->tagihan->warga->pengguna->nama ?? '-' }}</td>
+                                        <td>Rp{{ number_format($t->amount, 0, ',', '.') }}</td>
+                                        <td>
+                                            @if ($t->status == 'settlement')
+                                                <span class="badge bg-success">Lunas</span>
+                                            @elseif ($t->status == 'pending')
+                                                <span class="badge bg-warning text-dark">Belum Bayar</span>
+                                            @else
+                                                <span class="badge bg-danger">Gagal</span>
+                                            @endif
+                                        </td>
+                                        <td>{{ $t->updated_at->format('d-m-Y H:i') }}</td>
+                                        <td>
+                                            @if ($t->status == 'pending')
+                                                <form action="{{ route('transaksi.sendReminder', $t->id) }}" method="POST"
+                                                    class="d-inline">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-sm btn-danger">
+                                                        <i class="fas fa-bell"></i>
+                                                    </button>
+                                                </form>
+                                            @else
+                                                <span class="text-muted">-</span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 

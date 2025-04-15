@@ -54,10 +54,10 @@
                 {{-- Ringkasan Keuangan --}}
                 <div class="row mb-4">
                     <div class="col-md-3">
-                        <div class="card">
+                        <div class="card text-white bg-primary bg-gradient">
                             <div class="card-body">
                                 <h5>Total Pemasukan</h5>
-                                <p class="h4 text-dark">Rp {{ number_format($total_pembayaran, 0, ',', '.') }}</p>
+                                <p class="h4">Rp {{ number_format($total_pembayaran, 0, ',', '.') }}</p>
                             </div>
                         </div>
                     </div>

@@ -64,13 +64,13 @@
                     </a>
                     <span class="nav-tooltip">Transaksi</span>
                 </li>
-                <li class="nav-item">
+                <!-- <li class="nav-item">
                     <a href="{{ route('transaksi.laporan') }}" class="nav-link">
                         <span class="material-symbols-rounded">receipt</span>
                         <span class="nav-label">Laporan Keuangan</span>
                     </a>
                     <span class="nav-tooltip">Laporan Keuangan</span>
-                </li>
+                </li> -->
             @endif
 
             @if(Auth::user()->role->nama_role == 'kepala_dinas')

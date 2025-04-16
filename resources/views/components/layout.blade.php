@@ -21,25 +21,21 @@
     <!-- Bootstrap dropdown -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-
-
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
     <div class="main-container">
-        <x-navbar></x-navbar> <!-- Sidebar tetap di posisi kiri -->
+        <x-navbar></x-navbar>
 
         <!-- Konten utama -->
         <main class="content">
             {{ $slot }}
         </main>
     </div>
-
     <script src="{{ asset('js/sidebar.js') }}"></script>
     <script src="{{ asset('js/script.js') }}"></script>
-
-
+    <script src="{{ asset('js/chart.js') }}"></script>
 </body>
 
 </html>

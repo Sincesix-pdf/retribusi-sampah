@@ -324,9 +324,4 @@ class TagihanController extends Controller
 
         return redirect()->back()->with('success', 'Tagihan telah disetujui dan Snap URL dikirim ke warga melalui WhatsApp.');
     }
-
-    public function grafik()
-    {
-        return view('log-aktivitas.index');
-    }
 }

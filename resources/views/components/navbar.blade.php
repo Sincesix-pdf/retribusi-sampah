@@ -85,11 +85,11 @@
 
             @if(in_array(Auth::user()->role->nama_role, ['admin', 'kepala_dinas']))
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
+                    <a href="{{ route('kepala_dinas.grafikpendapatan') }}" class="nav-link">
                         <span class="material-symbols-rounded">monitoring</span>
-                        <span class="nav-label">Grafik Pendapatan</span>
+                        <span class="nav-label">Grafik Laporan</span>
                     </a>
-                    <span class="nav-tooltip">Grafik Pendapatan</span>
+                    <span class="nav-tooltip">Grafik Laporan</span>
                 </li>
             @endif
 

@@ -31,8 +31,10 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 Route::middleware(['auth', 'role:kepala_dinas'])->group(function () {
     Route::get('/kepala-dinas/dashboard', [AuthController::class, 'kepaladinas'])->name('kepala_dinas.index');
     Route::get('/kepala-dinas/daftarTagihan', [TagihanController::class, 'daftarTagihan'])->name('kepala_dinas.tagihan');
-    Route::get('/kepala-dinas/grafik', [TagihanController::class, 'grafik'])->name('kepala_dinas.grafik');
     Route::post('/kepala-dinas/tagihan/setujui', [TagihanController::class, 'setujuiTagihan'])->name('kepala_dinas.tagihan.setujui');
+    Route::get('/kepala-dinas/grafik-pendapatan', [TransaksiController::class, 'grafikPendapatan'])->name('kepala_dinas.grafikpendapatan');
+    Route::get('/kepala-dinas/grafik-persebaran', [TransaksiController::class, 'grafikPersebaran'])->name('kepala_dinas.grafikpersebaran');
+
 });
 
 // Keuangan
@@ -93,6 +95,7 @@ Route::middleware(['auth', 'role:warga'])->group(function () {
     Route::get('/warga/riwayat-transaksi', [TransaksiController::class, 'history'])->name('transaksi.history');
     Route::post('/warga/transaksi/cek-status/{order_id}', [TransaksiController::class, 'cekStatus'])->name('transaksi.cekStatus');
 });
+
 
 // route handle webhook ada di /routes/api.php
 

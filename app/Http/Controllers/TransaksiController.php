@@ -2,9 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Kecamatan;
+use App\Models\Kelurahan;
+use App\Models\Warga;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Config;
+use DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Request;
 use App\Models\Transaksi;
@@ -155,7 +159,6 @@ Harap simpan bukti pembayaran ini.
             ]);
     }
 
-
     public function sendReminder($id)
     {
         $transaksi = Transaksi::with('tagihan.warga.pengguna')->findOrFail($id);
@@ -234,6 +237,84 @@ Harap simpan bukti pembayaran ini.
             return redirect()->back()->with('error', 'Gagal mengirim pengingat.');
         }
     }
+
+    public function grafikPendapatan(Request $request)
+    {
+        $bulan = $request->bulan;
+        $tahun = $request->tahun ?? date('Y');
+
+        $query = Transaksi::where('transaksi.status', 'settlement')
+            ->join('tagihan', 'transaksi.tagihan_id', '=', 'tagihan.id');
+
+        // Total pendapatan per bulan
+        $perBulan = Transaksi::selectRaw('tagihan.bulan, tagihan.tahun, SUM(transaksi.amount) as total')
+            ->join('tagihan', 'transaksi.tagihan_id', '=', 'tagihan.id')
+            ->where('transaksi.status', 'settlement')
+            ->when($bulan, fn($q) => $q->where('tagihan.bulan', $bulan))
+            ->where('tagihan.tahun', $tahun)
+            ->groupBy('tagihan.bulan', 'tagihan.tahun')
+            ->orderBy('tagihan.tahun')
+            ->orderBy('tagihan.bulan')
+            ->get()
+            ->mapWithKeys(fn($item) => [
+                \Carbon\Carbon::create(null, (int) $item->bulan)->translatedFormat('F') => $item->total
+            ]);
+
+        // Semua jenis retribusi yang wajib ditampilkan
+        $allJenis = ['tetap', 'tidak_tetap'];
+
+        // Data pendapatan per jenis
+        $jenisRaw = $query->selectRaw('tagihan.jenis_retribusi, SUM(transaksi.amount) as total')
+            ->groupBy('tagihan.jenis_retribusi')
+            ->get()
+            ->pluck('total', 'jenis_retribusi');
+
+        $perJenis = collect($allJenis)->mapWithKeys(function ($jenis) use ($jenisRaw) {
+            $label = ucwords(str_replace('_', ' ', $jenis)); // Tetap, Tidak Tetap
+            return [$label => $jenisRaw[$jenis] ?? 0];
+        });
+
+        // Jumlah warga membayar per bulan
+        $perWargaBayar = Transaksi::selectRaw('tagihan.bulan, tagihan.tahun, COUNT(DISTINCT tagihan.NIK) as jumlah')
+            ->join('tagihan', 'transaksi.tagihan_id', '=', 'tagihan.id')
+            ->where('transaksi.status', 'settlement')
+            ->when($bulan, fn($q) => $q->where('tagihan.bulan', $bulan))
+            ->where('tagihan.tahun', $tahun)
+            ->groupBy('tagihan.bulan', 'tagihan.tahun')
+            ->orderBy('tagihan.tahun')
+            ->orderBy('tagihan.bulan')
+            ->get()
+            ->mapWithKeys(fn($item) => [
+                \Carbon\Carbon::create(null, (int) $item->bulan)->translatedFormat('F') => $item->jumlah
+            ]);
+
+        return view('grafik.grafik_pendapatan', compact(
+            'perBulan',
+            'perJenis',
+            'perWargaBayar'
+        ));
+    }
+
+
+    public function grafikPersebaran(Request $request)
+    {
+        $kecamatanId = $request->input('kecamatan', null);
+
+        // Ambil semua kecamatan untuk dropdown
+        $daftarKecamatan = Kecamatan::all();
+
+        // Ambil data kelurahan berdasarkan kecamatan
+        if ($kecamatanId) {
+            $kelurahans = Kelurahan::where('kecamatan_id', $kecamatanId)->withCount('warga')->get();
+            $namaKecamatan = Kecamatan::find($kecamatanId)?->nama ?? 'Kecamatan tidak ditemukan';
+        } else {
+            $kelurahans = Kelurahan::withCount('warga')->get();
+            $namaKecamatan = 'Semua Kecamatan';
+        }
+
+        return view('grafik.grafik_persebaran', compact('kelurahans', 'kecamatanId', 'namaKecamatan', 'daftarKecamatan'));
+    }
+
 
 }
 

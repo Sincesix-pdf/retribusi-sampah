@@ -37,9 +37,10 @@
                                 </option>
                                 <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Belum Bayar
                                 </option>
+                                <option value="menunggak" {{ request('status') == 'menunggak' ? 'selected' : '' }}>
+                                    Menunggak</option>
                             </select>
                         </div>
-
                         <div class="col-md-4 d-flex align-items-end gap-2">
                             <button type="submit" class="btn btn-success">
                                 <i class="fas fa-file-invoice-dollar"></i> Buat Laporan
@@ -113,12 +114,13 @@
                                         <td>
                                             @if ($t->status == 'settlement')
                                                 <span class="badge bg-success">Lunas</span>
-                                            @elseif ($t->status == 'pending')
-                                                <span class="badge bg-warning text-dark">Belum Bayar</span>
+                                            @elseif ($t->status_menunggak)
+                                                <span class="badge bg-danger">Menunggak</span>
                                             @else
-                                                <span class="badge bg-danger">Gagal</span>
+                                                <span class="badge bg-warning">Belum Bayar</span>
                                             @endif
                                         </td>
+
                                         <td>{{ $t->updated_at->format('d-m-Y H:i') }}</td>
                                         <td>
                                             @if ($t->status == 'pending')

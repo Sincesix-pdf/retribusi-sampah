@@ -94,6 +94,7 @@ Route::middleware(['auth', 'role:warga'])->group(function () {
     Route::get('/warga/dashboard', [AuthController::class, 'warga'])->name('warga.index');
     Route::get('/warga/riwayat-transaksi', [TransaksiController::class, 'history'])->name('transaksi.history');
     Route::post('/warga/transaksi/cek-status/{order_id}', [TransaksiController::class, 'cekStatus'])->name('transaksi.cekStatus');
+    Route::post('/warga/transaksi/{id}/sendReminder', [TransaksiController::class, 'sendReminder'])->name('transaksi.sendReminder');
 });
 
 

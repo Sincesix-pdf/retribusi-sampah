@@ -18,7 +18,7 @@ class TransaksiController extends Controller
     {
         $bulan = $request->input('bulan');
         $tahun = $request->input('tahun', date('Y'));
-        $status = $request->input('status'); // Ambil input status dari filter
+        $status = $request->input('status');
 
         $transaksi = Transaksi::with(['tagihan.warga.pengguna'])
             ->when($tahun, function ($query) use ($tahun) {
@@ -32,13 +32,30 @@ class TransaksiController extends Controller
                 });
             })
             ->when($status, function ($query) use ($status) {
-                $query->where('status', $status);
+                if ($status === 'menunggak') {
+                    // Menambahkan filter untuk status menunggak
+                    $query->where(function ($q) {
+                        $q->where('status', 'pending')
+                            ->whereRaw('created_at <= NOW() - INTERVAL 30 DAY');
+                    });
+                } else {
+                    $query->where('status', $status);
+                }
             })
             ->orderBy('created_at', 'desc')
             ->get();
 
+        // Tambahkan status menunggak berdasarkan created_at transaksi
+        $transaksi = $transaksi->map(function ($t) {
+            $t->status_menunggak = $t->created_at->addDays(30)->lt(now()) &&
+                $t->status != 'settlement';
+            return $t;
+        });
+
+        // Hitung transaksi yang menunggak
         $sudahBayar = $transaksi->where('status', 'settlement')->count();
         $belumBayar = $transaksi->where('status', 'pending')->count();
+        $menunggak = $transaksi->where('status_menunggak', true)->count();
         $totalPembayaran = $transaksi->where('status', 'settlement')->sum('amount');
         $totalTransaksi = $transaksi->count();
 
@@ -48,27 +65,22 @@ class TransaksiController extends Controller
             'transaksi',
             'sudahBayar',
             'belumBayar',
+            'menunggak',
             'totalPembayaran',
             'totalTransaksi'
         ));
     }
 
+
     public function cetakLaporan(Request $request)
     {
-        $bulan = $request->input('bulan'); // null = semua bulan
+        $bulan = $request->input('bulan');
         $tahun = $request->input('tahun', date('Y'));
-        $status = $request->input('status'); // Optional filter status
+        $status = $request->input('status');
 
-        // Ambil semua status jika status kosong, atau hanya yang dipilih
         $transaksi = Transaksi::with(['tagihan.warga'])
-            ->when($status, function ($query) use ($status) {
-                $query->where('status', $status);
-            }, function ($query) {
-                $query->whereIn('status', ['settlement', 'pending']);
-            })
             ->whereHas('tagihan', function ($query) use ($tahun, $bulan) {
                 $query->where('tahun', $tahun);
-
                 if (!empty($bulan)) {
                     $query->where('bulan', $bulan);
                 }
@@ -76,7 +88,20 @@ class TransaksiController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        // Total hanya dari transaksi yang lunas
+        // Menambahkan status menunggak berdasarkan created_at transaksi
+        $transaksi = $transaksi->map(function ($t) {
+            $t->status_menunggak = $t->created_at->addDays(30)->lt(now()) && $t->status != 'settlement';
+            return $t;
+        });
+
+        // Filter berdasarkan status, termasuk 'menunggak'
+        if ($status == 'menunggak') {
+            $transaksi = $transaksi->filter(fn($t) => $t->status_menunggak);
+        } elseif ($status) {
+            $transaksi = $transaksi->where('status', $status);
+        }
+
+        // Total pembayaran hanya untuk status 'settlement'
         $total_pembayaran = $transaksi->where('status', 'settlement')->sum('amount');
 
         $pdf = Pdf::loadView('transaksi.rekap_pdf', compact('transaksi', 'total_pembayaran', 'bulan', 'tahun', 'status'));
@@ -85,23 +110,27 @@ class TransaksiController extends Controller
 
         return $pdf->stream("Laporan_Keuangan_{$tahun}" . ($bulan ? "_$bulan" : "") . ".pdf");
     }
-
     public function history()
     {
-        // Ambil NIK warga yang sedang login
         $nik = Auth::user()->warga->NIK;
 
-        // Ambil semua transaksi berdasarkan NIK yang terkait dengan tagihan dan warga
         $transaksi = Transaksi::whereHas('tagihan', function ($query) use ($nik) {
             $query->whereHas('warga', function ($query) use ($nik) {
                 $query->where('NIK', $nik);
             });
-        })->orderBy('created_at', 'desc')->get();
+        })
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($t) {
+                $t->status_menunggak = $t->created_at->addDays(30)->lt(now()) && $t->status != 'settlement';
+                return $t;
+            });
 
         logAktivitas('Melihat riwayat transaksi');
 
         return view('transaksi.history', compact('transaksi'));
     }
+
 
     //handle status payment
     public function handleWebhook(Request $request)

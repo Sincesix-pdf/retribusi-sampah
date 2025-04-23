@@ -71,12 +71,12 @@
                     <td>{{ $trx->tagihan->tahun }}</td>
                     <td>Rp {{ number_format($trx->amount, 0, ',', '.') }}</td>
                     <td>
-                        @if($trx->status == 'settlement')
-                            Lunas
-                        @elseif($trx->status == 'pending')
-                            Belum Bayar
+                        @if ($trx->status == 'settlement')
+                            <span>Lunas</span>
+                        @elseif ($trx->status_menunggak)
+                            <span">Menunggak</span>
                         @else
-                            {{ ucfirst($trx->status) }}
+                            <span">Belum Bayar</span>
                         @endif
                     </td>
                 </tr>

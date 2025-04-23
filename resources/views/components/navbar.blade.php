@@ -83,7 +83,7 @@
                 </li>
             @endif
 
-            @if(in_array(Auth::user()->role->nama_role, ['admin', 'kepala_dinas']))
+            @if(in_array(Auth::user()->role->nama_role, ['kepala_dinas']))
                 <li class="nav-item">
                     <a href="{{ route('kepala_dinas.grafikpendapatan') }}" class="nav-link">
                         <span class="material-symbols-rounded">monitoring</span>

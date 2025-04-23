@@ -27,6 +27,9 @@ class AuthController extends Controller
             $request->session()->regenerate();
             $user = Auth::user();
 
+            logAktivitas('Login ke sistem', 'Berhasil login sebagai ' . $user->role->nama_role);
+
+
             // Redirect berdasarkan role
             switch ($user->role->nama_role) {
                 case 'pendataan':
@@ -50,6 +53,8 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
+        logAktivitas('Logout dari sistem', 'berhasil Logout dari sistem');
+        
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();

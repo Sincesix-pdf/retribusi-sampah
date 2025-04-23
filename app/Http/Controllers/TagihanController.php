@@ -93,6 +93,8 @@ class TagihanController extends Controller
             }
         }
 
+        logAktivitas('Generate Tagihan Tetap', "Generate tagihan tetap bulan $bulan tahun $tahun");
+
         return redirect()->route('tagihan.index.tetap')->with('success', "Tagihan bulan $bulan tahun $tahun berhasil dibuat!");
     }
 
@@ -124,6 +126,8 @@ class TagihanController extends Controller
             'tanggal_tagihan' => now(), // Set tanggal otomatis ke hari ini
             'status' => 'diajukan', // Langsung ubah status menjadi "diajukan"
         ]);
+
+        logAktivitas('Buat Tagihan Tidak Tetap', "Tagihan untuk NIK {$request->NIK} berhasil dibuat");
 
         return redirect()->route('tagihan.index.tidak_tetap')->with('success', 'Tagihan Tidak Tetap Berhasil Dibuat dan Diajukan ke Kepala Dinas');
     }
@@ -291,6 +295,8 @@ class TagihanController extends Controller
 
             // Ambil Snap URL Midtrans
             $snapUrl = $this->generateMidtransSnapUrl($t);
+            
+            $transaksi = $t->transaksi()->latest()->first();
 
             // Cek apakah tagihan tetap atau tidak tetap
             if ($t->jenis_retribusi == 'tetap') {
@@ -321,6 +327,8 @@ class TagihanController extends Controller
                         'message' => $pesan,
                     ]);
         }
+        
+        logAktivitas('Setujui Tagihan', "Menyetujui tagihan untuk NIK $NIK dengan order id: {$transaksi->order_id}");
 
         return redirect()->back()->with('success', 'Tagihan telah disetujui dan Snap URL dikirim ke warga melalui WhatsApp.');
     }

@@ -4,18 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\Kecamatan;
 use App\Models\Kelurahan;
-use App\Models\Warga;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
-use Config;
-use DB;
+use Midtrans\Config;
+use Midtrans\Snap;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Request;
 use App\Models\Transaksi;
-use App\Models\Tagihan;
-use Midtrans\Notification;
 use Illuminate\Support\Facades\Auth;
-use Midtrans\Snap;
 class TransaksiController extends Controller
 {
     public function index(Request $request)
@@ -45,6 +41,8 @@ class TransaksiController extends Controller
         $belumBayar = $transaksi->where('status', 'pending')->count();
         $totalPembayaran = $transaksi->where('status', 'settlement')->sum('amount');
         $totalTransaksi = $transaksi->count();
+
+        logAktivitas('Melihat daftar transaksi');
 
         return view('transaksi.index', compact(
             'transaksi',
@@ -83,6 +81,8 @@ class TransaksiController extends Controller
 
         $pdf = Pdf::loadView('transaksi.rekap_pdf', compact('transaksi', 'total_pembayaran', 'bulan', 'tahun', 'status'));
 
+        logAktivitas('Mencetak laporan transaksi');
+
         return $pdf->stream("Laporan_Keuangan_{$tahun}" . ($bulan ? "_$bulan" : "") . ".pdf");
     }
 
@@ -97,6 +97,8 @@ class TransaksiController extends Controller
                 $query->where('NIK', $nik);
             });
         })->orderBy('created_at', 'desc')->get();
+
+        logAktivitas('Melihat riwayat transaksi');
 
         return view('transaksi.history', compact('transaksi'));
     }
@@ -118,6 +120,16 @@ class TransaksiController extends Controller
                 $transaksi->update(['status' => 'settlement']);
                 $transaksi->update(['created_at' => Carbon::now('Asia/Jakarta')]);
                 $transaksi->update(['updated_at' => Carbon::now('Asia/Jakarta')]);
+
+                // Catat log aktivitas
+                $nik = $transaksi->tagihan->warga->NIK;
+                $penggunaId = $transaksi->tagihan->warga->pengguna->id ?? null;
+
+                logAktivitas(
+                    'Pembayaran berhasil',
+                    "NIK $nik berhasil melakukan pembayaran untuk order id {$transaksi->order_id}",
+                    $penggunaId
+                );
 
                 // Kirim notifikasi WhatsApp
                 $this->sendWhatsAppNotification($transaksi);
@@ -232,6 +244,7 @@ Harap simpan bukti pembayaran ini.
                 ]);
 
         if ($response->successful()) {
+            logAktivitas("Mengirim pengingat pembayaran ke {$user->nama} untuk order_id: {$transaksi->order_id}");
             return redirect()->back()->with('success', 'Pengingat pembayaran telah dikirim.');
         } else {
             return redirect()->back()->with('error', 'Gagal mengirim pengingat.');
@@ -288,6 +301,8 @@ Harap simpan bukti pembayaran ini.
                 \Carbon\Carbon::create(null, (int) $item->bulan)->translatedFormat('F') => $item->jumlah
             ]);
 
+        logAktivitas('Melihat grafik pendapatan', 'Melihat grafik pendapatan');
+
         return view('grafik.grafik_pendapatan', compact(
             'perBulan',
             'perJenis',
@@ -311,6 +326,8 @@ Harap simpan bukti pembayaran ini.
             $kelurahans = Kelurahan::withCount('warga')->get();
             $namaKecamatan = 'Semua Kecamatan';
         }
+
+        logAktivitas("Melihat grafik persebaran untuk {$namaKecamatan}", "Melihat grafik persebaran untuk {$namaKecamatan}");
 
         return view('grafik.grafik_persebaran', compact('kelurahans', 'kecamatanId', 'namaKecamatan', 'daftarKecamatan'));
     }

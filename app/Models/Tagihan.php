@@ -20,4 +20,9 @@ class Tagihan extends Model
     {
         return $this->belongsTo(Warga::class, 'NIK', 'NIK');
     }
+
+    public function transaksi()
+{
+    return $this->hasMany(Transaksi::class);
+}
 }

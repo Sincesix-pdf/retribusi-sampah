@@ -8,6 +8,7 @@ use App\Models\Kecamatan;
 use App\Models\Kelurahan;
 use App\Models\JenisLayanan;
 use App\Models\Warga;
+use App\Models\LogAktivitas;
 use Illuminate\Support\Facades\Hash;
 
 class DataWargaController extends Controller
@@ -42,6 +43,7 @@ class DataWargaController extends Controller
 
     public function store(Request $request)
     {
+        
         $validatedData = $request->validate([
             'nama' => 'required|string|max:255',
             'email' => 'required|email:dns|unique:pengguna,email',
@@ -75,6 +77,8 @@ class DataWargaController extends Controller
             'jenis_layanan_id' => $validatedData['jenis_layanan_id'],
             'kelurahan_id' => $validatedData['kelurahan_id'],
         ]);
+
+        logAktivitas('Tambah warga', 'Menambahkan warga dengan NIK: ' . $validatedData['NIK']);
 
         return redirect()->route('datawarga.index')->with('success', 'Warga berhasil ditambahkan!');
     }
@@ -122,13 +126,19 @@ class DataWargaController extends Controller
             'kelurahan_id' => $validatedData['kelurahan_id'],
         ]);
 
+        logAktivitas('Ubah warga', 'Mengubah data warga dengan NIK: ' . $NIK);
+
         return redirect()->route('datawarga.index')->with('success', 'Data Warga berhasil diperbarui.');
     }
 
     public function destroy(Warga $warga)
     {
+        $NIK = $warga->NIK;
         $warga->pengguna->delete();
         $warga->delete();
+
+        logAktivitas('Hapus warga', 'Menghapus data warga dengan NIK: ' . $NIK);
+
         return redirect()->route('datawarga.index')->with('success', 'Data warga berhasil dihapus!');
     }
 

@@ -8,8 +8,6 @@
   z-index: 10;
   width: 270px;
   height: 100vh;
-  border-top-right-radius: 16px;
-  border-bottom-right-radius: 16px;
   background: #151A2D;
   transition: all 0.4s ease;
 }

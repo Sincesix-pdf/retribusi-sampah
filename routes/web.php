@@ -44,7 +44,8 @@ Route::middleware(['auth', 'role:keuangan'])->group(function () {
     Route::get('/keuangan/laporan-keuangan', [TransaksiController::class, 'laporan'])->name('transaksi.laporan');
     Route::get('/keuangan/transaksi/laporan-keuangan/cetak-laporan', [TransaksiController::class, 'cetakLaporan'])->name('transaksi.cetak');
     Route::post('/keuangan/transaksi/{id}/sendReminder', [TransaksiController::class, 'sendReminder'])->name('transaksi.sendReminder');
-
+    Route::get('/keuangan/laporan-tagihan', [TagihanController::class, 'laporanTagihan'])->name('laporan.tagihan');
+    Route::get('/keuangan/laporan-tagihan/cetak', [TagihanController::class, 'cetak'])->name('laporan.cetak');
 });
 
 // Pendataan

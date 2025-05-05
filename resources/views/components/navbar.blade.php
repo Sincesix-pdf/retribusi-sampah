@@ -60,17 +60,17 @@
                 <li class="nav-item">
                     <a href="{{ route('transaksi.index') }}" class="nav-link">
                         <span class="material-symbols-rounded">attach_money</span>
-                        <span class="nav-label">Transaksi</span>
+                        <span class="nav-label">Laporan Transaksi</span>
                     </a>
-                    <span class="nav-tooltip">Transaksi</span>
+                    <span class="nav-tooltip">Laporan Transaksi</span>
                 </li>
-                <!-- <li class="nav-item">
-                    <a href="{{ route('transaksi.laporan') }}" class="nav-link">
+                <li class="nav-item">
+                    <a href="{{ route('laporan.tagihan') }}" class="nav-link">
                         <span class="material-symbols-rounded">receipt</span>
-                        <span class="nav-label">Laporan Keuangan</span>
+                        <span class="nav-label">Laporan Tagihan</span>
                     </a>
-                    <span class="nav-tooltip">Laporan Keuangan</span>
-                </li> -->
+                    <span class="nav-tooltip">Laporan Tagihan</span>
+                </li>
             @endif
 
             @if(Auth::user()->role->nama_role == 'kepala_dinas')

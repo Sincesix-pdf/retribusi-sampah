@@ -35,7 +35,8 @@
                                         <td>{{ $key + 1 }}</td>
                                         <td>{{ $t->order_id }}</td>
                                         <td class="text-end">Rp{{ number_format($t->amount, 0, ',', '.') }}</td>
-                                        <td>{{ date('F', mktime(0, 0, 0, $t->tagihan->bulan, 1)) }} {{ $t->tagihan->tahun }}</td>
+                                        <td>{{ date('F', mktime(0, 0, 0, $t->tagihan->bulan, 1)) }} {{ $t->tagihan->tahun }}
+                                        </td>
                                         <td>
                                             @if ($t->status == 'settlement')
                                                 <span class="badge bg-success">Lunas</span>
@@ -48,10 +49,11 @@
                                         <td>{{ $t->updated_at->format('d-m-Y H:i') }}</td>
                                         <td>
                                             @if ($t->status == 'pending')
-                                                <form action="{{ route('transaksi.sendReminder', $t->id) }}" method="POST" class="d-inline">
+                                                <form action="{{ route('transaksi.sendReminder', $t->id) }}" method="POST"
+                                                    class="d-inline">
                                                     @csrf
-                                                    <button type="submit" class="btn btn-sm btn-danger">
-                                                        <i class="fas fa-bell"></i>
+                                                    <button type="submit" class="btn btn-sm btn-success">
+                                                        <i class="fa-solid fa-dollar-sign"></i> Bayar
                                                     </button>
                                                 </form>
                                             @else

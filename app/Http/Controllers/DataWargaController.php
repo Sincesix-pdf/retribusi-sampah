@@ -62,7 +62,7 @@ class DataWargaController extends Controller
         $pengguna = Pengguna::create([
             'nama' => $validatedData['nama'],
             'email' => $validatedData['email'],
-            'password' => Hash::make($validatedData['password']),
+            'password' => $validatedData['password'],
             'alamat' => $validatedData['alamat'],
             'no_hp' => $validatedData['no_hp'],
             'jenis_kelamin' => $validatedData['jenis_kelamin'],
@@ -82,7 +82,7 @@ class DataWargaController extends Controller
 
         return redirect()->route('datawarga.index')->with('success', 'Warga berhasil ditambahkan!');
     }
-
+    
     public function edit($NIK)
     {
         $warga = Warga::where('NIK', $NIK)->with('kelurahan', 'jenisLayanan')->firstOrFail();

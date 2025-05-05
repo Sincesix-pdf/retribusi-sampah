@@ -28,7 +28,6 @@
                                 </option>
                             @endforeach
                         </select>
-
                     </div>
                     <div class="col-md-4 d-flex align-items-end gap-2">
                         <button type="submit" class="btn btn-success">
@@ -49,6 +48,20 @@
                     <div class="alert alert-warning mt-3">Tidak ada data kelurahan untuk kecamatan yang dipilih.</div>
                 @endif
 
+                <!-- Daftar Kelurahan diurutkan berdasarkan jumlah warga -->
+                @if ($kelurahans && $kelurahans->count())
+                    <div class="mt-4">
+                        <h6>Jumlah Warga di Setiap Kelurahan:</h6>
+                        <ul class="list-group">
+                            @foreach ($kelurahans->sortByDesc('warga_count') as $kelurahan)
+                                <li class="list-group-item d-flex justify-content-between">
+                                    {{ $kelurahan->nama }}
+                                    <span>{{ $kelurahan->warga_count }} Warga</span>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
             </div>
         </div>
     </div>

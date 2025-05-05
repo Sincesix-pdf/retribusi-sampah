@@ -23,7 +23,7 @@
                                     <td>{{ $key + $logAktivitas->firstItem() }}</td>
                                     <td>{{ $log->created_at->format('d/m/Y H:i') }}</td>
                                     <td>{{ $log->pengguna->nama ?? '-' }}</td>
-                                    <td>{{ $log->pengguna->role->nama_role ?? '-' }}</td>
+                                    <td>{{ ucwords(str_replace('_', ' ', $log->pengguna->role->nama_role ?? '-' )) }}</td>
                                     <td>{{ $log->aksi }}</td>
                                     <td>{{ $log->deskripsi ?? '-' }}</td>
                                 </tr>

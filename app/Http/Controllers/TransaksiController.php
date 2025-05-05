@@ -71,7 +71,6 @@ class TransaksiController extends Controller
         ));
     }
 
-
     public function cetakLaporan(Request $request)
     {
         $bulan = $request->input('bulan');
@@ -104,12 +103,20 @@ class TransaksiController extends Controller
         // Total pembayaran hanya untuk status 'settlement'
         $total_pembayaran = $transaksi->where('status', 'settlement')->sum('amount');
 
-        $pdf = Pdf::loadView('transaksi.rekap_pdf', compact('transaksi', 'total_pembayaran', 'bulan', 'tahun', 'status'));
+        $pdf = Pdf::loadView('transaksi.rekap_pdf', compact(
+            'transaksi',
+            'total_pembayaran',
+            'bulan',
+            'tahun',
+            'status'
+        ))->setPaper('A4', 'landscape');
 
         logAktivitas('Mencetak laporan transaksi');
 
         return $pdf->stream("Laporan_Keuangan_{$tahun}" . ($bulan ? "_$bulan" : "") . ".pdf");
     }
+
+    //melihat riwayat pembayaran
     public function history()
     {
         $nik = Auth::user()->warga->NIK;
@@ -130,7 +137,6 @@ class TransaksiController extends Controller
 
         return view('transaksi.history', compact('transaksi'));
     }
-
 
     //handle status payment
     public function handleWebhook(Request $request)
@@ -339,7 +345,6 @@ Harap simpan bukti pembayaran ini.
         ));
     }
 
-
     public function grafikPersebaran(Request $request)
     {
         $kecamatanId = $request->input('kecamatan', null);
@@ -360,7 +365,5 @@ Harap simpan bukti pembayaran ini.
 
         return view('grafik.grafik_persebaran', compact('kelurahans', 'kecamatanId', 'namaKecamatan', 'daftarKecamatan'));
     }
-
-
 }
 

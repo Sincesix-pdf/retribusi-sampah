@@ -48,13 +48,13 @@ class AuthController extends Controller
         }
 
         // Jika gagal, kembalikan ke halaman login dengan error
-        return back()->with('error', 'Email atau password salah!');
+        return redirect()->back()->with('error', 'Email atau password salah.');
     }
 
     public function logout(Request $request)
     {
         logAktivitas('Logout dari sistem', 'berhasil Logout dari sistem');
-        
+
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
@@ -82,10 +82,13 @@ class AuthController extends Controller
     {
         return view('dashboard', ['role' => Auth::user()->role->nama_role]);
     }
-    
+
     public function warga()
     {
-        return view('warga.index', ['warga' => Auth::user()->warga->jenis_retribusi]);
+        return view(
+            'warga.index',
+            ['warga' => Auth::user()->warga->jenis_retribusi],
+            ['nama' => Auth::user()->warga->pengguna->nama]
+        );
     }
-
 }

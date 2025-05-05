@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Models\Tagihan;
@@ -256,7 +257,6 @@ class TagihanController extends Controller
         return $snapUrl;
     }
 
-
     // Fungsi untuk menampilkan daftar tagihan di Kepala Dinas
     public function daftarTagihan()
     {
@@ -274,7 +274,6 @@ class TagihanController extends Controller
 
         return view('tagihan.daftar_tagihan', compact('tagihanTetap', 'tagihanTidakTetap'));
     }
-
 
     // Fungsi untuk menyetujui tagihan dan mengirim WhatsApp
     public function setujuiTagihan(Request $request)
@@ -295,7 +294,7 @@ class TagihanController extends Controller
 
             // Ambil Snap URL Midtrans
             $snapUrl = $this->generateMidtransSnapUrl($t);
-            
+
             $transaksi = $t->transaksi()->latest()->first();
 
             // Cek apakah tagihan tetap atau tidak tetap
@@ -327,9 +326,169 @@ class TagihanController extends Controller
                         'message' => $pesan,
                     ]);
         }
-        
+
         logAktivitas('Setujui Tagihan', "Menyetujui tagihan untuk NIK $NIK dengan order id: {$transaksi->order_id}");
 
         return redirect()->back()->with('success', 'Tagihan telah disetujui dan Snap URL dikirim ke warga melalui WhatsApp.');
+    }
+
+    // Laporan tagihan (role keuangan)
+    public function laporanTagihan(Request $request)
+    {
+        $bulan = $request->input('bulan');
+        $tahun = $request->input('tahun', date('Y'));
+        $status = $request->input('status');
+
+        // Ambil semua transaksi dengan filter
+        $transaksi = Transaksi::with(['tagihan.warga.pengguna'])
+            ->when($tahun, function ($query) use ($tahun) {
+                $query->whereHas('tagihan', function ($query) use ($tahun) {
+                    $query->where(function ($q) use ($tahun) {
+                        $q->where('tahun', $tahun)
+                            ->orWhereYear('tanggal_tagihan', $tahun);
+                    });
+                });
+            })
+            ->when($bulan, function ($query) use ($bulan) {
+                $query->whereHas('tagihan', function ($query) use ($bulan) {
+                    $query->where(function ($q) use ($bulan) {
+                        $q->where('bulan', $bulan)
+                            ->orWhereMonth('tanggal_tagihan', $bulan);
+                    });
+                });
+            })
+            ->when($status, function ($query) use ($status) {
+                if ($status === 'menunggak') {
+                    $query->where(function ($q) {
+                        $q->where('status', 'pending')
+                            ->whereRaw('created_at <= NOW() - INTERVAL 30 DAY');
+                    });
+                } else {
+                    $query->where('status', $status);
+                }
+            })
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // Tambahkan status menunggak
+        $transaksi = $transaksi->map(function ($t) {
+            $t->status_menunggak = $t->created_at->addDays(30)->lt(now()) && $t->status !== 'settlement';
+            return $t;
+        });
+
+        // Ambil ID tagihan dari transaksi yang sudah difilter
+        $tagihanIds = $transaksi->pluck('tagihan_id')->unique();
+
+        // Tagihan Tetap yang terkait transaksi (filtered)
+        $tagihanTetap = Tagihan::whereIn('id', $tagihanIds)
+            ->where('jenis_retribusi', 'tetap')
+            ->with('warga.pengguna')
+            ->get();
+
+        // Ambil semua tagihan tidak tetap sesuai bulan & tahun jika ada
+        $tagihanTidakTetap = Tagihan::where('jenis_retribusi', 'tidak_tetap')
+            ->when($bulan, function ($query) use ($bulan) {
+                $query->whereMonth('tanggal_tagihan', $bulan);
+            })
+            ->when($tahun, function ($query) use ($tahun) {
+                $query->whereYear('tanggal_tagihan', $tahun);
+            })
+            ->with('warga.pengguna', 'transaksi')
+            ->get();
+
+        // Filter berdasarkan status transaksi
+        $tagihanTidakTetap = $tagihanTidakTetap->filter(function ($tagihan) use ($status) {
+            if (!$status)
+                return true;
+
+            $transaksi = $tagihan->transaksi ?? collect(); 
+
+            foreach ($transaksi as $trx) {
+                if ($status === 'menunggak') {
+                    if ($trx->status === 'pending' && $trx->created_at->addDays(30)->lt(now())) {
+                        return true;
+                    }
+                } else {
+                    if ($trx->status === $status) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        });
+
+        $menunggak = $transaksi->where('status_menunggak', true)->count();
+
+        return view('tagihan.laporan', compact(
+            'tagihanTetap',
+            'tagihanTidakTetap',
+            'transaksi',
+            'menunggak',
+        ));
+    }
+
+    // laporan Transaksi (role keuangan)
+    public function cetak(Request $request)
+    {
+        $bulan = $request->input('bulan');
+        $tahun = $request->input('tahun', date('Y'));
+
+        // Status dari request (settlement, pending, menunggak)
+        $statusInput = $request->input('status');
+
+        // Ubah status ke versi tampilan
+        $status = match ($statusInput) {
+            'settlement' => 'lunas',
+            'pending' => 'belum bayar',
+            'menunggak' => 'menunggak',
+            default => null,
+        };
+
+        // Ambil transaksi sesuai tahun & bulan
+        $transaksi = Transaksi::with(['tagihan.warga.pengguna'])
+            ->whereHas('tagihan', function ($query) use ($tahun, $bulan) {
+                $query->where('tahun', $tahun);
+                if (!empty($bulan)) {
+                    $query->where('bulan', $bulan);
+                }
+            })
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // Tandai status menunggak
+        $transaksi = $transaksi->map(function ($t) {
+            $t->status_menunggak = $t->created_at->addDays(30)->lt(now()) && $t->status !== 'settlement';
+            return $t;
+        });
+
+        // Ambil tagihan tetap dan tidak tetap
+        $tagihanTetap = Tagihan::with(['warga.pengguna'])
+            ->where('jenis_retribusi', 'tetap')
+            ->where('tahun', $tahun)
+            ->when($bulan, fn($q) => $q->where('bulan', $bulan))
+            ->get();
+
+        $tagihanTidakTetap = Tagihan::where('jenis_retribusi', 'tidak_tetap')
+            ->when($bulan, fn($q) => $q->whereMonth('tanggal_tagihan', $bulan))
+            ->when($tahun, fn($q) => $q->whereYear('tanggal_tagihan', $tahun))
+            ->with('warga.pengguna')
+            ->get();
+
+        // Total pembayaran hanya untuk yang sukses
+        $total_pembayaran = $transaksi->where('status', 'settlement')->sum('amount');
+
+        $pdf = Pdf::loadView('tagihan.laporan_cetak', compact(
+            'transaksi',
+            'tagihanTetap',
+            'tagihanTidakTetap',
+            'total_pembayaran',
+            'bulan',
+            'tahun',
+            'status'
+        ))->setPaper('A4', 'landscape');
+
+        logAktivitas('Mencetak laporan transaksi');
+
+        return $pdf->stream("Laporan_Keuangan_{$tahun}" . ($bulan ? "_$bulan" : "") . ".pdf");
     }
 }

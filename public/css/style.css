@@ -79,3 +79,14 @@ body {
 .table thead tr th {
     font-size: 20px; /* Sedikit lebih besar untuk header */
 }
+
+/* card */
+.card-custom {
+    transition: all 0.3s ease;
+}
+
+.card-custom:hover {
+    filter: brightness(0.9);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}

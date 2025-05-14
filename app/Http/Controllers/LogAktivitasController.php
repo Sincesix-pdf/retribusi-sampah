@@ -8,7 +8,7 @@ class LogAktivitasController extends Controller
 {
     public function index()
     {
-        $logAktivitas = logAktivitas::with('pengguna.role')->latest()->paginate(10);
+        $logAktivitas = logAktivitas::with('pengguna.role')->get();
         return view('admin.log', compact('logAktivitas'));
     }
 }

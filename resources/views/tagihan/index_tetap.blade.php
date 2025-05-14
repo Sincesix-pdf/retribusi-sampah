@@ -38,7 +38,8 @@
                 <div class="">
                     <form action="{{ route('tagihan.generate.tetap') }}" method="POST" class="mb-3">
                         @csrf
-                        <div class="row g-3">
+                        <div class="row g-2">
+                            <label>Buat Tagihan Bedasarkan Bulan:</label>
                             <div class="col-md-2">
                                 <select name="bulan" class="form-select">
                                     @foreach (range(1, 12) as $m)
@@ -75,9 +76,10 @@
                             <div class="card-header bg-warning text-white">
                                 <h4 class="mb-0">Draft Tagihan Diajukan</h4>
                             </div>
-                            <div class="card-body p-0">
+                            <div class="card-body p-2">
                                 <div class="table-responsive custom-table-container">
-                                    <table class="table table-striped table-hover table-bordered mb-0 custom-table">
+                                    <table id="tabel-diajukan"
+                                        class="table table-hover table-striped table-bordered table w-100">
                                         <thead class="table-warning sticky-top">
                                             <tr>
                                                 <th>No</th>
@@ -118,9 +120,10 @@
                             <div class="card-header bg-success text-white">
                                 <h4 class="mb-0">Draft Tagihan Disetujui</h4>
                             </div>
-                            <div class="card-body p-0">
+                            <div class="card-body p-2">
                                 <div class="table-responsive custom-table-container">
-                                    <table class="table table-striped table-hover table-bordered mb-0 custom-table">
+                                    <table id="tabel-disetujui"
+                                        class="table table-hover table-striped table-bordered table w-100">
                                         <thead class="table-success sticky-top">
                                             <tr>
                                                 <th>No</th>

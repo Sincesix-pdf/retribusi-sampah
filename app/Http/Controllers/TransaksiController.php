@@ -20,20 +20,26 @@ class TransaksiController extends Controller
         $tahun = $request->input('tahun', date('Y'));
         $status = $request->input('status');
 
+        // Ambil semua transaksi dengan filter
         $transaksi = Transaksi::with(['tagihan.warga.pengguna'])
             ->when($tahun, function ($query) use ($tahun) {
                 $query->whereHas('tagihan', function ($query) use ($tahun) {
-                    $query->where('tahun', $tahun);
+                    $query->where(function ($q) use ($tahun) {
+                        $q->where('tahun', $tahun)
+                            ->orWhereYear('tanggal_tagihan', $tahun);
+                    });
                 });
             })
             ->when($bulan, function ($query) use ($bulan) {
                 $query->whereHas('tagihan', function ($query) use ($bulan) {
-                    $query->where('bulan', $bulan);
+                    $query->where(function ($q) use ($bulan) {
+                        $q->where('bulan', $bulan)
+                            ->orWhereMonth('tanggal_tagihan', $bulan);
+                    });
                 });
             })
             ->when($status, function ($query) use ($status) {
                 if ($status === 'menunggak') {
-                    // Menambahkan filter untuk status menunggak
                     $query->where(function ($q) {
                         $q->where('status', 'pending')
                             ->whereRaw('created_at <= NOW() - INTERVAL 30 DAY');
@@ -45,14 +51,22 @@ class TransaksiController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        // Tambahkan status menunggak berdasarkan created_at transaksi
+        // Menambahkan status menunggak
         $transaksi = $transaksi->map(function ($t) {
-            $t->status_menunggak = $t->created_at->addDays(30)->lt(now()) &&
-                $t->status != 'settlement';
+            $t->status_menunggak = $t->created_at->addDays(30)->lt(now()) && $t->status !== 'settlement';
             return $t;
         });
 
-        // Hitung transaksi yang menunggak
+        // Pisahkan transaksi Tetap dan Tidak Tetap
+        $transaksiTetap = $transaksi->filter(function ($t) {
+            return $t->tagihan && $t->tagihan->jenis_retribusi === 'tetap';
+        });
+
+        $transaksiTidakTetap = $transaksi->filter(function ($t) {
+            return $t->tagihan && $t->tagihan->jenis_retribusi === 'tidak_tetap';
+        });
+
+        // Statistik
         $sudahBayar = $transaksi->where('status', 'settlement')->count();
         $belumBayar = $transaksi->where('status', 'pending')->count();
         $menunggak = $transaksi->where('status_menunggak', true)->count();
@@ -63,6 +77,8 @@ class TransaksiController extends Controller
 
         return view('transaksi.index', compact(
             'transaksi',
+            'transaksiTetap',
+            'transaksiTidakTetap',
             'sudahBayar',
             'belumBayar',
             'menunggak',
@@ -71,26 +87,56 @@ class TransaksiController extends Controller
         ));
     }
 
-    public function cetakLaporan(Request $request)
+    public function cetakLaporanTransaksi(Request $request)
     {
         $bulan = $request->input('bulan');
         $tahun = $request->input('tahun', date('Y'));
         $status = $request->input('status');
 
-        $transaksi = Transaksi::with(['tagihan.warga'])
-            ->whereHas('tagihan', function ($query) use ($tahun, $bulan) {
-                $query->where('tahun', $tahun);
-                if (!empty($bulan)) {
-                    $query->where('bulan', $bulan);
+        // Ambil semua transaksi dengan filter
+        $transaksi = Transaksi::with(['tagihan.warga.pengguna'])
+            ->when($tahun, function ($query) use ($tahun) {
+                $query->whereHas('tagihan', function ($query) use ($tahun) {
+                    $query->where(function ($q) use ($tahun) {
+                        $q->where('tahun', $tahun)
+                            ->orWhereYear('tanggal_tagihan', $tahun);
+                    });
+                });
+            })
+            ->when($bulan, function ($query) use ($bulan) {
+                $query->whereHas('tagihan', function ($query) use ($bulan) {
+                    $query->where(function ($q) use ($bulan) {
+                        $q->where('bulan', $bulan)
+                            ->orWhereMonth('tanggal_tagihan', $bulan);
+                    });
+                });
+            })
+            ->when($status, function ($query) use ($status) {
+                if ($status === 'menunggak') {
+                    $query->where(function ($q) {
+                        $q->where('status', 'pending')
+                            ->whereRaw('created_at <= NOW() - INTERVAL 30 DAY');
+                    });
+                } else {
+                    $query->where('status', $status);
                 }
             })
             ->orderBy('created_at', 'desc')
             ->get();
 
-        // Menambahkan status menunggak berdasarkan created_at transaksi
+        // Menambahkan status menunggak
         $transaksi = $transaksi->map(function ($t) {
             $t->status_menunggak = $t->created_at->addDays(30)->lt(now()) && $t->status != 'settlement';
             return $t;
+        });
+
+        // Pisahkan transaksi Tetap dan Tidak Tetap
+        $transaksiTetap = $transaksi->filter(function ($t) {
+            return $t->tagihan && $t->tagihan->jenis_retribusi === 'tetap';
+        });
+
+        $transaksiTidakTetap = $transaksi->filter(function ($t) {
+            return $t->tagihan && $t->tagihan->jenis_retribusi === 'tidak_tetap';
         });
 
         // Filter berdasarkan status, termasuk 'menunggak'
@@ -104,6 +150,8 @@ class TransaksiController extends Controller
         $total_pembayaran = $transaksi->where('status', 'settlement')->sum('amount');
 
         $pdf = Pdf::loadView('transaksi.rekap_pdf', compact(
+            'transaksiTetap',
+            'transaksiTidakTetap',
             'transaksi',
             'total_pembayaran',
             'bulan',
@@ -167,7 +215,7 @@ class TransaksiController extends Controller
                 );
 
                 // Kirim notifikasi WhatsApp
-                $this->sendWhatsAppNotification($transaksi);
+                $this->sendPaymentNotification($transaksi);
             } elseif (in_array($request->transaction_status, ['cancel', 'expire', 'failure'])) {
                 $transaksi->update(['status' => 'cancel']);
             }
@@ -176,7 +224,7 @@ class TransaksiController extends Controller
         return response()->json(['message' => 'Webhook Berhasil Cihuyy'], 200);
     }
 
-    private function sendWhatsAppNotification($transaksi)
+    private function sendPaymentNotification($transaksi)
     {
         $apiKey = env('FONNTE_API_KEY');
         $warga = $transaksi->tagihan->warga;
@@ -288,63 +336,68 @@ Harap simpan bukti pembayaran ini.
 
     public function grafikPendapatan(Request $request)
     {
-        $bulan = $request->bulan;
-        $tahun = $request->tahun ?? date('Y');
-
-        $query = Transaksi::where('transaksi.status', 'settlement')
-            ->join('tagihan', 'transaksi.tagihan_id', '=', 'tagihan.id');
-
-        // Total pendapatan per bulan
-        $perBulan = Transaksi::selectRaw('tagihan.bulan, tagihan.tahun, SUM(transaksi.amount) as total')
-            ->join('tagihan', 'transaksi.tagihan_id', '=', 'tagihan.id')
-            ->where('transaksi.status', 'settlement')
-            ->when($bulan, fn($q) => $q->where('tagihan.bulan', $bulan))
-            ->where('tagihan.tahun', $tahun)
-            ->groupBy('tagihan.bulan', 'tagihan.tahun')
-            ->orderBy('tagihan.tahun')
-            ->orderBy('tagihan.bulan')
-            ->get()
-            ->mapWithKeys(fn($item) => [
-                \Carbon\Carbon::create(null, (int) $item->bulan)->translatedFormat('F') => $item->total
-            ]);
-
-        // Semua jenis retribusi yang wajib ditampilkan
-        $allJenis = ['tetap', 'tidak_tetap'];
-
-        // Data pendapatan per jenis
-        $jenisRaw = $query->selectRaw('tagihan.jenis_retribusi, SUM(transaksi.amount) as total')
-            ->groupBy('tagihan.jenis_retribusi')
-            ->get()
-            ->pluck('total', 'jenis_retribusi');
-
-        $perJenis = collect($allJenis)->mapWithKeys(function ($jenis) use ($jenisRaw) {
-            $label = ucwords(str_replace('_', ' ', $jenis)); // Tetap, Tidak Tetap
-            return [$label => $jenisRaw[$jenis] ?? 0];
+        $bulan = $request->input('bulan');
+        $tahun = $request->input('tahun', date('Y'));
+    
+        // Ambil semua transaksi yang 'settlement' dan sudah dimuat relasinya
+        $transaksi = Transaksi::with(['tagihan.warga'])
+            ->where('status', 'settlement')
+            ->whereHas('tagihan', function ($query) use ($tahun, $bulan) {
+                $query->where(function ($q) use ($tahun) {
+                    $q->where('tahun', $tahun)
+                      ->orWhereYear('tanggal_tagihan', $tahun);
+                });
+    
+                if ($bulan) {
+                    $query->where(function ($q) use ($bulan) {
+                        $q->where('bulan', $bulan)
+                          ->orWhereMonth('tanggal_tagihan', $bulan);
+                    });
+                }
+            })
+            ->get();
+    
+        // Pendapatan per bulan
+        $perBulan = $transaksi->groupBy(function ($item) {
+            $tagihan = $item->tagihan;
+            if ($tagihan->tanggal_tagihan) {
+                return Carbon::parse($tagihan->tanggal_tagihan)->translatedFormat('F');
+            } elseif ($tagihan->bulan && $tagihan->tahun) {
+                return Carbon::createFromDate($tagihan->tahun, $tagihan->bulan, 1)->translatedFormat('F');
+            } else {
+                return 'Tidak Diketahui';
+            }
+        })->map(function ($group) {
+            return $group->sum('amount');
         });
-
+    
+        // Pendapatan per jenis retribusi
+        $perJenis = $transaksi->groupBy(function ($item) {
+            return $item->tagihan->jenis_retribusi;
+        })->map(function ($group) {
+            return $group->sum('amount');
+        });
+    
         // Jumlah warga membayar per bulan
-        $perWargaBayar = Transaksi::selectRaw('tagihan.bulan, tagihan.tahun, COUNT(DISTINCT tagihan.NIK) as jumlah')
-            ->join('tagihan', 'transaksi.tagihan_id', '=', 'tagihan.id')
-            ->where('transaksi.status', 'settlement')
-            ->when($bulan, fn($q) => $q->where('tagihan.bulan', $bulan))
-            ->where('tagihan.tahun', $tahun)
-            ->groupBy('tagihan.bulan', 'tagihan.tahun')
-            ->orderBy('tagihan.tahun')
-            ->orderBy('tagihan.bulan')
-            ->get()
-            ->mapWithKeys(fn($item) => [
-                \Carbon\Carbon::create(null, (int) $item->bulan)->translatedFormat('F') => $item->jumlah
-            ]);
-
-        logAktivitas('Melihat grafik pendapatan', 'Melihat grafik pendapatan');
-
+        $perWargaBayar = $transaksi->groupBy(function ($item) {
+            $tagihan = $item->tagihan;
+            if ($tagihan->tanggal_tagihan) {
+                return Carbon::parse($tagihan->tanggal_tagihan)->translatedFormat('F');
+            } elseif ($tagihan->bulan && $tagihan->tahun) {
+                return Carbon::createFromDate($tagihan->tahun, $tagihan->bulan, 1)->translatedFormat('F');
+            } else {
+                return 'Tidak Diketahui';
+            }
+        })->map(function ($group) {
+            return $group->count(); // Jumlah transaksi
+        });
+    
         return view('grafik.grafik_pendapatan', compact(
-            'perBulan',
-            'perJenis',
-            'perWargaBayar'
-        ));
+        'perBulan',
+        'perJenis',
+        'perWargaBayar'));
     }
-
+    
     public function grafikPersebaran(Request $request)
     {
         $kecamatanId = $request->input('kecamatan', null);
@@ -363,7 +416,11 @@ Harap simpan bukti pembayaran ini.
 
         logAktivitas("Melihat grafik persebaran untuk {$namaKecamatan}", "Melihat grafik persebaran untuk {$namaKecamatan}");
 
-        return view('grafik.grafik_persebaran', compact('kelurahans', 'kecamatanId', 'namaKecamatan', 'daftarKecamatan'));
+        return view('grafik.grafik_persebaran', compact(
+            'kelurahans',
+             'kecamatanId',
+              'namaKecamatan',
+               'daftarKecamatan'));
     }
 }
 

@@ -96,11 +96,72 @@ h1 {
 
 .hero-text p {
     font-size: 1.2em;
-    color: #666;
+    color: #000000;
     font-family: "Poppins", sans-serif;
 }
 
 .hero-image img {
     width: 400px;
+}
+
+/* How it works Section */
+.how-it-works {
+    text-align: center;
+    padding: 60px 100px;
+    background: linear-gradient(to bottom, #0099ff, #007acc);
+}
+
+.how-it-works h2 {
+    font-size: 2em;
+    margin-bottom: 40px;
+    color: #f9f9f9;
+    font-family: "Poppins", sans-serif;
+}
+
+.steps {
+    display: flex;
+    gap: 30px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.step-card {
+    background-color: #ffffff26;
+    border: 1px solid #ffffff46;
+    border-radius: 12px;
+    padding: 25px 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    width: 250px;
+    height:350px;
+    text-align: left;
+    transition: transform 0.2s ease;
+}
+
+.step-card:hover {
+    transform: translateY(-5px);
+}
+
+.step-card h4 {
+    font-size: 1.3em;
+    margin-bottom: 10px;
+    color: #ffffff;
+    font-family: "Poppins", sans-serif;
+}
+
+.step-card p {
+    font-size: 1em;
+    color: #ffffff;
+    font-family: "Nunito", sans-serif;
+}
+
+
+/* Footer */
+footer {
+    background: linear-gradient(to bottom, #007acc, #006bb3);
+    color: #ffffff;
+    text-align: center;
+    padding: 20px 40px;
+    font-size: 0.9em;
+    font-family: "Nunito", sans-serif;
 }
 

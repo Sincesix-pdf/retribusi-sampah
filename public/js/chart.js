@@ -44,7 +44,7 @@ document.addEventListener("DOMContentLoaded", function () {
             labels: window.labelsJenis,
             datasets: [
                 {
-                    label: "Total Retribusi",
+                    label: "Total Pembayaran",
                     data: window.dataJenis,
                     backgroundColor: [
                         "#4e73df",

@@ -29,9 +29,14 @@ class DataWargaController extends Controller
             ->when($kelurahan_id, function ($query) use ($kelurahan_id) {
                 return $query->where('kelurahan_id', $kelurahan_id);
             })
-            ->paginate(10);
+            ->get();
 
-        return view('datawarga.index', compact('warga', 'kecamatan', 'kecamatan_id', 'kelurahan_id'));
+        return view('datawarga.index', compact(
+            'warga',
+            'kecamatan',
+            'kecamatan_id',
+            'kelurahan_id'
+        ));
     }
 
     public function create()
@@ -43,7 +48,7 @@ class DataWargaController extends Controller
 
     public function store(Request $request)
     {
-        
+
         $validatedData = $request->validate([
             'nama' => 'required|string|max:255',
             'email' => 'required|email:dns|unique:pengguna,email',
@@ -82,7 +87,7 @@ class DataWargaController extends Controller
 
         return redirect()->route('datawarga.index')->with('success', 'Warga berhasil ditambahkan!');
     }
-    
+
     public function edit($NIK)
     {
         $warga = Warga::where('NIK', $NIK)->with('kelurahan', 'jenisLayanan')->firstOrFail();

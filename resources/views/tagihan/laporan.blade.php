@@ -2,7 +2,7 @@
     <div class="content-container pb-3">
         <div class="card custom-card">
             <div class="card-header custom-card-header">
-                <h5 class="mb-0">Laporan Daftar Tagihan dan Status Transaksi</h5>
+                <h5 class="mb-0">Laporan Daftar Tagihan</h5>
             </div>
             <div class="card-body">
                 {{-- Form Filter Bulan, Tahun, Status --}}

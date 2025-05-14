@@ -105,7 +105,7 @@
                     window.labelsJenis = {!! json_encode($perJenis->keys()) !!};
                     window.dataJenis = {!! json_encode($perJenis->values()) !!};
                     window.labelsWarga = {!! json_encode($perWargaBayar->keys()) !!};
-                    window.dataWarga = {!! json_encode($perWargaBayar->values()) !!};
+    window.dataWarga = {!! json_encode($perWargaBayar->values()) !!};
                 </script>
                 <script src="{{ asset('js/chart.js') }}"></script>
             </div>

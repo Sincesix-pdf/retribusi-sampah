@@ -1,39 +1,38 @@
 document.addEventListener("DOMContentLoaded", function () {
-    // Navbar Scroll Effect
-    window.addEventListener("scroll", function () {
-        let navbar = document.getElementById("navbar");
-        if (window.scrollY > 10) {
-            navbar.classList.add("scrolled");
-        } else {
-            navbar.classList.remove("scrolled");
-        }
-    });
+    // ==================== Navbar Scroll Effect ====================
+    const navbar = document.getElementById("navbar");
+    if (navbar) {
+        window.addEventListener("scroll", function () {
+            navbar.classList.toggle("scrolled", window.scrollY > 10);
+        });
+    }
 
-    // Toggle Password Visibility
+    // ==================== Toggle Password Visibility ====================
     window.togglePassword = function (fieldId, iconId) {
-        let passwordField = document.getElementById(fieldId);
-        let icon = document.getElementById(iconId);
-        
-        passwordField.type = passwordField.type === "password" ? "text" : "password";
-        icon.textContent = passwordField.type === "password" ? "visibility" : "visibility_off";
+        const passwordField = document.getElementById(fieldId);
+        const icon = document.getElementById(iconId);
+        if (passwordField && icon) {
+            const isPassword = passwordField.type === "password";
+            passwordField.type = isPassword ? "text" : "password";
+            icon.textContent = isPassword ? "visibility_off" : "visibility";
+        }
     };
 
-    // Dropdown Kelurahan
-    let kecamatanSelect = document.getElementById("kecamatan_id");
-    let kelurahanSelect = document.getElementById("kelurahan_id");
-    let oldKelurahanID = kelurahanSelect?.getAttribute("data-old") || "";
+    // ==================== Dropdown Kelurahan ====================
+    const kecamatanSelect = document.getElementById("kecamatan_id");
+    const kelurahanSelect = document.getElementById("kelurahan_id");
+    const oldKelurahanID = kelurahanSelect?.getAttribute("data-old") || "";
 
     function loadKelurahan(kecamatan_id) {
-        if (!kelurahanSelect) return;
-        
+        if (!kelurahanSelect || !kecamatan_id) return;
+
         kelurahanSelect.innerHTML = '<option value="">Semua Kelurahan</option>';
-        if (!kecamatan_id) return;
-        
         fetch(`/get-kelurahan?kecamatan_id=${kecamatan_id}`)
-            .then(response => response.json())
-            .then(data => {
-                data.forEach(kelurahan => {
-                    let selected = kelurahan.id == oldKelurahanID ? "selected" : "";
+            .then((response) => response.json())
+            .then((data) => {
+                data.forEach((kelurahan) => {
+                    const selected =
+                        kelurahan.id == oldKelurahanID ? "selected" : "";
                     kelurahanSelect.innerHTML += `<option value="${kelurahan.id}" ${selected}>${kelurahan.nama}</option>`;
                 });
             });
@@ -43,33 +42,87 @@ document.addEventListener("DOMContentLoaded", function () {
         kecamatanSelect.addEventListener("change", function () {
             loadKelurahan(this.value);
         });
+
         if (kecamatanSelect.value) {
             loadKelurahan(kecamatanSelect.value);
         }
     }
 
-    // DataTable Initialization
-    $("#ViewTable").DataTable({
-        paging: true,
-        searching: true,
-        ordering: true,
-        info: true,
-        language: {
-            search: "Cari:",
-            lengthMenu: "Tampilkan _MENU_ data per halaman",
-            info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
-            infoEmpty: "Tidak ada data tersedia",
-            zeroRecords: "Data tidak ditemukan",
-            
-        },
-    });
+    // ==================== DataTables inisial ====================
+    const wargaTable = document.querySelector("#tabel-warga");
+    const diajukanTable = document.querySelector("#tabel-diajukan");
+    const disetujuiTable = document.querySelector("#tabel-disetujui");
 
-    // Jenis Retribusi Logic
-    let jenisRetribusiSelect = document.getElementById("jenis_retribusi");
-    let jenisLayananSelect = document.getElementById("jenis_layanan_id");
+    if (wargaTable && $.fn.DataTable) {
+        $("#tabel-warga").DataTable({
+            lengthMenu: [
+                [10, 25, 50, -1],
+                [10, 25, 50, "Semua"],
+            ],
+            language: {
+                search: "Cari:",
+                lengthMenu: "Tampilkan _MENU_ data",
+                info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
+                paginate: {
+                    next: '<i class="fas fa-chevron-right"></i>',
+                    previous: '<i class="fas fa-chevron-left"></i>',
+                },
+                zeroRecords: "Data tidak ditemukan",
+                infoEmpty: "Tidak ada data tersedia",
+                infoFiltered: "(filter dari total _MAX_ data)",
+            },
+        });
+    }
+
+    if (diajukanTable && $.fn.DataTable) {
+        $("#tabel-diajukan").DataTable({
+            lengthMenu: [
+                [10, 25, 50, -1],
+                [10, 25, 50, "Semua"],
+            ],
+            language: {
+                search: "Cari:",
+                lengthMenu: "Tampilkan _MENU_ data",
+                info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
+                paginate: {
+                    next: '<i class="fas fa-chevron-right"></i>',
+                    previous: '<i class="fas fa-chevron-left"></i>',
+                },
+                zeroRecords: "Data tidak ditemukan",
+                infoEmpty: "Tidak ada data tersedia",
+                infoFiltered: "(filter dari total _MAX_ data)",
+            },
+        });
+    }
+
+    if (disetujuiTable && $.fn.DataTable) {
+        $("#tabel-disetujui").DataTable({
+            lengthMenu: [
+                [10, 25, 50, -1],
+                [10, 25, 50, "Semua"],
+            ],
+            language: {
+                search: "Cari:",
+                lengthMenu: "Tampilkan _MENU_ data",
+                info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
+                paginate: {
+                    next: '<i class="fas fa-chevron-right"></i>',
+                    previous: '<i class="fas fa-chevron-left"></i>',
+                },
+                zeroRecords: "Data tidak ditemukan",
+                infoEmpty: "Tidak ada data tersedia",
+                infoFiltered: "(filter dari total _MAX_ data)",
+            },
+        });
+    }
+
+    // ==================== Jenis Retribusi Dropdown ====================
+    const jenisRetribusiSelect = document.getElementById("jenis_retribusi");
+    const jenisLayananSelect = document.getElementById("jenis_layanan_id");
 
     function updateJenisLayanan() {
         if (!jenisRetribusiSelect || !jenisLayananSelect) return;
+
         if (jenisRetribusiSelect.value === "tidak_tetap") {
             jenisLayananSelect.value = 4;
             jenisLayananSelect.setAttribute("readonly", "readonly");
@@ -80,20 +133,25 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (jenisRetribusiSelect) {
         jenisRetribusiSelect.addEventListener("change", updateJenisLayanan);
-        updateJenisLayanan(); // Panggil saat halaman dimuat
+        updateJenisLayanan();
     }
 
-    // Perhitungan Tagihan Tidak Tetap
-    let jenisTarifSelect = document.getElementById("jenisTarifSelect");
-    let volumeInput = document.getElementById("volumeInput");
-    let tarifInput = document.getElementById("tarifInput");
-    let totalInput = document.getElementById("totalInput");
+    // ==================== Perhitungan Tagihan Tidak Tetap ====================
+    const jenisTarifSelect = document.getElementById("jenisTarifSelect");
+    const volumeInput = document.getElementById("volumeInput");
+    const tarifInput = document.getElementById("tarifInput");
+    const totalInput = document.getElementById("totalInput");
 
     function updateTotal() {
-        if (!jenisTarifSelect || !volumeInput || !tarifInput || !totalInput) return;
-        
-        let tarifPerKubik = parseFloat(jenisTarifSelect.options[jenisTarifSelect.selectedIndex]?.dataset.tarif) || 0;
-        let volume = parseFloat(volumeInput.value) || 0;
+        if (!jenisTarifSelect || !volumeInput || !tarifInput || !totalInput)
+            return;
+
+        const tarifPerKubik =
+            parseFloat(
+                jenisTarifSelect.options[jenisTarifSelect.selectedIndex]
+                    ?.dataset.tarif
+            ) || 0;
+        const volume = parseFloat(volumeInput.value) || 0;
         tarifInput.value = tarifPerKubik;
         totalInput.value = tarifPerKubik * volume;
     }
@@ -104,11 +162,15 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 });
 
-// Checkbox "Pilih Semua" untuk daftar tagihan
+// ==================== Checkbox "Pilih Semua" ====================
 document.querySelectorAll("#checkAll").forEach((checkAllBox) => {
     checkAllBox.addEventListener("change", function () {
-        let targetGroup = this.getAttribute("data-target");
-        let checkboxes = document.querySelectorAll(`input[data-group="${targetGroup}"]`);
-        checkboxes.forEach((checkbox) => (checkbox.checked = this.checked));
+        const targetGroup = this.getAttribute("data-target");
+        const checkboxes = document.querySelectorAll(
+            `input[data-group="${targetGroup}"]`
+        );
+        checkboxes.forEach((checkbox) => {
+            checkbox.checked = this.checked;
+        });
     });
 });

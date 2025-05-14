@@ -31,7 +31,6 @@
                         <i class="fas fa-plus"></i> Tambah Tagihan Tidak Tetap
                     </a>
                 </div>
-
                 <!-- Tabs Navigation -->
                 <ul class="nav nav-tabs custom-tabs" id="tagihanTabs" role="tablist">
                     <li class="nav-item" role="presentation">
@@ -47,14 +46,14 @@
                 <div class="tab-content mt-3" id="tagihanTabsContent">
                     <!-- Tab: Diajukan -->
                     <div class="tab-pane fade show active" id="diajukan" role="tabpanel">
-
                         <div class="card custom-card">
                             <div class="card-header bg-warning text-white">
                                 <h4 class="mb-0">Draft Tagihan Diajukan</h4>
                             </div>
-                            <div class="card-body p-0">
+                            <div class="card-body p-2">
                                 <div class="table-responsive custom-table-container">
-                                    <table class="table table-striped table-hover table-bordered mb-0 custom-table">
+                                    <table id="tabel-diajukan"
+                                        class="table table-hover table-striped table-bordered table w-100">
                                         <thead class="table-warning sticky-top">
                                             <tr>
                                                 <th>No</th>
@@ -97,9 +96,10 @@
                             <div class="card-header bg-success text-white">
                                 <h4 class="mb-0">Draft Tagihan Disetujui</h4>
                             </div>
-                            <div class="card-body p-0">
+                            <div class="card-body p-2">
                                 <div class="table-responsive custom-table-container">
-                                    <table class="table table-striped table-hover table-bordered mb-0 custom-table">
+                                    <table id="tabel-disetujui"
+                                        class="table table-hover table-striped table-bordered table w-100">
                                         <thead class="table-success sticky-top">
                                             <tr>
                                                 <th>No</th>

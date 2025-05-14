@@ -4,12 +4,12 @@
             <div class="card-header custom-card-header">
                 <h5 class="mb-0">Riwayat Log Aktivitas</h5>
             </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table id="LogTable" class="table table-bordered table-striped">
+            <div class="card-body p-2">
+                <div class="tabel-responsive custom-table-container">
+                    <table id="tabel-warga" class="table table-hover table-striped table-bordered table w-100">
                         <thead class="table-light">
                             <tr>
-                                <th>#</th>
+                                <th>No</th>
                                 <th>Waktu</th>
                                 <th>Nama Pengguna</th>
                                 <th>Role</th>
@@ -18,12 +18,12 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse ($logAktivitas as $key => $log)
+                            @forelse ($logAktivitas as $log)
                                 <tr>
-                                    <td>{{ $key + $logAktivitas->firstItem() }}</td>
+                                    <td>{{ $loop->iteration }}</td>
                                     <td>{{ $log->created_at->format('d/m/Y H:i') }}</td>
                                     <td>{{ $log->pengguna->nama ?? '-' }}</td>
-                                    <td>{{ ucwords(str_replace('_', ' ', $log->pengguna->role->nama_role ?? '-' )) }}</td>
+                                    <td>{{ ucwords(str_replace('_', ' ', $log->pengguna->role->nama_role ?? '-')) }}</td>
                                     <td>{{ $log->aksi }}</td>
                                     <td>{{ $log->deskripsi ?? '-' }}</td>
                                 </tr>
@@ -34,10 +34,6 @@
                             @endforelse
                         </tbody>
                     </table>
-                </div>
-
-                <div class="mt-3">
-                    {{ $logAktivitas->links() }}
                 </div>
             </div>
         </div>

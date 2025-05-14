@@ -22,14 +22,14 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Admin
 Route::middleware(['auth', 'role:admin'])->group(function () {
-    Route::get('/admin/dashboard', [AuthController::class, 'admin'])->name('admin.index');
+    Route::get('/admin/dashboard', [AuthController::class, 'dashboard'])->name('admin.index');
     // akses halaman Kelola WR
     Route::get('/admin/logaktivitas', [LogAktivitasController::class, 'index'])->name('log-aktivitas.index');
 });
 
 // Kepala Dinas
 Route::middleware(['auth', 'role:kepala_dinas'])->group(function () {
-    Route::get('/kepala-dinas/dashboard', [AuthController::class, 'kepaladinas'])->name('kepala_dinas.index');
+    Route::get('/kepala-dinas/dashboard', [AuthController::class, 'dashboard'])->name('kepala_dinas.index');
     Route::get('/kepala-dinas/daftarTagihan', [TagihanController::class, 'daftarTagihan'])->name('kepala_dinas.tagihan');
     Route::post('/kepala-dinas/tagihan/setujui', [TagihanController::class, 'setujuiTagihan'])->name('kepala_dinas.tagihan.setujui');
     Route::get('/kepala-dinas/grafik-pendapatan', [TransaksiController::class, 'grafikPendapatan'])->name('kepala_dinas.grafikpendapatan');
@@ -39,19 +39,19 @@ Route::middleware(['auth', 'role:kepala_dinas'])->group(function () {
 
 // Keuangan
 Route::middleware(['auth', 'role:keuangan'])->group(function () {
-    Route::get('/keuangan/dashboard', [AuthController::class, 'keuangan'])->name('keuangan.index');
+    Route::get('/keuangan/dashboard', [AuthController::class, 'dashboard'])->name('keuangan.index');
     Route::get('/keuangan/transaksi', [TransaksiController::class, 'index'])->name('transaksi.index');
     Route::get('/keuangan/laporan-keuangan', [TransaksiController::class, 'laporan'])->name('transaksi.laporan');
-    Route::get('/keuangan/transaksi/laporan-keuangan/cetak-laporan', [TransaksiController::class, 'cetakLaporan'])->name('transaksi.cetak');
+    Route::get('/keuangan/transaksi/laporan-keuangan/cetak-laporan', [TransaksiController::class, 'cetakLaporanTransaksi'])->name('transaksi.cetak');
     Route::post('/keuangan/transaksi/{id}/sendReminder', [TransaksiController::class, 'sendReminder'])->name('transaksi.sendReminder');
     Route::get('/keuangan/laporan-tagihan', [TagihanController::class, 'laporanTagihan'])->name('laporan.tagihan');
-    Route::get('/keuangan/laporan-tagihan/cetak', [TagihanController::class, 'cetak'])->name('laporan.cetak');
+    Route::get('/keuangan/laporan-tagihan/cetak', [TagihanController::class, 'cetakLaporanTagihan'])->name('laporan.cetak');
 });
 
 // Pendataan
 Route::middleware(['auth', 'role:pendataan'])->group(function () {
     // akses halaman dashboard
-    Route::get('/pendataan/dashboard', [AuthController::class, 'pendataan'])->name('pendataan.index');
+    Route::get('/pendataan/dashboard', [AuthController::class, 'dashboard'])->name('pendataan.index');
 
     // Akses halaman Kelola Warga
     Route::get('/pendataan/datawarga', [DataWargaController::class, 'index'])->name('datawarga.index');

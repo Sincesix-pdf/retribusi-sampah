@@ -60,7 +60,10 @@ class TagihanController extends Controller
             ->with(['warga.pengguna', 'warga.jenisLayanan'])
             ->get();
 
-        return view('tagihan.index_tidak_tetap', compact('tagihanDiajukan', 'tagihanDisetujui'));
+        return view('tagihan.index_tidak_tetap', compact(
+            'tagihanDiajukan',
+            'tagihanDisetujui'
+        ));
     }
 
     public function generateTetap(Request $request)
@@ -272,7 +275,10 @@ class TagihanController extends Controller
             ->with('warga.pengguna')
             ->get();
 
-        return view('tagihan.daftar_tagihan', compact('tagihanTetap', 'tagihanTidakTetap'));
+        return view('tagihan.daftar_tagihan', compact(
+            'tagihanTetap',
+            'tagihanTidakTetap'
+        ));
     }
 
     // Fungsi untuk menyetujui tagihan dan mengirim WhatsApp
@@ -303,12 +309,12 @@ class TagihanController extends Controller
                 $bulan = $t->bulan;
                 $tahun = $t->tahun;
                 $nama_bulan = date('F', strtotime("$tahun-$bulan-01"));
-                $total_tagihan = number_format($tarif, 0, ',', '.'); // Tidak ada perhitungan volume
+                $total_tagihan = number_format($tarif, 0, ',', '.');
 
                 $pesan = "Halo *$nama* *$NIK*,\n\nTagihan Anda sebesar *Rp$total_tagihan* untuk periode *$nama_bulan, $tahun*.\n\nSilakan lakukan pembayaran melalui link berikut:\n$snapUrl\n\nTerima kasih.";
             } else {
                 // Tagihan Tidak Tetap
-                $volume = $t->volume; // Misalnya: 10 kubik
+                $volume = $t->volume;
                 $tanggal_tagihan = date('d F Y', strtotime($t->tanggal_tagihan));
 
                 // Hitung total tagihan = tarif * volume
@@ -401,7 +407,7 @@ class TagihanController extends Controller
             if (!$status)
                 return true;
 
-            $transaksi = $tagihan->transaksi ?? collect(); 
+            $transaksi = $tagihan->transaksi ?? collect();
 
             foreach ($transaksi as $trx) {
                 if ($status === 'menunggak') {
@@ -428,7 +434,7 @@ class TagihanController extends Controller
     }
 
     // laporan Transaksi (role keuangan)
-    public function cetak(Request $request)
+    public function cetakLaporanTagihan(Request $request)
     {
         $bulan = $request->input('bulan');
         $tahun = $request->input('tahun', date('Y'));

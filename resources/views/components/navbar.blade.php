@@ -13,7 +13,7 @@
     <!-- Sidebar Header -->
     <header class="sidebar-header">
         <a href="{{ $dashboardRoute }}" class="header-logo">
-            <img src="/gambar/GEH.png" alt="logo">
+            <img src="/gambar/Logo.png" alt="logo">
         </a>
         <button class="toggler sidebar-toggler">
             <span class="material-symbols-rounded">chevron_left</span>

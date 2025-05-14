@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Warga;
+use App\Models\Pengguna;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+
 
 class AuthController extends Controller
 {
@@ -28,7 +31,6 @@ class AuthController extends Controller
             $user = Auth::user();
 
             logAktivitas('Login ke sistem', 'Berhasil login sebagai ' . $user->role->nama_role);
-
 
             // Redirect berdasarkan role
             switch ($user->role->nama_role) {
@@ -62,25 +64,23 @@ class AuthController extends Controller
         return redirect('/login')->with('success', 'Anda telah logout.');
     }
 
-
-    public function admin()
+    public function dashboard(Request $request)
     {
-        return view('dashboard', ['role' => Auth::user()->role->nama_role]);
-    }
+        $jumlahWarga = Warga::count();
+        $jumlahRetribusiTetap = Warga::where('jenis_retribusi', 'tetap')->count();
+        $jumlahRetribusiTidakTetap = Warga::where('jenis_retribusi', 'tidak_tetap')->count();
+        $jumlahPetugas = Pengguna::whereIn('role_id', [1, 2, 3, 4])->count();
 
-    public function kepaladinas()
-    {
-        return view('dashboard', ['role' => Auth::user()->role->nama_role]);
-    }
 
-    public function keuangan()
-    {
-        return view('dashboard', ['role' => Auth::user()->role->nama_role]);
-    }
+        $role = Auth::user()->role->nama_role;
 
-    public function pendataan()
-    {
-        return view('dashboard', ['role' => Auth::user()->role->nama_role]);
+        return view('dashboard', compact(
+            'jumlahWarga',
+            'jumlahRetribusiTetap',
+            'jumlahRetribusiTidakTetap',
+            'jumlahPetugas',
+            'role'
+        ));
     }
 
     public function warga()

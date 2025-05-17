@@ -25,9 +25,9 @@ class TambahWargaSeeder extends Seeder
         $dataWarga = [];
 
         // Buat 10 data warga
-        for ($i = 1; $i <= 10; $i++) {
+        for ($i = 1; $i <= 30; $i++) {
             $kel = $kelurahan->random();
-            $jenis_retribusi = $i <= 5 ? 'tetap' : 'tidak_tetap'; //sesuaikan jumlah jenis_layanan tidak_tetap
+            $jenis_retribusi = $i <= 15 ? 'tetap' : 'tidak_tetap'; //sesuaikan jumlah jenis_layanan tidak_tetap
 
             // Filter jenis_layanan agar tidak termasuk id 4 (tidak_tetap)
             $jenis_layanan_terfilter = $jenis_layanan->filter(function ($item) {

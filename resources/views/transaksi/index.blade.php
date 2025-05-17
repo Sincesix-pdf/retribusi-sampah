@@ -51,7 +51,7 @@
 
                 {{-- Statistik Pembayaran --}}
                 <div class="row mb-4">
-                    <div class="col-md-3">
+                    <div class="col-12 col-sm-6 col-md-3 mb-3">
                         <div class="card text-white card-custom shadow-sm" style="background-color: #4cae4f;">
                             <div class="card-body">
                                 <h5 class="card-title">Sudah Bayar</h5>
@@ -60,7 +60,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-12 col-sm-6 col-md-3 mb-3">
                         <div class="card text-white card-custom shadow-sm" style="background-color: #F5A623;">
                             <div class="card-body">
                                 <h5 class="card-title">Belum Bayar</h5>
@@ -69,7 +69,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-12 col-sm-6 col-md-3 mb-3">
                         <div class="card text-white card-custom shadow-sm" style="background-color: #8bc34b;">
                             <div class="card-body">
                                 <h5 class="card-title">Total Pendapatan</h5>
@@ -79,7 +79,6 @@
                         </div>
                     </div>
                 </div>
-
 
                 {{-- Tab Navigasi Transaksi --}}
                 <ul class="nav nav-tabs custom-tabs" id="transaksiTabs" role="tablist">
@@ -101,13 +100,13 @@
                     <!-- Transaksi  Tetap -->
                     <div class="tab-pane fade show active" id="transaksi-tetap" role="tabpanel">
                         <div class="card custom-card">
-                            <div class="card-header bg-success text-white">
+                            <div class="card-header bg-primary text-white">
                                 <h4 class="mb-0">Transaksi Tetap</h4>
                             </div>
                             <div class="card-body p-0">
                                 <div class="table-responsive custom-table-container">
                                     <table class="table table-striped table-hover table-bordered mb-0 custom-table">
-                                        <thead class="table-success sticky-top">
+                                        <thead class="table-primary">
                                             <tr>
                                                 <th>No</th>
                                                 <th>Order ID</th>
@@ -172,7 +171,7 @@
                             <div class="card-body p-0">
                                 <div class="table-responsive custom-table-container">
                                     <table class="table table-striped table-hover table-bordered mb-0 custom-table">
-                                        <thead class="table-success sticky-top">
+                                        <thead class="table-success">
                                             <tr>
                                                 <th>No</th>
                                                 <th>Order ID</th>

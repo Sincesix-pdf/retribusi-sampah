@@ -54,7 +54,7 @@
                                 <div class="table-responsive custom-table-container">
                                     <table id="tabel-diajukan"
                                         class="table table-hover table-striped table-bordered table w-100">
-                                        <thead class="table-warning sticky-top">
+                                        <thead class="table-warning">
                                             <tr>
                                                 <th>No</th>
                                                 <th>NIK</th>

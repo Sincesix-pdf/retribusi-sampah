@@ -18,6 +18,9 @@
         <button class="toggler sidebar-toggler">
             <span class="material-symbols-rounded">chevron_left</span>
         </button>
+        <button class="toggler menu-toggler">
+            <span class="material-symbols-rounded">menu</span>
+        </button>
     </header>
 
     <nav class="sidebar-nav">
@@ -49,8 +52,10 @@
                         <span class="dropdown-icon material-symbols-rounded">keyboard_arrow_down</span>
                     </a>
                     <ul class="dropdown-menu1">
-                        <li class="nav-item"><a href="{{ route('tagihan.index.tetap') }}" class="nav-link dropdown-link1">Tagihan Tetap</a></li>
-                        <li class="nav-item"><a href="{{ route('tagihan.index.tidak_tetap') }}" class="nav-link dropdown-link1">Tagihan Tidak Tetap</a></li>
+                        <li class="nav-item"><a href="{{ route('tagihan.index.tetap') }}"
+                                class="nav-link dropdown-link1">Tagihan Tetap</a></li>
+                        <li class="nav-item"><a href="{{ route('tagihan.index.tidak_tetap') }}"
+                                class="nav-link dropdown-link1">Tagihan Tidak Tetap</a></li>
                     </ul>
                 </li>
                 <span class="nav-tooltip">Kelola Tagihan</span>
@@ -117,7 +122,8 @@
         <!-- Logout -->
         <ul class="nav-list secondary-nav">
             <li class="nav-item">
-                <a href="#" class="nav-link" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                <a href="#" class="nav-link"
+                    onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                     <span class="material-symbols-rounded">logout</span>
                     <span class="nav-label">Logout</span>
                 </a>

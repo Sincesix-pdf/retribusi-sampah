@@ -12,12 +12,14 @@ return new class extends Migration {
     {
         Schema::create('log_aktivitas', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('pengguna_id')->constrained('pengguna')->onDelete('cascade');
+            $table->foreignId('pengguna_id')
+                ->nullable()
+                ->constrained('pengguna')
+                ->onDelete('cascade');
             $table->string('aksi');
             $table->text('deskripsi')->nullable();
             $table->timestamps();
         });
-
     }
 
     /**

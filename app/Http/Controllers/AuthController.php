@@ -49,6 +49,9 @@ class AuthController extends Controller
             }
         }
 
+        // Log jika gagal login
+        logAktivitas('Login ke sistem', 'Gagal login dengan email: ' . $request->email);
+
         // Jika gagal, kembalikan ke halaman login dengan error
         return redirect()->back()->with('error', 'Email atau password salah.');
     }

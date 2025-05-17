@@ -43,6 +43,7 @@ body {
     color: rgb(0, 0, 0);
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
     margin-bottom: 30px;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 
 .dashboard-header-card h1 {
@@ -109,4 +110,41 @@ body {
     filter: brightness(0.9);
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+@media (max-width: 768px) {
+    
+
+    .custom-card {
+        font-size: 0.85rem;
+    }
+
+    .custom-table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .custom-table-container table {
+        min-width: 200px;
+        width: 100%;
+    }
+
+    .custom-table-container thead th {
+        font-size: 0.8rem !important;
+        white-space: nowrap;
+    }
+
+    .custom-table-container tbody td {
+        font-size: 0.8rem !important;
+        white-space: nowrap;
+    }
+
+    .btn-sm {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+    }
+
+    .card-header h5 {
+        font-size: 1rem;
+    }
 }

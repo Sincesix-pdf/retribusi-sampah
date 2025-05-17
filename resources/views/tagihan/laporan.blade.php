@@ -138,7 +138,7 @@
                             <div class="card-body p-0">
                                 <div class="table-responsive custom-table-container">
                                     <table class="table table-striped table-hover table-bordered mb-0 custom-table">
-                                        <thead class="table-success sticky-top">
+                                        <thead class="table-success">
                                             <tr>
                                                 <th>No</th>
                                                 <th>NIK</th>

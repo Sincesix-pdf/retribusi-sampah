@@ -10,9 +10,9 @@
                     <div class="alert alert-warning">Belum ada transaksi.</div>
                 @else
                     <div class="card-body p-2">
-                        <div class="tabel-responsive custom-table-container">
+                        <div class="table-responsive custom-table-container">
                             <table id="tabel-warga" class="table table-hover table-striped table-bordered table w-100">
-                                <thead>
+                                <thead class="table-primary">
                                     <tr>
                                         <th>No</th>
                                         <th>Order ID</th>

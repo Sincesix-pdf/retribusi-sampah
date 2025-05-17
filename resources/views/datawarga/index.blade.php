@@ -50,7 +50,7 @@
                 <!-- Tabel Data -->
                 <div style="overflow-x: auto; width: 100%;" class="table-responsive custom-table-container">
                     <table id="tabel-warga" class="table table-striped table-sm table-hover table-bordered w-100">
-                        <thead class="table-dark">
+                        <thead class="table-primary">
                             <tr>
                                 <th>NIK</th>
                                 <th>Nama</th>

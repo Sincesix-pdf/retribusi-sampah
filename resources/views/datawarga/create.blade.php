@@ -95,6 +95,7 @@
                             </option>
                         @endforeach
                     </select>
+                    <small id="jenisLayananError" class="text-danger d-none">Jenis layanan tidak sesuai dengan jenis retribusi.</small>
 
                     <div class="mt-3">
                         <button type="submit" class="btn btn-primary">Simpan</button>

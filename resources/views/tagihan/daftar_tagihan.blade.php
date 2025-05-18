@@ -15,12 +15,14 @@
                 <!-- Tabs Navigation -->
                 <ul class="nav nav-tabs custom-tabs" id="tagihanTabs" role="tablist">
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="tagihan-tetap-tab" data-bs-toggle="tab" data-bs-target="#tagihan-tetap" type="button" role="tab">
+                        <button class="nav-link active" id="tagihan-tetap-tab" data-bs-toggle="tab"
+                            data-bs-target="#tagihan-tetap" type="button" role="tab">
                             Tagihan Tetap
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="tagihan-tidak-tetap-tab" data-bs-toggle="tab" data-bs-target="#tagihan-tidak-tetap" type="button" role="tab">
+                        <button class="nav-link" id="tagihan-tidak-tetap-tab" data-bs-toggle="tab"
+                            data-bs-target="#tagihan-tidak-tetap" type="button" role="tab">
                             Tagihan Tidak Tetap
                         </button>
                     </li>
@@ -35,10 +37,11 @@
                                 <div class="card-header bg-primary text-white">
                                     <h4 class="mb-0">Tagihan Tetap</h4>
                                 </div>
-                                <div class="card-body p-0">
+                                <div class="card-body p-2">
                                     <div class="table-responsive custom-table-container">
-                                        <table class="table table-striped table-hover table-bordered mb-0 custom-table">
-                                            <thead class="table-primary sticky-top">
+                                        <table id="tabel-warga"
+                                            class="table table-striped table-sm table-hover table-bordered w-100">
+                                            <thead class="table-primary">
                                                 <tr>
                                                     <th><input type="checkbox" id="checkAll" data-target="tetap"></th>
                                                     <th>No</th>
@@ -52,13 +55,16 @@
                                             <tbody>
                                                 @forelse ($tagihanTetap as $t)
                                                     <tr>
-                                                        <td><input type="checkbox" name="tagihan_id[]" value="{{ $t->id }}" data-group="tetap"></td>
+                                                        <td><input type="checkbox" name="tagihan_id[]" value="{{ $t->id }}"
+                                                                data-group="tetap"></td>
                                                         <td>{{ $loop->iteration }}</td>
                                                         <td>{{ $t->NIK }}</td>
                                                         <td>{{ $t->warga->pengguna->nama }}</td>
-                                                        <td>{{ date('F', mktime(0, 0, 0, $t->bulan, 1)) }} {{ $t->tahun }}</td>
+                                                        <td>{{ date('F', mktime(0, 0, 0, $t->bulan, 1)) }} {{ $t->tahun }}
+                                                        </td>
                                                         <td>Rp{{ number_format($t->tarif) }}</td>
-                                                        <td><span class="badge bg-warning">{{ ucfirst($t->status) }}</span></td>
+                                                        <td><span class="badge bg-warning">{{ ucfirst($t->status) }}</span>
+                                                        </td>
                                                     </tr>
                                                 @empty
                                                     <tr>
@@ -70,8 +76,8 @@
                                     </div>
                                 </div>
                             </div>
-                            <button type="submit" class="btn btn-primary mt-3">
-                                <i class="fas fa-check"></i> Setujui Tagihan Tetap
+                            <button type="submit" class="btn btn-primary mt-3" id="setujuiTetap>
+                                <i class=" fas fa-check"></i> Setujui Tagihan Tetap
                             </button>
                         </form>
                     </div>
@@ -81,15 +87,17 @@
                         <form action="{{ route('kepala_dinas.tagihan.setujui') }}" method="POST">
                             @csrf
                             <div class="card custom-card">
-                                <div class="card-header bg-success text-white">
+                                <div class="card-header bg-primary text-white">
                                     <h4 class="mb-0">Tagihan Tidak Tetap</h4>
                                 </div>
-                                <div class="card-body p-0">
+                                <div class="card-body p-2">
                                     <div class="table-responsive custom-table-container">
-                                        <table class="table table-striped table-hover table-bordered mb-0 custom-table">
-                                            <thead class="table-success sticky-top">
+                                        <table id=""
+                                            class="table table-striped table-hover table-bordered mb-0 custom-table">
+                                            <thead class="table-success">
                                                 <tr>
-                                                    <th><input type="checkbox" id="checkAll" data-target="tidak-tetap"></th>
+                                                    <th><input type="checkbox" id="checkAll" data-target="tidak-tetap">
+                                                    </th>
                                                     <th>No</th>
                                                     <th>NIK</th>
                                                     <th>Nama</th>
@@ -103,7 +111,8 @@
                                             <tbody>
                                                 @forelse ($tagihanTidakTetap as $t)
                                                     <tr>
-                                                        <td><input type="checkbox" name="tagihan_id[]" value="{{ $t->id }}" data-group="tidak-tetap"></td>
+                                                        <td><input type="checkbox" name="tagihan_id[]" value="{{ $t->id }}"
+                                                                data-group="tidak-tetap"></td>
                                                         <td>{{ $loop->iteration }}</td>
                                                         <td>{{ $t->NIK }}</td>
                                                         <td>{{ $t->warga->pengguna->nama }}</td>
@@ -111,11 +120,13 @@
                                                         <td>{{ $t->volume }}</td>
                                                         <td>{{ $t->total_tagihan }}</td>
                                                         <td>{{ $t->tanggal_tagihan }}</td>
-                                                        <td><span class="badge bg-success">{{ ucfirst($t->status) }}</span></td>
+                                                        <td><span class="badge bg-warning">{{ ucfirst($t->status) }}</span>
+                                                        </td>
                                                     </tr>
                                                 @empty
                                                     <tr>
-                                                        <td colspan="8" class="text-center">Tidak ada tagihan tidak tetap.</td>
+                                                        <td colspan="8" class="text-center">Tidak ada tagihan tidak tetap.
+                                                        </td>
                                                     </tr>
                                                 @endforelse
                                             </tbody>
@@ -123,7 +134,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <button type="submit" class="btn btn-success mt-3">
+                            <button type="submit" class="btn btn-success mt-3" id="setujuiTidakTetap">
                                 <i class="fas fa-check"></i> Setujui Tagihan Tidak Tetap
                             </button>
                         </form>

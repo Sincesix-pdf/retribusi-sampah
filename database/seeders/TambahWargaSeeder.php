@@ -39,7 +39,7 @@ class TambahWargaSeeder extends Seeder
 
             // Insert ke tabel pengguna dulu
             $penggunaId = DB::table('pengguna')->insertGetId([
-                'nama' => $faker->name,
+                'nama' => $faker->firstName . ' ' . $faker->lastName,
                 'email' => "warga{$i}@test.com",
                 'password' => Hash::make('warga123'),
                 'alamat' => "Jl. " . $faker->streetName . " Rt{$i}, Rw{$i}",

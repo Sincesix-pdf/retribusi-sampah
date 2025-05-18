@@ -57,7 +57,6 @@ class PenggunaSeeder extends Seeder
             ],
         ];
 
-        // Filter out users with null role_id (jika role tidak ditemukan)
         $users = array_filter($users, fn($user) => !is_null($user['role_id']));
 
         // Masukkan data ke tabel pengguna

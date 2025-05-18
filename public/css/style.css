@@ -113,7 +113,9 @@ body {
 }
 
 @media (max-width: 768px) {
-    
+    .cards{
+        padding-bottom: 10px;
+    }
 
     .custom-card {
         font-size: 0.85rem;
@@ -146,5 +148,30 @@ body {
 
     .card-header h5 {
         font-size: 1rem;
+    }
+    /* tagihan tidak tetap */
+    .btn-tambah-tagihan {
+        font-size: 0.8rem !important;
+    }
+    .warga-select {
+        font-size: 0.7rem !important;
+    }
+
+    /* paginate */
+    div.dataTables_wrapper {
+        padding: 0 5px;
+    }
+
+    /* Tampilkan ... data */
+    div.dataTables_length {
+        text-align: left !important;
+        margin-bottom: 10px;
+        padding-left: 0 !important;
+    }
+
+    /* Cari */
+    div.dataTables_filter {
+        text-align: left !important;
+        padding-left: 0 !important;
     }
 }

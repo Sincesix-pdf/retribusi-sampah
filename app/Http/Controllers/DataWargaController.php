@@ -59,7 +59,14 @@ class DataWargaController extends Controller
             'tanggal_lahir' => 'required|date',
             'NIK' => 'required|digits:16|numeric|unique:warga,NIK',
             'jenis_retribusi' => 'required',
-            'jenis_layanan_id' => 'required',
+            'jenis_layanan_id' => [
+                'required',
+                function ($attribute, $value, $fail) use ($request) {
+                    if ($request->jenis_retribusi === 'tetap' && $value == 4) {
+                        $fail('Jenis layanan tidak sesuai dengan jenis retribusi.');
+                    }
+                },
+            ],
             'kecamatan_id' => 'required|exists:kecamatan,id',
             'kelurahan_id' => 'required|exists:kelurahan,id',
         ]);
@@ -113,7 +120,14 @@ class DataWargaController extends Controller
             'jenis_kelamin' => 'required|in:Laki-laki,Perempuan',
             'tanggal_lahir' => 'required|date',
             'jenis_retribusi' => 'required',
-            'jenis_layanan_id' => 'required',
+            'jenis_layanan_id' => [
+                'required',
+                function ($attribute, $value, $fail) use ($request) {
+                    if ($request->jenis_retribusi === 'tetap' && $value == 4) {
+                        $fail('Jenis layanan tidak sesuai dengan jenis retribusi.');
+                    }
+                },
+            ],
         ]);
 
         $pengguna->update([

@@ -79,7 +79,7 @@
                             <div class="card-body p-2">
                                 <div class="table-responsive custom-table-container">
                                     <table id="tabel-diajukan"
-                                        class="table table-hover table-striped table-bordered table w-100">
+                                        class="table table-striped table-sm table-hover table-bordered w-100">
                                         <thead class="table-warning">
                                             <tr>
                                                 <th>No</th>

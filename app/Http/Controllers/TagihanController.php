@@ -267,13 +267,13 @@ class TagihanController extends Controller
         $tagihanTetap = Tagihan::where('status', 'diajukan')
             ->where('jenis_retribusi', 'tetap')
             ->with('warga.pengguna')
-            ->get();
+            ->paginate(10);
 
         // Ambil data tagihan tidak tetap yang diajukan
         $tagihanTidakTetap = Tagihan::where('status', 'diajukan')
             ->where('jenis_retribusi', 'tidak_tetap')
             ->with('warga.pengguna')
-            ->get();
+            ->paginate(10);
 
         return view('tagihan.daftar_tagihan', compact(
             'tagihanTetap',
@@ -324,7 +324,7 @@ class TagihanController extends Controller
                 $pesan = "Halo *$nama* *$NIK*,\n\nTagihan Anda sebesar *Rp$total_tagihan_rp* berdasarkan pemakaian *$volume kubik* pada tanggal *$tanggal_tagihan*.\n\nSilakan lakukan pembayaran melalui link berikut:\n$snapUrl\n\nTerima kasih.";
             }
 
-            // Kirim pesan ke WhatsApp menggunakan Fonnte
+            // Kirim pesan ke WhatsApp melalui Fonnte
             Http::withHeaders([
                 'Authorization' => $apiKey,
             ])->post('https://api.fonnte.com/send', [
@@ -332,10 +332,12 @@ class TagihanController extends Controller
                         'message' => $pesan,
                     ]);
         }
+        // delay untuk API WA
+        sleep(5);
 
         logAktivitas('Setujui Tagihan', "Menyetujui tagihan untuk NIK $NIK dengan order id: {$transaksi->order_id}");
 
-        return redirect()->back()->with('success', 'Tagihan telah disetujui dan Snap URL dikirim ke warga melalui WhatsApp.');
+        return redirect()->back()->with('success', 'Tagihan telah disetujui dan dikirim ke warga melalui WhatsApp.');
     }
 
     // Laporan tagihan (role keuangan)

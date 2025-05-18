@@ -9,13 +9,14 @@
                     @csrf
 
                     <label for="wargaSelect">Pilih Warga</label>
-                    <select name="NIK" id="wargaSelect" class="form-control">
+                    <select name="NIK" id="wargaSelect" class="form-control warga-select">
                         @foreach($warga as $w)
                             <option value="{{ $w->NIK }}">
                                 {{ $w->NIK }} - {{ $w->pengguna->nama }}
                             </option>
                         @endforeach
                     </select>
+
 
                     <label for="jenisTarifSelect">Pilih Jenis Tarif</label>
                     <select name="jenis_tarif" id="jenisTarifSelect" class="form-control">

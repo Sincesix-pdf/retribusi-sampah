@@ -70,11 +70,20 @@
                         </div>
                     </div>
                     <div class="col-12 col-sm-6 col-md-3 mb-3">
+                        <div class="card text-white card-custom shadow-sm bg-danger">
+                            <div class="card-body">
+                                <h5 class="card-title">Menunggak</h5>
+                                <h2>{{ $menunggak }} Warga</h2>
+                                <p class="mb-0">Status: Menunggak</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-sm-6 col-md-3 mb-3">
                         <div class="card text-white card-custom shadow-sm" style="background-color: #8bc34b;">
                             <div class="card-body">
                                 <h5 class="card-title">Total Pendapatan</h5>
                                 <h2>Rp{{ number_format($totalPembayaran, 0, ',', '.') }}</h2>
-                                <p class="mb-0">Dari {{ $totalTransaksi }} Transaksi</p>
+                                <p class="mb-0">Dari {{ $totalTransaksi }} Pembayaran</p>
                             </div>
                         </div>
                     </div>
@@ -103,9 +112,9 @@
                             <div class="card-header bg-primary text-white">
                                 <h4 class="mb-0">Transaksi Tetap</h4>
                             </div>
-                            <div class="card-body p-0">
+                            <div class="card-body p-2">
                                 <div class="table-responsive custom-table-container">
-                                    <table class="table table-striped table-hover table-bordered mb-0 custom-table">
+                                    <table id="tabel-diajukan" class="table table-striped table-hover table-bordered mb-0 custom-table">
                                         <thead class="table-primary">
                                             <tr>
                                                 <th>No</th>
@@ -168,9 +177,9 @@
                             <div class="card-header bg-success text-white">
                                 <h4 class="mb-0">Transaksi Tidak Tetap</h4>
                             </div>
-                            <div class="card-body p-0">
+                            <div class="card-body p-2">
                                 <div class="table-responsive custom-table-container">
-                                    <table class="table table-striped table-hover table-bordered mb-0 custom-table">
+                                    <table id="tabel-disetujui" class="table table-striped table-hover table-bordered mb-0 custom-table">
                                         <thead class="table-success">
                                             <tr>
                                                 <th>No</th>

@@ -68,9 +68,9 @@
                             <div class="card-header bg-primary text-white">
                                 <h4 class="mb-0">Tagihan Tetap</h4>
                             </div>
-                            <div class="card-body p-0">
+                            <div class="card-body p-2">
                                 <div class="table-responsive custom-table-container">
-                                    <table class="table table-striped table-hover table-bordered mb-0 custom-table">
+                                    <table id="tabel-diajukan" class="table table-striped table-hover table-bordered mb-0 custom-table">
                                         <thead class="table-primary sticky-top">
                                             <tr>
                                                 <th>No</th>
@@ -135,9 +135,9 @@
                             <div class="card-header bg-success text-white">
                                 <h4 class="mb-0">Tagihan Tidak Tetap</h4>
                             </div>
-                            <div class="card-body p-0">
+                            <div class="card-body p-2">
                                 <div class="table-responsive custom-table-container">
-                                    <table class="table table-striped table-hover table-bordered mb-0 custom-table">
+                                    <table id="tabel-disetujui" class="table table-striped table-hover table-bordered mb-0 custom-table">
                                         <thead class="table-success">
                                             <tr>
                                                 <th>No</th>

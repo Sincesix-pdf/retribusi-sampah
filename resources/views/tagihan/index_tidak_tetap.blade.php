@@ -27,10 +27,11 @@
                     </div>
                 </form>
                 <div class="d-inline-block me-3">
-                    <a class="btn btn-success mb-3" href="{{ route('tagihan.create.tidak_tetap') }}">
+                    <a class="btn btn-success mb-3 btn-tambah-tagihan" href="{{ route('tagihan.create.tidak_tetap') }}">
                         <i class="fas fa-plus"></i> Tambah Tagihan Tidak Tetap
                     </a>
                 </div>
+
                 <!-- Tabs Navigation -->
                 <ul class="nav nav-tabs custom-tabs" id="tagihanTabs" role="tablist">
                     <li class="nav-item" role="presentation">

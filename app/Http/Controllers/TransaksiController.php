@@ -71,7 +71,7 @@ class TransaksiController extends Controller
         $belumBayar = $transaksi->where('status', 'pending')->count();
         $menunggak = $transaksi->where('status_menunggak', true)->count();
         $totalPembayaran = $transaksi->where('status', 'settlement')->sum('amount');
-        $totalTransaksi = $transaksi->count();
+        $totalTransaksi = Transaksi::where('status', 'settlement')->count();
 
         logAktivitas('Melihat daftar transaksi');
 

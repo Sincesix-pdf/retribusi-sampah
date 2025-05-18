@@ -119,20 +119,36 @@ document.addEventListener("DOMContentLoaded", function () {
     // ==================== Jenis Retribusi Dropdown ====================
     const jenisRetribusiSelect = document.getElementById("jenis_retribusi");
     const jenisLayananSelect = document.getElementById("jenis_layanan_id");
+    const jenisLayananError = document.getElementById("jenisLayananError");
 
     function updateJenisLayanan() {
-        if (!jenisRetribusiSelect || !jenisLayananSelect) return;
+        if (!jenisRetribusiSelect || !jenisLayananSelect || !jenisLayananError)
+            return;
 
-        if (jenisRetribusiSelect.value === "tidak_tetap") {
-            jenisLayananSelect.value = 4;
+        const jenisRetribusi = jenisRetribusiSelect.value;
+        const jenisLayanan = jenisLayananSelect.value;
+
+        // Misal ID 4 adalah jenis layanan tidak tetap
+        const layananTidakTetapId = "4";
+
+        if (jenisRetribusi === "tidak_tetap") {
+            jenisLayananSelect.value = layananTidakTetapId;
             jenisLayananSelect.setAttribute("readonly", "readonly");
+            jenisLayananError.classList.add("d-none");
         } else {
             jenisLayananSelect.removeAttribute("readonly");
+
+            if (jenisLayanan === layananTidakTetapId) {
+                jenisLayananError.classList.remove("d-none");
+            } else {
+                jenisLayananError.classList.add("d-none");
+            }
         }
     }
 
     if (jenisRetribusiSelect) {
         jenisRetribusiSelect.addEventListener("change", updateJenisLayanan);
+        jenisLayananSelect.addEventListener("change", updateJenisLayanan);
         updateJenisLayanan();
     }
 
@@ -174,3 +190,4 @@ document.querySelectorAll("#checkAll").forEach((checkAllBox) => {
         });
     });
 });
+

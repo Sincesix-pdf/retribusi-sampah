@@ -33,7 +33,6 @@ body {
     margin-left: 85px;
 }
 
-
 /* Dashboard Petugas */
 .dashboard-header-card {
     background: white;
@@ -90,8 +89,6 @@ body {
     color: #000000;
 }
 
-
-
 /* index */
 .table tbody tr td {
     font-size: 17px; /* Sesuaikan ukuran font */
@@ -113,7 +110,7 @@ body {
 }
 
 @media (max-width: 768px) {
-    .cards{
+    .cards {
         padding-bottom: 10px;
     }
 
@@ -162,16 +159,59 @@ body {
         padding: 0 5px;
     }
 
-    /* Tampilkan ... data */
     div.dataTables_length {
         text-align: left !important;
         margin-bottom: 10px;
         padding-left: 0 !important;
     }
 
-    /* Cari */
     div.dataTables_filter {
         text-align: left !important;
         padding-left: 0 !important;
+    }
+
+    /* History Warga */
+    .transaksi-card {
+        position: relative;
+        background-color: #fff;
+        padding-bottom: 3rem;
+    }
+
+    .transaksi-card .status-badge {
+        position: absolute;
+        top: 10px;
+        right: 1px;
+        font-size: 0.75rem;
+        padding: 6px 12px;
+        z-index: 1;
+    }
+
+    .transaksi-card .bayar-btn {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        font-size: 0.75rem;
+        padding: 6px 12px;
+        z-index: 1;
+    }
+
+    .transaksi-card .order-id {
+        font-weight: bold;
+        font-size: 18px;
+    }
+
+    .transaksi-card .header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .transaksi-card .amount {
+        font-size: 15px;
+    }
+
+    .transaksi-card .periode {
+        font-size: 15px;
+        color: #6c757d;
     }
 }

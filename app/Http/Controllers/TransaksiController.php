@@ -176,6 +176,7 @@ class TransaksiController extends Controller
         })
             ->orderBy('created_at', 'desc')
             ->get()
+            ->sortByDesc(fn($t) => $t->status == 'pending')
             ->map(function ($t) {
                 $t->status_menunggak = $t->created_at->addDays(30)->lt(now()) && $t->status != 'settlement';
                 return $t;

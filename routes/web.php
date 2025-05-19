@@ -43,7 +43,6 @@ Route::middleware(['auth', 'role:keuangan'])->group(function () {
     Route::get('/keuangan/transaksi', [TransaksiController::class, 'index'])->name('transaksi.index');
     Route::get('/keuangan/laporan-keuangan', [TransaksiController::class, 'laporan'])->name('transaksi.laporan');
     Route::get('/keuangan/transaksi/laporan-keuangan/cetak-laporan', [TransaksiController::class, 'cetakLaporanTransaksi'])->name('transaksi.cetak');
-    Route::post('/keuangan/transaksi/{id}/sendReminder', [TransaksiController::class, 'sendReminder'])->name('transaksi.sendReminder');
     Route::get('/keuangan/laporan-tagihan', [TagihanController::class, 'laporanTagihan'])->name('laporan.tagihan');
     Route::get('/keuangan/laporan-tagihan/cetak', [TagihanController::class, 'cetakLaporanTagihan'])->name('laporan.cetak');
 });
@@ -95,7 +94,11 @@ Route::middleware(['auth', 'role:warga'])->group(function () {
     Route::get('/warga/dashboard', [AuthController::class, 'warga'])->name('warga.index');
     Route::get('/warga/riwayat-transaksi', [TransaksiController::class, 'history'])->name('transaksi.history');
     Route::post('/warga/transaksi/cek-status/{order_id}', [TransaksiController::class, 'cekStatus'])->name('transaksi.cekStatus');
-    Route::post('/warga/transaksi/{id}/sendReminder', [TransaksiController::class, 'sendReminder'])->name('transaksi.sendReminder');
+});
+
+// Akses button pengingat
+Route::middleware(['auth', 'role:keuangan,warga'])->group(function () {
+    Route::post('/transaksi/{id}/sendReminder', [TransaksiController::class, 'sendReminder'])->name('transaksi.sendReminder');
 });
 
 

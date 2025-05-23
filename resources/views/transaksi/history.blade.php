@@ -8,6 +8,21 @@
                 @if ($transaksi->isEmpty())
                     <div class="alert alert-warning">Belum ada transaksi.</div>
                 @else
+                    @if ($jumlahTunggakan > 0)
+                        <div class="alert alert-danger">
+                            <strong>Perhatian!</strong> Anda memiliki {{ $jumlahTunggakan }} bulan tunggakan
+                            dengan total <strong>Rp{{ number_format($totalTunggakan, 0, ',', '.') }}</strong>. Segera melakukan pembayaran. 
+                            <a href="#"
+                                onclick="event.preventDefault(); document.getElementById('rincian-tunggakan').classList.toggle('d-none');"
+                                style="text-decoration: underline;">lihat rincian</a>
+                            <ul id="rincian-tunggakan" class="mt-2 d-none mb-0">
+                                @foreach ($rincianTunggakan as $r)
+                                    <li>{{ $r }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
                     {{-- Tabel Desktop --}}
                     <div class="table-responsive d-none d-md-block">
                         <table class="table table-hover table-striped table-bordered w-100">
@@ -42,16 +57,22 @@
                                         <td>{{ $t->updated_at->format('d-m-Y H:i') }}</td>
                                         <td>
                                             @if ($t->status == 'pending')
-                                                <form action="{{ route('transaksi.sendReminder', $t->id) }}" method="POST"
+                                                <form action="{{ route('transaksi.bayarLangsung', $t->id) }}" method="POST"
                                                     class="d-inline">
                                                     @csrf
                                                     <button type="submit" class="btn btn-sm btn-success">
                                                         <i class="fa-solid fa-dollar-sign"></i> Bayar
                                                     </button>
                                                 </form>
+                                            @elseif ($t->status == 'settlement')
+                                                <a href="{{ route('transaksi.cetakBukti', $t->id) }}" class="btn btn-sm btn-primary"
+                                                    target="_blank">
+                                                    <i class="fa-solid fa-print"></i> Nota
+                                                </a>
                                             @else
                                                 <span class="text-muted">-</span>
                                             @endif
+
                                         </td>
                                     </tr>
                                 @endforeach
@@ -84,12 +105,24 @@
                                     {{ date('F', mktime(0, 0, 0, $t->tagihan->bulan, 1)) }} {{ $t->tagihan->tahun }}
                                 </div>
 
-                                @if ($t->status == 'pending')
-                                    <form action="{{ route('transaksi.sendReminder', $t->id) }}" method="POST" class="m-0">
-                                        @csrf
-                                        <button type="submit" class="btn btn-success bayar-btn">Bayar Sekarang</button>
-                                    </form>
-                                @endif
+                                <div class="bayar-btn">
+                                    @if ($t->status == 'pending')
+                                        <form action="{{ route('transaksi.bayarLangsung', $t->id) }}" method="POST"
+                                            class="d-inline">
+                                            @csrf
+                                            <button type="submit" class="btn btn-sm btn-success">
+                                                <i class="fa-solid fa-dollar-sign"></i> Bayar
+                                            </button>
+                                        </form>
+                                    @elseif ($t->status == 'settlement')
+                                        <a href="{{ route('transaksi.cetakBukti', $t->id) }}" class="btn btn-sm btn-primary"
+                                            target="_blank">
+                                            <i class="fa-solid fa-print"></i> Nota
+                                        </a>
+                                    @else
+                                        <span class="text-muted">-</span>
+                                    @endif
+                                </div>
                             </div>
                         @endforeach
                     </div>

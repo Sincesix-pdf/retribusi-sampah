@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ProfilController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
@@ -94,6 +95,11 @@ Route::middleware(['auth', 'role:warga'])->group(function () {
     Route::get('/warga/dashboard', [AuthController::class, 'warga'])->name('warga.index');
     Route::get('/warga/riwayat-transaksi', [TransaksiController::class, 'history'])->name('transaksi.history');
     Route::post('/warga/transaksi/cek-status/{order_id}', [TransaksiController::class, 'cekStatus'])->name('transaksi.cekStatus');
+    Route::get('/warga/profil', [ProfilController::class, 'index'])->name('warga.profil');
+    Route::post('/warga/profil/password', [ProfilController::class, 'updatePassword'])->name('warga.updatePassword');
+    Route::post('/transaksi/bayar/{id}', [TransaksiController::class, 'bayarLangsung'])->name('transaksi.bayarLangsung');
+    Route::get('/transaksi/{id}/bukti', [TransaksiController::class, 'cetakBukti'])->name('transaksi.cetakBukti');
+    Route::post('/transaksi/bayar-semua', [TransaksiController::class, 'bayarSemua'])->name('transaksi.bayarSemua');
 });
 
 // Akses button pengingat

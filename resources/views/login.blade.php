@@ -55,15 +55,6 @@
                   <input type="password" name="password" class="form-control" id="password" required>
                 </div>
 
-                <!-- <div class="d-flex mb-5 align-items-center">
-                  <label class="control control--checkbox mb-0">
-                    <span class="caption">Ingat saya</span>
-                    <input type="checkbox" name="remember"/>
-                    <div class="control__indicator"></div>
-                  </label>
-                  <span class="ml-auto"><a href="#" class="forgot-pass">Lupa Password?</a></span> 
-                </div> -->
-
                 <input type="submit" value="Login" class="btn btn-block btn-login">
 
               </form>
@@ -74,10 +65,9 @@
       </div>
     </div>
   </div>
-
+  </body>
   <script src="{{ asset('js/login/jquery-3.3.1.min.js') }}"></script>
   <script src="{{ asset('js/login/popper.min.js') }}"></script>
   <script src="{{ asset('js/login/bootstrap.min.js') }}"></script>
   <script src="{{ asset('js/login/main.js') }}"></script>
-  </body>
 </html>

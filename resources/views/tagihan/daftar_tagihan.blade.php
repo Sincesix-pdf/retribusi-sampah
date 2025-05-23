@@ -43,7 +43,6 @@
                                             class="table table-striped table-sm table-hover table-bordered w-100">
                                             <thead class="table-primary">
                                                 <tr>
-                                                    <th><input type="checkbox" id="checkAll" data-target="tetap"></th>
                                                     <th>No</th>
                                                     <th>NIK</th>
                                                     <th>Nama</th>
@@ -55,8 +54,7 @@
                                             <tbody>
                                                 @forelse ($tagihanTetap as $t)
                                                     <tr>
-                                                        <td><input type="checkbox" name="tagihan_id[]" value="{{ $t->id }}"
-                                                                data-group="tetap"></td>
+                                                        <input type="hidden" name="tagihan_id[]" value="{{ $t->id }}">
                                                         <td>{{ $loop->iteration }}</td>
                                                         <td>{{ $t->NIK }}</td>
                                                         <td>{{ $t->warga->pengguna->nama }}</td>
@@ -96,7 +94,6 @@
                                             class="table table-striped table-hover table-bordered mb-0 custom-table">
                                             <thead class="table-success">
                                                 <tr>
-                                                    <th><input type="checkbox" id="checkAll" data-target="tidak-tetap">
                                                     </th>
                                                     <th>No</th>
                                                     <th>NIK</th>
@@ -111,8 +108,7 @@
                                             <tbody>
                                                 @forelse ($tagihanTidakTetap as $t)
                                                     <tr>
-                                                        <td><input type="checkbox" name="tagihan_id[]" value="{{ $t->id }}"
-                                                                data-group="tidak-tetap"></td>
+                                                        <input type="hidden" name="tagihan_id[]" value="{{ $t->id }}">
                                                         <td>{{ $loop->iteration }}</td>
                                                         <td>{{ $t->NIK }}</td>
                                                         <td>{{ $t->warga->pengguna->nama }}</td>

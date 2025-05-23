@@ -178,16 +178,4 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 });
 
-// ==================== Checkbox "Pilih Semua" ====================
-document.querySelectorAll("#checkAll").forEach((checkAllBox) => {
-    checkAllBox.addEventListener("change", function () {
-        const targetGroup = this.getAttribute("data-target");
-        const checkboxes = document.querySelectorAll(
-            `input[data-group="${targetGroup}"]`
-        );
-        checkboxes.forEach((checkbox) => {
-            checkbox.checked = this.checked;
-        });
-    });
-});
-
+// ============================ Setujui Tagihan ========================

@@ -121,6 +121,15 @@
 
         <!-- Logout -->
         <ul class="nav-list secondary-nav">
+            @if(Auth::user()->role->nama_role == 'warga')
+                <li class="nav-item">
+                    <a href="{{ route('warga.profil') }}" class="nav-link">
+                        <span class="nav-icon material-symbols-rounded">account_circle</span>
+                        <span class="nav-label">Profile</span>
+                    </a>
+                    <span class="nav-tooltip">Profile</span>
+                </li>
+            @endif
             <li class="nav-item">
                 <a href="#" class="nav-link"
                     onclick="event.preventDefault(); document.getElementById('logout-form').submit();">

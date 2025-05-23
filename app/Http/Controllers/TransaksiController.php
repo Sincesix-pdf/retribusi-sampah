@@ -182,10 +182,25 @@ class TransaksiController extends Controller
                 return $t;
             });
 
+        // Hitung akumulasi tunggakan
+        $jumlahTunggakan = $transaksi->where('status_menunggak', true)->count();
+        $totalTunggakan = $transaksi->where('status_menunggak', true)->sum('amount');
+        
+        // Rincian tunggakan
+        $rincianTunggakan = $transaksi->where('status_menunggak', true)->map(function ($t) {
+            return date('F Y', mktime(0, 0, 0, $t->tagihan->bulan, 1, $t->tagihan->tahun));
+        })->values();
+        
+
         logAktivitas('Melihat riwayat transaksi');
 
-        return view('transaksi.history', compact('transaksi'));
+        return view('transaksi.history', compact(
+            'transaksi',
+ 'jumlahTunggakan',
+        'totalTunggakan',
+        'rincianTunggakan'));
     }
+
 
     //handle status payment
     public function handleWebhook(Request $request)
@@ -335,29 +350,99 @@ Harap simpan bukti pembayaran ini.
         }
     }
 
+    // bayar di web
+    public function bayarLangsung($id)
+    {
+        $transaksi = Transaksi::with('tagihan.warga.pengguna')->findOrFail($id);
+
+        if ($transaksi->status !== 'pending') {
+            return redirect()->back()->with('error', 'Transaksi ini sudah dibayar atau gagal.');
+        }
+
+        // Jika Snap URL expired, generate ulang
+        if ($transaksi->expired_at && $transaksi->expired_at->isPast()) {
+            Config::$serverKey = env('MIDTRANS_SERVER_KEY');
+            Config::$isProduction = env('MIDTRANS_IS_PRODUCTION', false);
+            Config::$isSanitized = env('MIDTRANS_IS_SANITIZED', true);
+            Config::$is3ds = env('MIDTRANS_IS_3DS', true);
+
+            $tagihan = $transaksi->tagihan;
+            $user = $tagihan->warga->pengguna;
+
+            $newOrderId = 'INV-' . $tagihan->id . '-' . time() . rand(100, 999);
+            $grossAmount = ($tagihan->jenis_retribusi === 'tetap')
+                ? $tagihan->tarif
+                : $tagihan->tarif * $tagihan->volume;
+
+            $params = [
+                'transaction_details' => [
+                    'order_id' => $newOrderId,
+                    'gross_amount' => $grossAmount,
+                ],
+                'customer_details' => [
+                    'first_name' => $user->nama,
+                    'email' => $user->email,
+                    'phone' => $user->no_hp,
+                ],
+                'expiry' => [
+                    'start_time' => now()->format("Y-m-d H:i:s O"),
+                    'unit' => 'hour',
+                    'duration' => 24,
+                ],
+            ];
+
+            $newSnapUrl = Snap::createTransaction($params)->redirect_url;
+
+            $transaksi->update([
+                'order_id' => $newOrderId,
+                'snap_url' => $newSnapUrl,
+                'expired_at' => now()->addHours(24),
+            ]);
+        }
+
+        return redirect($transaksi->snap_url);
+    }
+    public function cetakBukti($id)
+    {
+        $transaksi = Transaksi::with('tagihan.warga')->findOrFail($id);
+
+        if ($transaksi->status !== 'settlement') {
+            return redirect()->back()->with('error', 'Bukti hanya tersedia untuk transaksi yang berhasil.');
+        }
+
+        $bulanTagihan = Carbon::create()->month((int) $transaksi->tagihan->bulan)->locale('id')->isoFormat('MMMM');
+        $tahunTagihan = $transaksi->tagihan->tahun;
+
+
+        $pdf = Pdf::loadView('transaksi.nota', compact(['transaksi', 'bulanTagihan', 'tahunTagihan']))->setPaper([0, 0, 595, 382]);
+
+        return $pdf->stream("Bukti-Pembayaran-{$transaksi->order_id}.pdf");
+    }
+
+    // grafik laporan
     public function grafikPendapatan(Request $request)
     {
         $bulan = $request->input('bulan');
         $tahun = $request->input('tahun', date('Y'));
-    
+
         // Ambil semua transaksi yang 'settlement' dan sudah dimuat relasinya
         $transaksi = Transaksi::with(['tagihan.warga'])
             ->where('status', 'settlement')
             ->whereHas('tagihan', function ($query) use ($tahun, $bulan) {
                 $query->where(function ($q) use ($tahun) {
                     $q->where('tahun', $tahun)
-                      ->orWhereYear('tanggal_tagihan', $tahun);
+                        ->orWhereYear('tanggal_tagihan', $tahun);
                 });
-    
+
                 if ($bulan) {
                     $query->where(function ($q) use ($bulan) {
                         $q->where('bulan', $bulan)
-                          ->orWhereMonth('tanggal_tagihan', $bulan);
+                            ->orWhereMonth('tanggal_tagihan', $bulan);
                     });
                 }
             })
             ->get();
-    
+
         // Pendapatan per bulan
         $perBulan = $transaksi->groupBy(function ($item) {
             $tagihan = $item->tagihan;
@@ -371,14 +456,14 @@ Harap simpan bukti pembayaran ini.
         })->map(function ($group) {
             return $group->sum('amount');
         });
-    
+
         // Pendapatan per jenis retribusi
         $perJenis = $transaksi->groupBy(function ($item) {
             return $item->tagihan->jenis_retribusi;
         })->map(function ($group) {
             return $group->sum('amount');
         });
-    
+
         // Jumlah warga membayar per bulan
         $perWargaBayar = $transaksi->groupBy(function ($item) {
             $tagihan = $item->tagihan;
@@ -392,13 +477,13 @@ Harap simpan bukti pembayaran ini.
         })->map(function ($group) {
             return $group->count(); // Jumlah transaksi
         });
-    
+
         return view('grafik.grafik_pendapatan', compact(
-        'perBulan',
-        'perJenis',
-        'perWargaBayar'));
+            'perBulan',
+            'perJenis',
+            'perWargaBayar'
+        ));
     }
-    
     public function grafikPersebaran(Request $request)
     {
         $kecamatanId = $request->input('kecamatan', null);
@@ -419,9 +504,10 @@ Harap simpan bukti pembayaran ini.
 
         return view('grafik.grafik_persebaran', compact(
             'kelurahans',
-             'kecamatanId',
-              'namaKecamatan',
-               'daftarKecamatan'));
+            'kecamatanId',
+            'namaKecamatan',
+            'daftarKecamatan'
+        ));
     }
 }
 

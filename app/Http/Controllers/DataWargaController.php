@@ -105,50 +105,50 @@ class DataWargaController extends Controller
         return view('datawarga.edit', compact('warga', 'kecamatan', 'kelurahan', 'jenis_layanan'));
     }
 
-    public function update(Request $request, $NIK)
-    {
-        $warga = Warga::where('NIK', $NIK)->firstOrFail();
-        $pengguna = $warga->pengguna;
+public function update(Request $request, $NIK)
+{
+$warga = Warga::where('NIK', $NIK)->firstOrFail();
+$pengguna = $warga->pengguna;
 
-        $validatedData = $request->validate([
-            'nama' => 'required|string|max:255',
-            'email' => 'required|email|unique:pengguna,email,' . $pengguna->id,
-            'alamat' => 'required|string|max:255',
-            'kecamatan_id' => 'required|exists:kecamatan,id',
-            'kelurahan_id' => 'required|exists:kelurahan,id',
-            'no_hp' => 'required|string|max:15',
-            'jenis_kelamin' => 'required|in:Laki-laki,Perempuan',
-            'tanggal_lahir' => 'required|date',
-            'jenis_retribusi' => 'required',
-            'jenis_layanan_id' => [
-                'required',
-                function ($attribute, $value, $fail) use ($request) {
-                    if ($request->jenis_retribusi === 'tetap' && $value == 4) {
-                        $fail('Jenis layanan tidak sesuai dengan jenis retribusi.');
-                    }
-                },
-            ],
-        ]);
+$validatedData = $request->validate([
+    'nama' => 'required|string|max:255',
+    'email' => 'required|email|unique:pengguna,email,' . $pengguna->id,
+    'alamat' => 'required|string|max:255',
+    'kecamatan_id' => 'required|exists:kecamatan,id',
+    'kelurahan_id' => 'required|exists:kelurahan,id',
+    'no_hp' => 'required|string|max:15',
+    'jenis_kelamin' => 'required|in:Laki-laki,Perempuan',
+    'tanggal_lahir' => 'required|date',
+    'jenis_retribusi' => 'required',
+    'jenis_layanan_id' => [
+        'required',
+        function ($attribute, $value, $fail) use ($request) {
+            if ($request->jenis_retribusi === 'tetap' && $value == 4) {
+                $fail('Jenis layanan tidak sesuai dengan jenis retribusi.');
+            }
+        },
+    ],
+]);
 
-        $pengguna->update([
-            'nama' => $validatedData['nama'],
-            'email' => $validatedData['email'],
-            'alamat' => $validatedData['alamat'],
-            'no_hp' => $validatedData['no_hp'],
-            'jenis_kelamin' => $validatedData['jenis_kelamin'],
-            'tanggal_lahir' => $validatedData['tanggal_lahir'],
-        ]);
+$pengguna->update([
+    'nama' => $validatedData['nama'],
+    'email' => $validatedData['email'],
+    'alamat' => $validatedData['alamat'],
+    'no_hp' => $validatedData['no_hp'],
+    'jenis_kelamin' => $validatedData['jenis_kelamin'],
+    'tanggal_lahir' => $validatedData['tanggal_lahir'],
+]);
 
-        $warga->update([
-            'jenis_retribusi' => $validatedData['jenis_retribusi'],
-            'jenis_layanan_id' => $validatedData['jenis_layanan_id'],
-            'kelurahan_id' => $validatedData['kelurahan_id'],
-        ]);
+$warga->update([
+    'jenis_retribusi' => $validatedData['jenis_retribusi'],
+    'jenis_layanan_id' => $validatedData['jenis_layanan_id'],
+    'kelurahan_id' => $validatedData['kelurahan_id'],
+]);
 
-        logAktivitas('Ubah warga', 'Mengubah data warga dengan NIK: ' . $NIK);
+logAktivitas('Ubah warga', 'Mengubah data warga dengan NIK: ' . $NIK);
 
-        return redirect()->route('datawarga.index')->with('success', 'Data Warga berhasil diperbarui.');
-    }
+return redirect()->route('datawarga.index')->with('success', 'Data Warga berhasil diperbarui.');
+}
 
     public function destroy(Warga $warga)
     {

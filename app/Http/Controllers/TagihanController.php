@@ -267,7 +267,7 @@ class TagihanController extends Controller
         $tagihanTetap = Tagihan::where('status', 'diajukan')
             ->where('jenis_retribusi', 'tetap')
             ->with('warga.pengguna')
-            ->paginate(10);
+            ->get();
 
         // Ambil data tagihan tidak tetap yang diajukan
         $tagihanTidakTetap = Tagihan::where('status', 'diajukan')

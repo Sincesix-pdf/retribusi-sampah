@@ -35,6 +35,7 @@ Route::middleware(['auth', 'role:kepala_dinas'])->group(function () {
     Route::post('/kepala-dinas/tagihan/setujui', [TagihanController::class, 'setujuiTagihan'])->name('kepala_dinas.tagihan.setujui');
     Route::get('/kepala-dinas/grafik-pendapatan', [TransaksiController::class, 'grafikPendapatan'])->name('kepala_dinas.grafikpendapatan');
     Route::get('/kepala-dinas/grafik-persebaran', [TransaksiController::class, 'grafikPersebaran'])->name('kepala_dinas.grafikpersebaran');
+    Route::post('/tagihan/tolak', [TagihanController::class, 'tolakTagihan'])->name('kepala_dinas.tagihan.tolak');
 
 });
 

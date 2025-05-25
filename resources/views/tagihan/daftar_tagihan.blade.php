@@ -90,10 +90,10 @@
                                 </div>
                                 <div class="card-body p-2">
                                     <div class="table-responsive custom-table-container">
-                                        <table id=""
-                                            class="table table-striped table-hover table-bordered mb-0 custom-table">
+                                        <table class="table table-striped table-hover table-bordered mb-0 custom-table">
                                             <thead class="table-success">
                                                 <tr>
+                                                    <th><input type="checkbox" id="checkAll" data-target="tidak-tetap">
                                                     </th>
                                                     <th>No</th>
                                                     <th>NIK</th>
@@ -108,20 +108,30 @@
                                             <tbody>
                                                 @forelse ($tagihanTidakTetap as $t)
                                                     <tr>
-                                                        <input type="hidden" name="tagihan_id[]" value="{{ $t->id }}">
+                                                        <td>
+                                                            <input type="checkbox" name="tagihan_id[]" value="{{ $t->id }}"
+                                                                data-group="tidak-tetap">
+                                                        </td>
                                                         <td>{{ $loop->iteration }}</td>
                                                         <td>{{ $t->NIK }}</td>
                                                         <td>{{ $t->warga->pengguna->nama }}</td>
                                                         <td>Rp{{ number_format($t->tarif) }}</td>
                                                         <td>{{ $t->volume }}</td>
-                                                        <td>{{ $t->total_tagihan }}</td>
+                                                        <td>Rp{{ number_format($t->total_tagihan) }}</td>
                                                         <td>{{ $t->tanggal_tagihan }}</td>
-                                                        <td><span class="badge bg-warning">{{ ucfirst($t->status) }}</span>
+                                                        <td>
+                                                            @if ($t->status == 'ditolak')
+                                                                <span
+                                                                    class="badge bg-danger">{{ ucfirst($t->status) }}</span><br>
+                                                                <small><i>Alasan: {{ $t->keterangan }}</i></small>
+                                                            @else
+                                                                <span class="badge bg-warning">{{ ucfirst($t->status) }}</span>
+                                                            @endif
                                                         </td>
                                                     </tr>
                                                 @empty
                                                     <tr>
-                                                        <td colspan="8" class="text-center">Tidak ada tagihan tidak tetap.
+                                                        <td colspan="9" class="text-center">Tidak ada tagihan tidak tetap.
                                                         </td>
                                                     </tr>
                                                 @endforelse
@@ -130,13 +140,50 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- Tombol Setujui -->
                             <button type="submit" class="btn btn-success mt-3" id="setujuiTidakTetap">
-                                <i class="fas fa-check"></i> Setujui Tagihan Tidak Tetap
+                                <i class="fas fa-check"></i> Setujui Tagihan
                             </button>
                         </form>
+                        <!-- Tombol Tolak Tagihan -->
+                        <button type="button" class="btn btn-danger mt-2" id="tolakTidakTetapBtn"
+                            data-bs-toggle="modal" data-bs-target="#modalTolakTidakTetap">
+                            <i class="fas fa-times"></i> Tolak Tagihan
+                        </button>
                     </div>
-                </div> <!-- End of Tabs -->
-            </div> <!-- End of Card Body -->
-        </div> <!-- End of Card -->
+
+                    <!-- Modal Tolak Tagihan -->
+                    <div class="modal fade" id="modalTolakTidakTetap" tabindex="-1" aria-labelledby="modalTolakLabel"
+                        aria-hidden="true">
+                        <div class="modal-dialog">
+                            <form action="{{ route('kepala_dinas.tagihan.tolak') }}" method="POST">
+                                @csrf
+                                <div class="modal-content">
+                                    <div class="modal-header bg-danger text-white">
+                                        <h5 class="modal-title" id="modalTolakLabel">Alasan Penolakan Tagihan Tidak
+                                            Tetap</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                            aria-label="Tutup"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <input type="hidden" name="tagihan_ids" id="tagihanIdsTolak">
+                                        <div class="mb-3">
+                                            <label for="alasan" class="form-label">Alasan Penolakan</label>
+                                            <textarea name="alasan" id="alasan" class="form-control" rows="3"
+                                                required></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="submit" class="btn btn-danger">Tolak Tagihan</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div> <!-- End of Tabs -->
+        </div> <!-- End of Card Body -->
+    </div> <!-- End of Card -->
     </div>
 </x-layout>

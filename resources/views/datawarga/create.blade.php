@@ -25,22 +25,6 @@
                     <label>Email:</label>
                     <input type="email" name="email" class="form-control" value="{{ old('email') }}" required>
 
-                    <label>Password:</label>
-                    <div class="input-group">
-                        <input type="password" id="password" name="password" class="form-control" required>
-                        <span class="input-group-text" onclick="togglePassword('password', 'togglePasswordIcon1')" style="cursor: pointer;">
-                            <span id="togglePasswordIcon1" class="material-symbols-rounded">visibility</span>
-                        </span>
-                    </div>
-
-                    <label>Ulangi Password:</label>
-                    <div class="input-group">
-                        <input type="password" id="password_confirmation" name="password_confirmation" class="form-control" required>
-                        <span class="input-group-text" onclick="togglePassword('password_confirmation', 'togglePasswordIcon2')" style="cursor: pointer;">
-                            <span id="togglePasswordIcon2" class="material-symbols-rounded">visibility</span>
-                        </span>
-                    </div>
-
                     <label>Alamat:</label>
                     <input type="text" name="alamat" class="form-control" value="{{ old('alamat') }}" required>
 
@@ -48,7 +32,8 @@
                     <select name="kecamatan_id" id="kecamatan_id" class="form-control">
                         <option value="">Pilih Kecamatan</option>
                         @foreach($kecamatan as $kec)
-                            <option value="{{ $kec->id }}" {{ old('kecamatan_id') == $kec->id ? 'selected' : '' }}>{{ $kec->nama }}</option>
+                            <option value="{{ $kec->id }}" {{ old('kecamatan_id') == $kec->id ? 'selected' : '' }}>
+                                {{ $kec->nama }}</option>
                         @endforeach
                     </select>
 
@@ -67,15 +52,19 @@
 
                     <label>Jenis Kelamin:</label>
                     <select name="jenis_kelamin" class="form-control">
-                        <option value="Laki-laki" {{ old('jenis_kelamin') == 'Laki-laki' ? 'selected' : '' }}>Laki-laki</option>
-                        <option value="Perempuan" {{ old('jenis_kelamin') == 'Perempuan' ? 'selected' : '' }}>Perempuan</option>
+                        <option value="Laki-laki" {{ old('jenis_kelamin') == 'Laki-laki' ? 'selected' : '' }}>Laki-laki
+                        </option>
+                        <option value="Perempuan" {{ old('jenis_kelamin') == 'Perempuan' ? 'selected' : '' }}>Perempuan
+                        </option>
                     </select>
 
                     <label>Tanggal Lahir:</label>
-                    <input type="date" name="tanggal_lahir" class="form-control" value="{{ old('tanggal_lahir') }}" required>
+                    <input type="date" name="tanggal_lahir" class="form-control" value="{{ old('tanggal_lahir') }}"
+                        required>
 
                     <label>NIK:</label>
-                    <input type="text" name="NIK" class="form-control @error('NIK') is-invalid @enderror" value="{{ old('NIK') }}">
+                    <input type="text" name="NIK" class="form-control @error('NIK') is-invalid @enderror"
+                        value="{{ old('NIK') }}">
                     @error('NIK')
                         <div class="text-danger">{{ $message }}</div>
                     @enderror
@@ -83,7 +72,8 @@
                     <label>Jenis Retribusi:</label>
                     <select name="jenis_retribusi" id="jenis_retribusi" class="form-control">
                         <option value="tetap" {{ old('jenis_retribusi') == 'tetap' ? 'selected' : '' }}>Tetap</option>
-                        <option value="tidak_tetap" {{ old('jenis_retribusi') == 'tidak_tetap' ? 'selected' : '' }}>Tidak Tetap</option>
+                        <option value="tidak_tetap" {{ old('jenis_retribusi') == 'tidak_tetap' ? 'selected' : '' }}>Tidak
+                            Tetap</option>
                     </select>
 
                     <label>Jenis Layanan:</label>
@@ -95,7 +85,8 @@
                             </option>
                         @endforeach
                     </select>
-                    <small id="jenisLayananError" class="text-danger d-none">Jenis layanan tidak sesuai dengan jenis retribusi.</small>
+                    <small id="jenisLayananError" class="text-danger d-none">Jenis layanan tidak sesuai dengan jenis
+                        retribusi.</small>
 
                     <div class="mt-3">
                         <button type="submit" class="btn btn-primary">Simpan</button>

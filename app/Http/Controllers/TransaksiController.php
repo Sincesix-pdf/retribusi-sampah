@@ -14,6 +14,33 @@ use App\Models\Transaksi;
 use Illuminate\Support\Facades\Auth;
 class TransaksiController extends Controller
 {
+    /**
+     * Hitung akumulasi tunggakan, total tunggakan, dan rincian tunggakan dari koleksi transaksi.
+     *
+     * @param \Illuminate\Support\Collection $transaksi
+     * @return array
+     */
+    private function hitungTunggakan($transaksi)
+    {
+        $tunggakan = $transaksi->filter(function ($t) {
+            return $t->created_at->addDays(30)->lt(now()) && $t->status != 'settlement';
+        });
+
+        $jumlahTunggakan = $tunggakan->count();
+        $totalTunggakan = $tunggakan->sum('amount');
+        $rincianTunggakan = $tunggakan->map(function ($t) {
+            if ($t->tagihan && $t->tagihan->bulan && $t->tagihan->tahun) {
+                return date('F Y', mktime(0, 0, 0, $t->tagihan->bulan, 1, $t->tagihan->tahun));
+            }
+            return 'Periode Tidak Diketahui';
+        })->values();
+
+        return [
+            'jumlahTunggakan' => $jumlahTunggakan,
+            'totalTunggakan' => $totalTunggakan,
+            'rincianTunggakan' => $rincianTunggakan,
+        ];
+    }
     public function index(Request $request)
     {
         $bulan = $request->input('bulan');
@@ -51,9 +78,21 @@ class TransaksiController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        // Menambahkan status menunggak
-        $transaksi = $transaksi->map(function ($t) {
+        // Menambahkan status menunggak dan akumulasi tunggakan per NIK
+        $transaksi = $transaksi->map(function ($t) use ($transaksi) {
             $t->status_menunggak = $t->created_at->addDays(30)->lt(now()) && $t->status !== 'settlement';
+
+            // Hitung akumulasi tunggakan untuk NIK yang sama
+            $nik = $t->tagihan->warga->NIK ?? null;
+            if ($nik) {
+                $t->akumulasi_tunggakan = $transaksi->filter(function ($item) use ($nik) {
+                    return ($item->tagihan->warga->NIK ?? null) == $nik
+                        && $item->created_at->addDays(30)->lt(now())
+                        && $item->status !== 'settlement';
+                })->count();
+            } else {
+                $t->akumulasi_tunggakan = 0;
+            }
             return $t;
         });
 
@@ -73,6 +112,9 @@ class TransaksiController extends Controller
         $totalPembayaran = $transaksi->where('status', 'settlement')->sum('amount');
         $totalTransaksi = Transaksi::where('status', 'settlement')->count();
 
+        // Hitung tunggakan
+        $tunggakan = $this->hitungTunggakan($transaksi);
+
         logAktivitas('Melihat daftar transaksi');
 
         return view('transaksi.index', compact(
@@ -83,7 +125,8 @@ class TransaksiController extends Controller
             'belumBayar',
             'menunggak',
             'totalPembayaran',
-            'totalTransaksi'
+            'totalTransaksi',
+            'tunggakan'
         ));
     }
 
@@ -182,25 +225,18 @@ class TransaksiController extends Controller
                 return $t;
             });
 
-        // Hitung akumulasi tunggakan
-        $jumlahTunggakan = $transaksi->where('status_menunggak', true)->count();
-        $totalTunggakan = $transaksi->where('status_menunggak', true)->sum('amount');
-        
-        // Rincian tunggakan
-        $rincianTunggakan = $transaksi->where('status_menunggak', true)->map(function ($t) {
-            return date('F Y', mktime(0, 0, 0, $t->tagihan->bulan, 1, $t->tagihan->tahun));
-        })->values();
-        
+        // Pakai helper
+        $tunggakan = $this->hitungTunggakan($transaksi);
 
         logAktivitas('Melihat riwayat transaksi');
 
-        return view('transaksi.history', compact(
-            'transaksi',
- 'jumlahTunggakan',
-        'totalTunggakan',
-        'rincianTunggakan'));
+        return view('transaksi.history', [
+            'transaksi' => $transaksi,
+            'jumlahTunggakan' => $tunggakan['jumlahTunggakan'],
+            'totalTunggakan' => $tunggakan['totalTunggakan'],
+            'rincianTunggakan' => $tunggakan['rincianTunggakan'],
+        ]);
     }
-
 
     //handle status payment
     public function handleWebhook(Request $request)
@@ -274,20 +310,25 @@ Harap simpan bukti pembayaran ini.
     {
         $transaksi = Transaksi::with('tagihan.warga.pengguna')->findOrFail($id);
 
-        if ($transaksi->status !== 'pending') {
+        // Ambil user dan info tagihan
+        $user = $transaksi->tagihan->warga->pengguna;
+        $no_hp = $user->no_hp;
+
+        // Cek status menunggak
+        $status_menunggak = $transaksi->created_at->addDays(30)->lt(now()) && $transaksi->status !== 'settlement';
+
+        if ($transaksi->status !== 'pending' && !$status_menunggak) {
             return redirect()->back()->with('error', 'Transaksi ini sudah dibayar atau gagal.');
         }
 
-        // Cek apakah Snap URL expired
+        // Jika Snap URL expired, generate ulang
         if ($transaksi->expired_at && $transaksi->expired_at->isPast()) {
-            // Re-generate Snap URL
             Config::$serverKey = env('MIDTRANS_SERVER_KEY');
             Config::$isProduction = env('MIDTRANS_IS_PRODUCTION', false);
             Config::$isSanitized = env('MIDTRANS_IS_SANITIZED', true);
             Config::$is3ds = env('MIDTRANS_IS_3DS', true);
 
             $tagihan = $transaksi->tagihan;
-            $user = $tagihan->warga->pengguna;
 
             $newOrderId = 'INV-' . $tagihan->id . '-' . time() . rand(100, 999);
             $grossAmount = ($tagihan->jenis_retribusi === 'tetap')
@@ -320,20 +361,54 @@ Harap simpan bukti pembayaran ini.
             ]);
         }
 
-        // Kirim pesan WhatsApp
-        $user = $transaksi->tagihan->warga->pengguna;
-        $bulanTagihan = Carbon::create(null, $transaksi->tagihan->bulan)->locale('id')->isoFormat('MMMM');
-        $tahunTagihan = $transaksi->tagihan->tahun;
-        $jumlah = number_format($transaksi->amount, 0, ',', '.');
-        $no_hp = $user->no_hp;
+        // Jika menunggak, cari semua tunggakan NIK ini
+        if ($status_menunggak) {
+            $nik = $transaksi->tagihan->warga->NIK ?? null;
+            $tunggakanTransaksi = Transaksi::with('tagihan')
+                ->whereHas('tagihan', function ($q) use ($nik) {
+                    $q->where('NIK', $nik);
+                })
+                ->where('status', 'pending')
+                ->get()
+                ->filter(function ($t) {
+                    return $t->created_at->addDays(30)->lt(now());
+                });
 
-        $message = "*PENGINGAT PEMBAYARAN TAGIHAN*\n\n" .
-            "Yth. *{$user->nama}*,\n" .
-            "Tagihan Anda untuk bulan *{$bulanTagihan} {$tahunTagihan}* masih *belum dibayar*.\n\n" .
-            "*Jumlah:* Rp{$jumlah}\n" .
-            "*Nomor Invoice:* {$transaksi->order_id}\n" .
-            "*Link Pembayaran:* {$transaksi->snap_url}\n\n" .
-            "Segera lakukan pembayaran sebelum jatuh tempo. Terima kasih.";
+            $jumlahTunggakan = $tunggakanTransaksi->count();
+            $totalTunggakan = $tunggakanTransaksi->sum('amount');
+
+            // Rincian tunggakan dengan link pembayaran per transaksi
+            $rincianTunggakan = $tunggakanTransaksi->map(function ($t) {
+                if ($t->tagihan && $t->tagihan->bulan && $t->tagihan->tahun) {
+                    $periode = date('F Y', mktime(0, 0, 0, $t->tagihan->bulan, 1, $t->tagihan->tahun));
+                } else {
+                    $periode = 'Periode Tidak Diketahui';
+                }
+                // Sertakan link pembayaran jika ada
+                $link = $t->snap_url ? "\n$t->snap_url" : '';
+                return "- $periode$link";
+            })->implode("\n");
+
+            $message = "*PERINGATAN TUNGGAKAN TAGIHAN*\n\n" .
+                "Yth. *{$user->nama}*,\n" .
+                "Anda memiliki *{$jumlahTunggakan} tunggakan* pembayaran retribusi sampah untuk bulan:\n" .
+                "{$rincianTunggakan}\n\n" .
+                "*Total yang harus dibayarkan:* Rp" . number_format($totalTunggakan, 0, ',', '.') . "\n\n" .
+                "Segera lakukan pembayaran sebelum layanan dihentikan. Terima kasih.";
+        } else {
+            // Reminder biasa
+            $bulanTagihan = Carbon::create(null, $transaksi->tagihan->bulan)->locale('id')->isoFormat('MMMM');
+            $tahunTagihan = $transaksi->tagihan->tahun;
+            $jumlah = number_format($transaksi->amount, 0, ',', '.');
+
+            $message = "*PENGINGAT PEMBAYARAN TAGIHAN*\n\n" .
+                "Yth. *{$user->nama}*,\n" .
+                "Tagihan Anda untuk bulan *{$bulanTagihan} {$tahunTagihan}* masih *belum dibayar*.\n\n" .
+                "*Jumlah:* Rp{$jumlah}\n" .
+                "*Nomor Invoice:* {$transaksi->order_id}\n" .
+                "*Link Pembayaran:* {$transaksi->snap_url}\n\n" .
+                "Segera lakukan pembayaran sebelum jatuh tempo. Terima kasih.";
+        }
 
         $response = Http::withHeaders([
             'Authorization' => env('FONNTE_API_KEY'),

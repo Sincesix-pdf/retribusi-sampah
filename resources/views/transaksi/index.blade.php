@@ -114,7 +114,8 @@
                             </div>
                             <div class="card-body p-2">
                                 <div class="table-responsive custom-table-container">
-                                    <table id="tabel-diajukan" class="table table-striped table-hover table-bordered mb-0 custom-table">
+                                    <table id="tabel-diajukan"
+                                        class="table table-striped table-hover table-bordered mb-0 custom-table">
                                         <thead class="table-primary">
                                             <tr>
                                                 <th>No</th>
@@ -143,7 +144,12 @@
                                                         @if ($t->status == 'settlement')
                                                             <span class="badge bg-success">Lunas</span>
                                                         @elseif ($t->status_menunggak)
-                                                            <span class="badge bg-danger">Menunggak</span>
+                                                            <span class="badge bg-danger">
+                                                                Menunggak
+                                                                @if ($t->akumulasi_tunggakan > 1)
+                                                                    ({{ $t->akumulasi_tunggakan }} bulan)
+                                                                @endif
+                                                            </span>
                                                         @else
                                                             <span class="badge bg-warning">Belum Bayar</span>
                                                         @endif
@@ -179,7 +185,8 @@
                             </div>
                             <div class="card-body p-2">
                                 <div class="table-responsive custom-table-container">
-                                    <table id="tabel-disetujui" class="table table-striped table-hover table-bordered mb-0 custom-table">
+                                    <table id="tabel-disetujui"
+                                        class="table table-striped table-hover table-bordered mb-0 custom-table">
                                         <thead class="table-success">
                                             <tr>
                                                 <th>No</th>

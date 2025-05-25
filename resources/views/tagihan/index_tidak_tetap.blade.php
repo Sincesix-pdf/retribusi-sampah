@@ -42,6 +42,10 @@
                         <button class="nav-link" id="disetujui-tab" data-bs-toggle="tab" data-bs-target="#disetujui"
                             type="button" role="tab">Tagihan Disetujui</button>
                     </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="ditolak-tab" data-bs-toggle="tab" data-bs-target="#ditolak"
+                            type="button" role="tab">Tagihan Ditolak</button>
+                    </li>
                 </ul>
 
                 <div class="tab-content mt-3" id="tagihanTabsContent">
@@ -75,7 +79,7 @@
                                                     <td>{{ $t->warga->pengguna->nama }}</td>
                                                     <td>Rp{{ number_format($t->tarif) }}</td>
                                                     <td>{{ $t->volume }}</td>
-                                                    <td>{{ $t->total_tagihan }}</td>
+                                                    <td>Rp{{ number_format($t->total_tagihan) }}</td>
                                                     <td>{{ $t->tanggal_tagihan }}</td>
                                                     <td><span class="badge bg-warning">Diajukan</span></td>
                                                 </tr>
@@ -108,6 +112,7 @@
                                                 <th>Nama</th>
                                                 <th>Tarif</th>
                                                 <th>Volume</th>
+                                                <th>Total Tagihan</th>
                                                 <th>Tanggal Tagihan</th>
                                                 <th>Status</th>
                                             </tr>
@@ -120,12 +125,61 @@
                                                     <td>{{ $t->warga->pengguna->nama }}</td>
                                                     <td>Rp{{ number_format($t->tarif) }}</td>
                                                     <td>{{ $t->volume }}</td>
+                                                    <td>Rp{{ number_format($t->total_tagihan) }}</td>
                                                     <td>{{ $t->tanggal_tagihan }}</td>
                                                     <td><span class="badge bg-success">Disetujui</span></td>
                                                 </tr>
                                             @empty
                                                 <tr>
                                                     <td colspan="8" class="text-center">Tidak ada tagihan disetujui.</td>
+                                                </tr>
+                                            @endforelse
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab: Ditolak -->
+                    <div class="tab-pane fade" id="ditolak" role="tabpanel">
+                        <div class="card custom-card">
+                            <div class="card-header bg-danger text-white">
+                                <h4 class="mb-0">Draft Tagihan Ditolak</h4>
+                            </div>
+                            <div class="card-body p-2">
+                                <div class="table-responsive custom-table-container">
+                                    <table id="tabel-warga"
+                                        class="table table-hover table-striped table-bordered table w-100">
+                                        <thead class="table-danger sticky-top">
+                                            <tr>
+                                                <th>No</th>
+                                                <th>NIK</th>
+                                                <th>Nama</th>
+                                                <th>Tarif</th>
+                                                <th>Volume</th>
+                                                <th>Total Tagihan</th>
+                                                <th>Tanggal Tagihan</th>
+                                                <th>Status</th>
+                                                <th>Keterangan</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @forelse ($tagihanDitolak as $t)
+                                                <tr>
+                                                    <td>{{ $loop->iteration }}</td>
+                                                    <td>{{ $t->NIK }}</td>
+                                                    <td>{{ $t->warga->pengguna->nama }}</td>
+                                                    <td>Rp{{ number_format($t->tarif) }}</td>
+                                                    <td>{{ $t->volume }}</td>
+                                                    <td>{{ $t->tanggal_tagihan }}</td>
+                                                    <td>Rp{{ number_format($t->total_tagihan) }}</td>
+                                                    <td><span class="badge bg-danger">Ditolak</span></td>
+                                                    <td>{{ $t->keterangan }}</td>
+                                                </tr>
+                                            @empty
+                                                <tr>
+                                                    <td colspan="8" class="text-center">Tidak ada tagihan ditolak.</td>
                                                 </tr>
                                             @endforelse
                                         </tbody>

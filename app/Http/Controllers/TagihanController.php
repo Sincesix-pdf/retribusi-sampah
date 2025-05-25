@@ -60,9 +60,18 @@ class TagihanController extends Controller
             ->with(['warga.pengguna', 'warga.jenisLayanan'])
             ->get();
 
+        $tagihanDitolak = Tagihan::where('jenis_retribusi', 'tidak_tetap')
+            ->where('status', 'ditolak')
+            ->when($tanggal_tagihan, function ($query) use ($tanggal_tagihan) {
+                return $query->whereDate('tanggal_tagihan', $tanggal_tagihan);
+            })
+            ->with(['warga.pengguna', 'warga.jenisLayanan'])
+            ->get();
+
         return view('tagihan.index_tidak_tetap', compact(
             'tagihanDiajukan',
-            'tagihanDisetujui'
+            'tagihanDisetujui',
+            'tagihanDitolak',
         ));
     }
 
@@ -134,76 +143,6 @@ class TagihanController extends Controller
         logAktivitas('Buat Tagihan Tidak Tetap', "Tagihan untuk NIK {$request->NIK} berhasil dibuat");
 
         return redirect()->route('tagihan.index.tidak_tetap')->with('success', 'Tagihan Tidak Tetap Berhasil Dibuat dan Diajukan ke Kepala Dinas');
-    }
-
-    public function edit($id)
-    {
-        $tagihan = Tagihan::findOrFail($id);
-        $warga = Warga::where('jenis_retribusi', $tagihan->jenis_retribusi)->get();
-
-        if ($tagihan->jenis_retribusi === 'tetap') {
-            return view('tagihan.edit_tetap', compact('tagihan', 'warga'));
-        } else {
-            return view('tagihan.edit_tidak_tetap', compact('tagihan', 'warga'));
-        }
-    }
-
-    public function update(Request $request, $id)
-    {
-        $tagihan = Tagihan::findOrFail($id);
-
-        if ($tagihan->jenis_retribusi === 'tetap') {
-            $request->validate([
-                'NIK' => 'required|exists:warga,NIK',
-                'tarif' => 'required|numeric',
-                'bulan' => 'required|numeric|min:1|max:12',
-                'tahun' => 'required|numeric|min:2020',
-            ]);
-
-            $tagihan->update([
-                'NIK' => $request->NIK,
-                'tarif' => $request->tarif,
-                'bulan' => $request->bulan,
-                'tahun' => $request->tahun,
-                'total_tagihan' => $request->tarif,
-            ]);
-
-            return redirect()->route('tagihan.index.tetap')->with('success', 'Tagihan tetap berhasil diperbarui');
-        } else {
-            $request->validate([
-                'NIK' => 'required|exists:warga,NIK',
-                'tarif' => 'required|numeric',
-                'volume' => 'required|numeric',
-                'tanggal_tagihan' => 'required|date',
-            ]);
-
-            $tagihan->update([
-                'NIK' => $request->NIK,
-                'tarif' => $request->tarif,
-                'volume' => $request->volume,
-                'total_tagihan' => $request->tarif * $request->volume,
-                'tanggal_tagihan' => $request->tanggal_tagihan,
-            ]);
-
-            return redirect()->route('tagihan.index.tidak_tetap')->with('success', 'Tagihan tidak tetap berhasil diperbarui');
-        }
-    }
-
-    public function destroy($id)
-    {
-        $tagihan = Tagihan::findOrFail($id);
-
-        if (in_array($tagihan->jenis_retribusi, ['tetap', 'tidak_tetap'])) {
-            $tagihan->delete();
-
-            if ($tagihan->jenis_retribusi === 'tetap') {
-                return redirect()->route('tagihan.index.tetap')->with('success', 'Tagihan tetap berhasil dihapus');
-            } else {
-                return redirect()->route('tagihan.index.tidak_tetap')->with('success', 'Tagihan tidak tetap berhasil dihapus');
-            }
-        }
-
-        return redirect()->back()->with('error', 'Tagihan tidak dapat dihapus');
     }
 
     public function generateMidtransSnapUrl($tagihan)
@@ -339,6 +278,27 @@ class TagihanController extends Controller
 
         return redirect()->back()->with('success', 'Tagihan telah disetujui dan dikirim ke warga melalui WhatsApp.');
     }
+
+    // Fungsi untuk menolak tagihan
+    public function tolakTagihan(Request $request)
+    {
+        $ids = explode(',', $request->tagihan_ids);
+        $alasan = $request->alasan;
+
+        $tagihan = Tagihan::whereIn('id', $ids)->get();
+
+        foreach ($tagihan as $t) {
+            $t->update([
+                'status' => 'ditolak',
+                'keterangan' => $alasan,
+            ]);
+        }
+
+        logAktivitas('Tolak Tagihan', "Menolak tagihan ID: " . implode(', ', $ids) . " dengan alasan: $alasan");
+
+        return redirect()->back()->with('success', 'Tagihan berhasil ditolak.');
+    }
+
 
     // Laporan tagihan (role keuangan)
     public function laporanTagihan(Request $request)

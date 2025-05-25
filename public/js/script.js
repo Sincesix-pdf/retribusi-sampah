@@ -178,4 +178,61 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 });
 
-// ============================ Setujui Tagihan ========================
+// ==================== Checkbox "Pilih Semua" ====================
+document.querySelectorAll("#checkAll").forEach((checkAllBox) => {
+    checkAllBox.addEventListener("change", function () {
+        const targetGroup = this.getAttribute("data-target");
+
+        const checkboxes = document.querySelectorAll(
+            `input[data-group="${targetGroup}"]`
+        );
+        checkboxes.forEach((checkbox) => {
+            checkbox.checked = this.checked;
+        });
+    });
+});
+
+// ==================== Validasi Tombol "Setujui" ====================
+document
+    .getElementById("setujuiTidakTetap")
+    .addEventListener("click", function (e) {
+        const selected = document.querySelectorAll(
+            'input[name="tagihan_id[]"][data-group="tidak-tetap"]:checked'
+        );
+        if (selected.length === 0) {
+            e.preventDefault();
+            Swal.fire({
+                icon: "error",
+                title: "Oops...",
+                text: "Pilih data yang akan disetujui!",
+                confirmButtonColor: "#3085d6",
+            });
+        }
+    });
+
+// ==================== Tombol "Tolak" Buka Modal ====================
+document
+    .getElementById("tolakTidakTetapBtn")
+    .addEventListener("click", function (e) {
+        let selected = [];
+        document
+            .querySelectorAll(
+                'input[name="tagihan_id[]"][data-group="tidak-tetap"]:checked'
+            )
+            .forEach(function (checkbox) {
+                selected.push(checkbox.value);
+            });
+
+        if (selected.length === 0) {
+            e.preventDefault();
+            Swal.fire({
+                icon: "error",
+                title: "Oops...",
+                text: "Pilih data yang akan ditolak!",
+                confirmButtonColor: "#d33",
+            });
+            return false;
+        }
+
+        document.getElementById("tagihanIdsTolak").value = selected.join(",");
+    });

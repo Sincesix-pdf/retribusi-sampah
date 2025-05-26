@@ -387,6 +387,7 @@ class TagihanController extends Controller
 
         $menunggak = $transaksi->where('status_menunggak', true)->count();
 
+        logAktivitas('Melihat laporan tagihan');
         return view('tagihan.laporan', compact(
             'tagihanTetap',
             'tagihanTidakTetap',
@@ -400,11 +401,10 @@ class TagihanController extends Controller
     {
         $bulan = $request->input('bulan');
         $tahun = $request->input('tahun', date('Y'));
-
-        // Status dari request (settlement, pending, menunggak)
         $statusInput = $request->input('status');
+        $tanggalMulai = $request->input('tanggal_mulai');
+        $tanggalSelesai = $request->input('tanggal_selesai');
 
-        // Ubah status ke versi tampilan
         $status = match ($statusInput) {
             'settlement' => 'lunas',
             'pending' => 'belum bayar',
@@ -412,51 +412,54 @@ class TagihanController extends Controller
             default => null,
         };
 
-        // Ambil transaksi sesuai tahun & bulan
-        $transaksi = Transaksi::with(['tagihan.warga.pengguna'])
-            ->whereHas('tagihan', function ($query) use ($tahun, $bulan) {
-                $query->where('tahun', $tahun);
-                if (!empty($bulan)) {
-                    $query->where('bulan', $bulan);
-                }
-            })
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        // Tandai status menunggak
-        $transaksi = $transaksi->map(function ($t) {
-            $t->status_menunggak = $t->created_at->addDays(30)->lt(now()) && $t->status !== 'settlement';
-            return $t;
-        });
-
-        // Ambil tagihan tetap dan tidak tetap
+        // Ambil semua tagihan tetap & tidak tetap
         $tagihanTetap = Tagihan::with(['warga.pengguna'])
             ->where('jenis_retribusi', 'tetap')
             ->where('tahun', $tahun)
             ->when($bulan, fn($q) => $q->where('bulan', $bulan))
             ->get();
 
-        $tagihanTidakTetap = Tagihan::where('jenis_retribusi', 'tidak_tetap')
+        $tagihanTidakTetap = Tagihan::with(['warga.pengguna'])
+            ->where('jenis_retribusi', 'tidak_tetap')
             ->when($bulan, fn($q) => $q->whereMonth('tanggal_tagihan', $bulan))
             ->when($tahun, fn($q) => $q->whereYear('tanggal_tagihan', $tahun))
-            ->with('warga.pengguna')
             ->get();
 
-        // Total pembayaran hanya untuk yang sukses
+        // Ambil semua transaksi yang terkait tagihan di atas
+        $tagihanIds = $tagihanTetap->pluck('id')->merge($tagihanTidakTetap->pluck('id'))->unique()->toArray();
+
+        $transaksi = Transaksi::with(['tagihan.warga.pengguna'])
+            ->whereIn('tagihan_id', $tagihanIds)
+            ->when($tanggalMulai, function ($query) use ($tanggalMulai) {
+                $query->whereDate('created_at', '>=', $tanggalMulai);
+            })
+            ->when($tanggalSelesai, function ($query) use ($tanggalSelesai) {
+                $query->whereDate('created_at', '<=', $tanggalSelesai);
+            })
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($t) {
+                $t->status_menunggak = $t->created_at->addDays(30)->lt(now()) && $t->status !== 'settlement';
+                return $t;
+            });
+
         $total_pembayaran = $transaksi->where('status', 'settlement')->sum('amount');
 
-        $pdf = Pdf::loadView('tagihan.laporan_cetak', compact(
-            'transaksi',
+        logAktivitas(
+            'Mencetak laporan tagihan',
+            'Laporan tagihan dicetak pada ' . now()->format('d-m-Y H:i:s')
+        );
+
+        return Pdf::loadView('tagihan.laporan_cetak', compact(
             'tagihanTetap',
             'tagihanTidakTetap',
+            'transaksi',
             'total_pembayaran',
             'bulan',
             'tahun',
-            'status'
-        ))->setPaper('A4', 'landscape');
-
-        logAktivitas('Mencetak laporan transaksi');
-
-        return $pdf->stream("Laporan_Keuangan_{$tahun}" . ($bulan ? "_$bulan" : "") . ".pdf");
+            'status',
+            'tanggalMulai',
+            'tanggalSelesai'
+        ))->setPaper('A4', 'landscape')->stream("Laporan_Tagihan_{$tahun}" . ($bulan ? "_$bulan" : "") . ".pdf");
     }
 }

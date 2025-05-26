@@ -135,6 +135,8 @@ class TransaksiController extends Controller
         $bulan = $request->input('bulan');
         $tahun = $request->input('tahun', date('Y'));
         $status = $request->input('status');
+        $tanggalMulai = $request->input('tanggal_mulai');
+        $tanggalSelesai = $request->input('tanggal_selesai');
 
         // Ambil semua transaksi dengan filter
         $transaksi = Transaksi::with(['tagihan.warga.pengguna'])
@@ -154,15 +156,16 @@ class TransaksiController extends Controller
                     });
                 });
             })
-            ->when($status, function ($query) use ($status) {
-                if ($status === 'menunggak') {
-                    $query->where(function ($q) {
-                        $q->where('status', 'pending')
-                            ->whereRaw('created_at <= NOW() - INTERVAL 30 DAY');
-                    });
-                } else {
-                    $query->where('status', $status);
-                }
+            // Hanya filter status selain menunggak di query builder
+            ->when($status && $status !== 'menunggak', function ($query) use ($status) {
+                $query->where('status', $status);
+            })
+            // Filter tanggal jika ada
+            ->when($tanggalMulai, function ($query) use ($tanggalMulai) {
+                $query->whereDate('created_at', '>=', $tanggalMulai);
+            })
+            ->when($tanggalSelesai, function ($query) use ($tanggalSelesai) {
+                $query->whereDate('created_at', '<=', $tanggalSelesai);
             })
             ->orderBy('created_at', 'desc')
             ->get();
@@ -173,6 +176,13 @@ class TransaksiController extends Controller
             return $t;
         });
 
+        // Filter berdasarkan status, termasuk 'menunggak'
+        if ($status == 'menunggak') {
+            $transaksi = $transaksi->filter(fn($t) => $t->status_menunggak);
+        } elseif ($status) {
+            $transaksi = $transaksi->where('status', $status);
+        }
+
         // Pisahkan transaksi Tetap dan Tidak Tetap
         $transaksiTetap = $transaksi->filter(function ($t) {
             return $t->tagihan && $t->tagihan->jenis_retribusi === 'tetap';
@@ -181,13 +191,6 @@ class TransaksiController extends Controller
         $transaksiTidakTetap = $transaksi->filter(function ($t) {
             return $t->tagihan && $t->tagihan->jenis_retribusi === 'tidak_tetap';
         });
-
-        // Filter berdasarkan status, termasuk 'menunggak'
-        if ($status == 'menunggak') {
-            $transaksi = $transaksi->filter(fn($t) => $t->status_menunggak);
-        } elseif ($status) {
-            $transaksi = $transaksi->where('status', $status);
-        }
 
         // Total pembayaran hanya untuk status 'settlement'
         $total_pembayaran = $transaksi->where('status', 'settlement')->sum('amount');
@@ -199,11 +202,15 @@ class TransaksiController extends Controller
             'total_pembayaran',
             'bulan',
             'tahun',
-            'status'
+            'status',
+            'tanggalMulai',
+            'tanggalSelesai'
         ))->setPaper('A4', 'landscape');
 
-        logAktivitas('Mencetak laporan transaksi');
-
+        logAktivitas(
+            'Mencetak laporan transaksi',
+            'Laporan transaksi dicetak pada ' . now()->format('d-m-Y H:i:s')
+        );
         return $pdf->stream("Laporan_Keuangan_{$tahun}" . ($bulan ? "_$bulan" : "") . ".pdf");
     }
 

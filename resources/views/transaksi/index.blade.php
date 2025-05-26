@@ -244,10 +244,66 @@
                     </div>
                 </div>
                 <div class="mt-3">
-                    <a href="{{ route('transaksi.cetak', ['bulan' => request('bulan'), 'tahun' => request('tahun'), 'status' => request('status')]) }}"
-                        target="_blank" class="btn btn-primary">
-                        <i class="fa-solid fa-print"></i></i> Cetak Laporan
-                    </a>
+                    <!-- Tombol Cetak Laporan dengan Modal -->
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalCetakLaporan">
+                        <i class="fa-solid fa-print"></i> Cetak Laporan
+                    </button>
+                </div>
+
+                <!-- Modal Filter Cetak Laporan -->
+                <div class="modal fade" id="modalCetakLaporan" tabindex="-1" aria-labelledby="modalCetakLaporanLabel"
+                    aria-hidden="true">
+                    <div class="modal-dialog">
+                        <form action="{{ route('transaksi.cetak') }}" method="GET" target="_blank" class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="modalCetakLaporanLabel">Filter Cetak Laporan</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="mb-3">
+                                    <label for="tanggal_mulai" class="form-label">Dari Tanggal</label>
+                                    <input type="date" class="form-control" name="tanggal_mulai" id="tanggal_mulai">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="tanggal_selesai" class="form-label">Sampai Tanggal</label>
+                                    <input type="date" class="form-control" name="tanggal_selesai" id="tanggal_selesai">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="bulan" class="form-label">Bulan</label>
+                                    <select name="bulan" id="bulan" class="form-select">
+                                        <option value="">Semua Bulan</option>
+                                        @foreach (range(1, 12) as $m)
+                                            <option value="{{ $m }}" {{ request('bulan') == $m ? 'selected' : '' }}>
+                                                {{ date('F', mktime(0, 0, 0, $m, 1)) }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="tahun" class="form-label">Tahun</label>
+                                    <select name="tahun" id="tahun" class="form-select">
+                                        @foreach (range(2023, date('Y')) as $y)
+                                            <option value="{{ $y }}" {{ request('tahun', date('Y')) == $y ? 'selected' : '' }}>
+                                                {{ $y }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="status" class="form-label">Status Pembayaran</label>
+                                    <select name="status" id="status" class="form-select">
+                                        <option value="">Semua</option>
+                                        <option value="settlement">Lunas</option>
+                                        <option value="pending">Belum Bayar</option>
+                                        <option value="menunggak">Menunggak</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-print"></i> Cetak</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>

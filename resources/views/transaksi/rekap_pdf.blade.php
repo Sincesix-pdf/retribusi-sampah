@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Laporan Keuangan</title>
+    <title>Laporan Transaksi</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -43,109 +43,199 @@
         tr {
             page-break-inside: avoid;
         }
+
+        .header {
+            text-align: left;
+            border-bottom: 2px solid #000;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+        }
+
+        .header img {
+            float: left;
+            width: 70px;
+            margin-right: 10px;
+        }
+
+        .header .instansi {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .header .alamat {
+            font-size: 11px;
+        }
+
+        .footer {
+            width: 100%;
+            text-align: right;
+            position: fixed;
+            bottom: 30px;
+            left: 0;
+        }
+
+        .footer .ttd {
+            display: inline-block;
+            text-align: center;
+            margin-right: 40px;
+        }
+
+        .footer img {
+            width: 90px;
+            margin-bottom: 2px;
+        }
+
+        .wrap-border {
+            border: 2px solid #000;
+            padding: 18px 18px 80px 18px;
+            /* padding bawah lebih besar untuk footer */
+            min-height: 95vh;
+            box-sizing: border-box;
+        }
     </style>
 </head>
 
 <body>
-    <h2>
-        Laporan Keuangan
-        - {{ $bulan ? DateTime::createFromFormat('!m', $bulan)->format('F') : '' }} {{ $tahun }}
-        @if (!empty($status))
-            - {{ ucfirst($status) }}
+    <div class="wrap-border">
+        {{-- HEADER RESMI --}}
+        <div class="header">
+            <img src="{{ public_path('gambar/Logo.png') }}" style="filter: grayscale(100%);"
+                alt="Logo Kabupaten Malang">
+            <div style="margin-left: 10px;">
+                <div class="instansi">PEMERINTAH KABUPATEN MALANG<br>DINAS LINGKUNGAN HIDUP</div>
+                <div class="alamat">
+                    Jl. Panji No. 158 Lt.8 Kepanjen Telepon/Fax (0341) 392029<br>
+                    E-mail: dinas.lh@malangkab.go.id – Website: http://www.malangkab.go.id<br>
+                    KEPANJEN 65163
+                </div>
+            </div>
+            <div style="clear: both;"></div>
+        </div>
+
+        <hr style="border: 1px solid #000; margin-bottom: 20px;">
+
+        <h2>
+            Laporan Keuangan
+            - {{ $bulan ? DateTime::createFromFormat('!m', $bulan)->format('F') : '' }} {{ $tahun }}
+            @if (!empty($status))
+                - {{ ucfirst($status) }}
+            @endif
+        </h2>
+
+        {{-- Info Laporan --}}
+        <div style="margin-bottom: 18px; margin-top: 10px;">
+            @if (!empty($tanggalMulai) && !empty($tanggalSelesai))
+                <div><strong>Periode:</strong> {{ \Carbon\Carbon::parse($tanggalMulai)->format('d-m-Y') }} s/d
+                    {{ \Carbon\Carbon::parse($tanggalSelesai)->format('d-m-Y') }}
+                </div>
+            @endif
+            <div><strong>Dicetak pada:</strong> {{ \Carbon\Carbon::now()->format('d-m-Y H:i:s') }}</div>
+            <div><strong>Total Pemasukan:</strong> Rp{{ number_format($total_pembayaran, 0, ',', '.') }}</div>
+        </div>
+
+        {{-- Transaksi Tagihan Tetap --}}
+        @php $no = 1; @endphp
+        <h3>Transaksi Tagihan Tetap</h3>
+        @if($transaksiTetap->count())
+            <table>
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Order ID</th>
+                        <th>NIK</th>
+                        <th>Nama Warga</th>
+                        <th>Bulan</th>
+                        <th>Tahun</th>
+                        <th>Jumlah</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($transaksiTetap as $trx)
+                        <tr>
+                            <td>{{ $no++ }}</td>
+                            <td>{{ $trx->order_id }}</td>
+                            <td>{{ $trx->tagihan->warga->NIK }}</td>
+                            <td>{{ $trx->tagihan->warga->pengguna->nama ?? '-' }}</td>
+                            <td>{{ date('F', mktime(0, 0, 0, $trx->tagihan->bulan, 1)) }}</td>
+                            <td>{{ $trx->tagihan->tahun }}</td>
+                            <td>Rp{{ number_format($trx->amount, 0, ',', '.') }}</td>
+                            <td>
+                                @if ($trx->status == 'settlement')
+                                    Lunas
+                                @elseif ($trx->status_menunggak)
+                                    Menunggak
+                                @else
+                                    Belum Bayar
+                                @endif
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        @else
+            <p>Tidak ada transaksi tagihan tetap yang sesuai.</p>
         @endif
-    </h2>
 
-    <p><strong>Total Pemasukan:</strong> Rp{{ number_format($total_pembayaran, 0, ',', '.') }}</p>
+        {{-- Halaman Baru --}}
+        <div class="page-break"></div>
 
-    {{-- Transaksi Tagihan Tetap --}}
-    @php $no = 1; @endphp
-    <h3>Transaksi Tagihan Tetap</h3>
-    @if($transaksiTetap->count())
-        <table>
-            <thead>
-                <tr>
-                    <th>No</th>
-                    <th>Order ID</th>
-                    <th>Nama Warga</th>
-                    <th>Bulan</th>
-                    <th>Tahun</th>
-                    <th>Jumlah</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($transaksiTetap as $trx)
+        {{-- Transaksi Tagihan Tidak Tetap --}}
+        @php $no = 1; @endphp
+        <h3>Transaksi Tagihan Tidak Tetap</h3>
+        @if($transaksiTidakTetap->count())
+            <table>
+                <thead>
                     <tr>
-                        <td>{{ $no++ }}</td>
-                        <td>{{ $trx->order_id }}</td>
-                        <td>{{ $trx->tagihan->warga->pengguna->nama ?? '-' }}</td>
-                        <td>{{ date('F', mktime(0, 0, 0, $trx->tagihan->bulan, 1)) }}</td>
-                        <td>{{ $trx->tagihan->tahun }}</td>
-                        <td>Rp{{ number_format($trx->amount, 0, ',', '.') }}</td>
-                        <td>
-                            @if ($trx->status == 'settlement')
-                                Lunas
-                            @elseif ($trx->status_menunggak)
-                                Menunggak
-                            @else
-                                Belum Bayar
-                            @endif
-                        </td>
+                        <th>No</th>
+                        <th>Order ID</th>
+                        <th>Tanggal Tagihan</th>
+                        <th>NIK</th>
+                        <th>Nama</th>
+                        <th>Volume</th>
+                        <th>Jumlah</th>
+                        <th>Status</th>
                     </tr>
-                @endforeach
-            </tbody>
-        </table>
-    @else
-        <p>Tidak ada transaksi tagihan tetap yang sesuai.</p>
-    @endif
+                </thead>
+                <tbody>
+                    @foreach($transaksiTidakTetap as $trx)
+                        <tr>
+                            <td>{{ $no++ }}</td>
+                            <td>{{ $trx->order_id }}</td>
+                            <td>{{ $trx->tagihan->tanggal_tagihan }}</td>
+                            <td>{{ $trx->tagihan->warga->NIK ?? '-' }}</td>
+                            <td>{{ $trx->tagihan->warga->pengguna->nama ?? '-' }}</td>
+                            <td>{{$trx->tagihan->volume}}</td>
+                            <td>Rp{{ number_format($trx->amount, 0, ',', '.') }}</td>
+                            <td>
+                                @if ($trx->status == 'settlement')
+                                    Lunas
+                                @elseif ($trx->status_menunggak)
+                                    Menunggak
+                                @else
+                                    Belum Bayar
+                                @endif
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        @else
+            <p>Tidak ada transaksi tagihan tidak tetap yang sesuai.</p>
+        @endif
 
-    {{-- Halaman Baru --}}
-    <div class="page-break"></div>
-
-    {{-- Transaksi Tagihan Tidak Tetap --}}
-    @php $no = 1; @endphp
-    <h3>Transaksi Tagihan Tidak Tetap</h3>
-    @if($transaksiTidakTetap->count())
-        <table>
-            <thead>
-                <tr>
-                    <th>No</th>
-                    <th>Order ID</th>
-                    <th>Tanggal Tagihan</th>
-                    <th>NIK</th>
-                    <th>Nama</th>
-                    <th>Volume</th>
-                    <th>Jumlah</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($transaksiTidakTetap as $trx)
-                    <tr>
-                        <td>{{ $no++ }}</td>
-                        <td>{{ $trx->order_id }}</td>
-                        <td>{{ $trx->tagihan->tanggal_tagihan }}</td>
-                        <td>{{ $trx->tagihan->warga->NIK ?? '-' }}</td>
-                        <td>{{ $trx->tagihan->warga->pengguna->nama ?? '-' }}</td>
-                        <td>{{$trx->tagihan->volume}}</td>
-                        <td>Rp{{ number_format($trx->amount, 0, ',', '.') }}</td>
-                        <td>
-                            @if ($trx->status == 'settlement')
-                                Lunas
-                            @elseif ($trx->status_menunggak)
-                                Menunggak
-                            @else
-                                Belum Bayar
-                            @endif
-                        </td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-    @else
-        <p>Tidak ada transaksi tagihan tidak tetap yang sesuai.</p>
-    @endif
-
+        {{-- FOOTER RESMI (hanya di halaman terakhir) --}}
+        <div style="height: 60px;"></div>
+        <div class="footer" style="position: static; width: 100%; text-align: right; margin-top: 40px;">
+            <div class="ttd" style="margin-right: 40px;">
+                <span>Ditandatangani secara elektronik oleh<br>
+                    Kepala Dinas Lingkungan Hidup<br>
+                    Kabupaten Malang</span><br>
+                <img src="{{ public_path('gambar/qr_ttd.png') }}" alt="QR TTD"><br>
+                <b>Dr. Ahmad Dzulfikar Nurrahman, S.T, M.T</b>
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>

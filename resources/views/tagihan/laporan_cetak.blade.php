@@ -9,124 +9,195 @@
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th, td { border: 1px solid #000; padding: 6px; text-align: left; }
         th { background-color: #f2f2f2; }
-        
-        /* Menambahkan aturan untuk pemisahan halaman */
         .page-break { page-break-before: always; }
-
-        /* Agar tabel tidak terpotong ketika dicetak */
         table { page-break-inside: auto; }
         tr { page-break-inside: avoid; }
-        
+        .header {
+            text-align: left;
+            border-bottom: 2px solid #000;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+        }
+        .header img {
+            float: left;
+            width: 70px;
+            margin-right: 10px;
+        }
+        .header .instansi {
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .header .alamat {
+            font-size: 11px;
+        }
+        .footer {
+            width: 100%;
+            text-align: right;
+            position: fixed;
+            bottom: 30px;
+            left: 0;
+        }
+        .footer .ttd {
+            display: inline-block;
+            text-align: center;
+            margin-right: 40px;
+        }
+        .footer img {
+            width: 90px;
+            margin-bottom: 2px;
+        }
+        .wrap-border {
+            border: 2px solid #000;
+            padding: 18px 18px 80px 18px;
+            min-height: 95vh;
+            box-sizing: border-box;
+        }
     </style>
 </head>
 <body>
-    <h2>
-        Laporan Tagihan 
-        - {{ $bulan ? DateTime::createFromFormat('!m', $bulan)->format('F') : '' }} {{ $tahun }}
-        @if (!empty($status))
-            - {{ ucfirst($status) }}
-        @endif
-    </h2>
+    <div class="wrap-border">
+        {{-- HEADER RESMI --}}
+        <div class="header">
+            <img src="{{ public_path('gambar/Logo.png') }}" style="filter: grayscale(100%);" alt="Logo Kabupaten Malang">
+            <div style="margin-left: 10px;">
+                <div class="instansi">PEMERINTAH KABUPATEN MALANG<br>DINAS LINGKUNGAN HIDUP</div>
+                <div class="alamat">
+                    Jl. Panji No. 158 Lt.8 Kepanjen Telepon/Fax (0341) 392029<br>
+                    E-mail: dinas.lh@malangkab.go.id – Website: http://www.malangkab.go.id<br>
+                    KEPANJEN 65163
+                </div>
+            </div>
+            <div style="clear: both;"></div>
+        </div>
 
-    {{-- Tagihan Tetap --}}
-    @if($tagihanTetap->count())
+        <hr style="border: 1px solid #000; margin-bottom: 20px;">
+
+        <h2>
+            Laporan Tagihan
+            - {{ $bulan ? DateTime::createFromFormat('!m', $bulan)->format('F') : '' }} {{ $tahun }}
+            @if (!empty($status))
+                - {{ ucfirst($status) }}
+            @endif
+        </h2>
+        <div style="margin-bottom: 18px; margin-top: 10px;">
+            @if (!empty($tanggalMulai) && !empty($tanggalSelesai))
+                <div><strong>Periode:</strong> {{ \Carbon\Carbon::parse($tanggalMulai)->format('d-m-Y') }} s/d {{ \Carbon\Carbon::parse($tanggalSelesai)->format('d-m-Y') }}</div>
+            @endif
+            <div><strong>Dicetak pada:</strong> {{ \Carbon\Carbon::now()->format('d-m-Y H:i:s') }}</div>
+            <div><strong>Total Pemasukan:</strong> Rp{{ number_format($total_pembayaran, 0, ',', '.') }}</div>
+        </div>
+
+        {{-- Tagihan Tetap --}}
         <h3>Tagihan Tetap</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>No</th>
-                    <th>NIK</th>
-                    <th>Nama</th>
-                    <th>Bulan/Tahun</th>
-                    <th>Jumlah Tagihan</th>
-                    <th>Status</th>
-                    <th>Status Transaksi</th>
-                </tr>
-            </thead>
-            <tbody>
-                @php $no = 1; @endphp
-                @foreach($tagihanTetap as $t)
-                    @php
-                        $trxMatch = $transaksi->where('tagihan_id', $t->id);
-                        $statusTrx = $trxMatch->first();
-                        $statusTransaksi = $statusTrx
-                            ? ($statusTrx->status === 'settlement'
-                                ? 'lunas'
-                                : ($statusTrx->status_menunggak
-                                    ? 'menunggak'
-                                    : 'belum bayar'))
-                            : 'belum bayar';
-                    @endphp
-                    @if (!$status || strtolower($statusTransaksi) === strtolower($status))
+        @if($tagihanTetap->count())
+            <table>
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>NIK</th>
+                        <th>Nama Warga</th>
+                        <th>Bulan</th>
+                        <th>Tahun</th>
+                        <th>Jumlah</th>
+                        <th>Status</th>
+                        <th>Status Transaksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @php $no = 1; @endphp
+                    @foreach($tagihanTetap as $t)
+                        @php
+                            $trx = $transaksi->first(fn($tr) => $tr->tagihan_id == $t->id);
+                        @endphp
                         <tr>
                             <td>{{ $no++ }}</td>
-                            <td>{{ $t->NIK ?? '??' }}</td>
-                            <td>{{ $t->warga->pengguna->nama ?? '??' }}</td>
-                            <td>{{ DateTime::createFromFormat('!m', $t->bulan)->format('F') }} {{ $t->tahun }}</td>
-                            <td>Rp{{ number_format($t->tarif ?? 0, 0, ',', '.') }}</td>
-                            <td>{{ ucfirst($t->status ?? '??') }}</td>
-                            <td>{{ ucfirst($statusTransaksi) }}</td>
+                            <td>{{ $t->warga->NIK ?? '-' }}</td>
+                            <td>{{ $t->warga->pengguna->nama ?? '-' }}</td>
+                            <td>{{ $t->bulan ? date('F', mktime(0, 0, 0, $t->bulan, 1)) : '-' }}</td>
+                            <td>{{ $t->tahun ?? '-' }}</td>
+                            <td>Rp{{ number_format($trx->amount ?? 0, 0, ',', '.') }}</td>
+                            <td>{{ $t->status }}</td>
+                            <td>
+                                @if ($trx && $trx->status == 'settlement')
+                                    Lunas
+                                @elseif ($trx && $trx->status_menunggak)
+                                    Menunggak
+                                @elseif ($trx)
+                                    Belum Bayar
+                                @else
+                                    -
+                                @endif
+                            </td>
                         </tr>
-                    @endif
-                @endforeach
-            </tbody>
-        </table>
-    @else
-        <p>Tagihan Tetap: Tidak ada data yang sesuai.</p>
-    @endif
+                    @endforeach
+                </tbody>
+            </table>
+        @else
+            <p>Tagihan Tetap: Tidak ada data yang sesuai.</p>
+        @endif
 
-    <!-- Halaman Baru -->
-    <div class="page-break"></div>
+        <div class="page-break"></div>
 
-    {{-- Tagihan Tidak Tetap --}}
-    @if($tagihanTidakTetap->count())
+        {{-- Tagihan Tidak Tetap --}}
         <h3>Tagihan Tidak Tetap</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>No</th>
-                    <th>NIK</th>
-                    <th>Nama</th>
-                    <th>Tarif</th>
-                    <th>Volume</th>
-                    <th>Total Tagihan</th>
-                    <th>Tanggal</th>
-                    <th>Status</th>
-                    <th>Status Transaksi</th>
-                </tr>
-            </thead>
-            <tbody>
-                @php $no = 1; @endphp
-                @foreach($tagihanTidakTetap as $tt)
-                    @php
-                        $trxMatch = $transaksi->where('tagihan_id', $tt->id);
-                        $statusTrx = $trxMatch->first();
-                        $statusTransaksi = $statusTrx
-                            ? ($statusTrx->status === 'settlement'
-                                ? 'lunas'
-                                : ($statusTrx->status_menunggak
-                                    ? 'menunggak'
-                                    : 'belum bayar'))
-                            : 'belum bayar';
-                    @endphp
-                    @if (!$status || strtolower($statusTransaksi) === strtolower($status))
+        @if($tagihanTidakTetap->count())
+            <table>
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>NIK</th>
+                        <th>Nama Warga</th>
+                        <th>Tanggal Tagihan</th>
+                        <th>Volume</th>
+                        <th>Jumlah</th>
+                        <th>Status</th>
+                        <th>Status Transaksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @php $no = 1; @endphp
+                    @foreach($tagihanTidakTetap as $t)
+                        @php
+                            $trx = $transaksi->first(fn($tr) => $tr->tagihan_id == $t->id);
+                        @endphp
                         <tr>
                             <td>{{ $no++ }}</td>
-                            <td>{{ $tt->NIK ?? '??' }}</td>
-                            <td>{{ $tt->warga->pengguna->nama ?? '??' }}</td>
-                            <td>Rp{{ number_format($tt->tarif ?? 0, 0, ',', '.') }}</td>
-                            <td>{{ $tt->volume ?? '??' }}</td>
-                            <td>Rp{{ number_format($tt->total_tagihan ?? 0, 0, ',', '.') }}</td>
-                            <td>{{ $tt->tanggal_tagihan ?? '??' }}</td>
-                            <td>{{ ucfirst($tt->status ?? '??') }}</td>
-                            <td>{{ ucfirst($statusTransaksi) }}</td>
+                            <td>{{ $t->warga->NIK ?? '-' }}</td>
+                            <td>{{ $t->warga->pengguna->nama ?? '-' }}</td>
+                            <td>{{ $t->tanggal_tagihan ? \Carbon\Carbon::parse($t->tanggal_tagihan)->format('d-m-Y') : '-' }}</td>
+                            <td>{{ $t->volume ?? '-' }}</td>
+                            <td>Rp{{ number_format($trx->amount ?? 0, 0, ',', '.') }}</td>
+                            <td>{{ $t->status }}</td>
+                            <td>
+                                @if ($trx && $trx->status == 'settlement')
+                                    Lunas
+                                @elseif ($trx && $trx->status_menunggak)
+                                    Menunggak
+                                @elseif ($trx)
+                                    Belum Bayar
+                                @else
+                                    -
+                                @endif
+                            </td>
                         </tr>
-                    @endif
-                @endforeach
-            </tbody>
-        </table>
-    @else
-        <p>Tagihan Tidak Tetap: Tidak ada data yang sesuai.</p>
-    @endif
+                    @endforeach
+                </tbody>
+            </table>
+        @else
+            <p>Tagihan Tidak Tetap: Tidak ada data yang sesuai.</p>
+        @endif
+
+        {{-- FOOTER RESMI --}}
+        <div style="height: 60px;"></div>
+        <div class="footer" style="position: static; width: 100%; text-align: right; margin-top: 40px;">
+            <div class="ttd" style="margin-right: 40px;">
+                <span>Ditandatangani secara elektronik oleh<br>
+                Kepala Dinas Lingkungan Hidup<br>
+                Kabupaten Malang</span><br>
+                <img src="{{ public_path('gambar/qr_ttd.png') }}" alt="QR TTD"><br>
+                <b>Dr. Ahmad Dzulfikar Nurrahman, S.T, M.T</b>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

@@ -10,7 +10,7 @@ return new class extends Migration {
         Schema::create('tagihan', function (Blueprint $table) {
             $table->id();
             $table->string('NIK'); // Relasi ke warga
-            $table->enum('jenis_retribusi', ['tetap', 'tidak_tetap']);
+            $table->enum('jenis_retribusi', ['tetap', 'retasi']);
             $table->decimal('tarif', 10, 2);
             $table->string('bulan')->nullable();
             $table->year('tahun')->nullable();

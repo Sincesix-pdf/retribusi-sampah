@@ -115,10 +115,18 @@
         <hr style="border: 1px solid #000; margin-bottom: 20px;">
 
         <h2>
-            Laporan Keuangan
+            Laporan Transaksi
             - {{ $bulan ? DateTime::createFromFormat('!m', $bulan)->format('F') : '' }} {{ $tahun }}
             @if (!empty($status))
-                - {{ ucfirst($status) }}
+                @php
+                    $statusLabel = match ($status) {
+                        'settlement' => 'Lunas',
+                        'pending' => 'Belum Bayar',
+                        'menunggak' => 'Menunggak',
+                        default => ucfirst($status),
+                    };
+                @endphp
+                - {{ $statusLabel }}
             @endif
         </h2>
 
@@ -182,7 +190,7 @@
 
         {{-- Transaksi Tagihan Tidak Tetap --}}
         @php $no = 1; @endphp
-        <h3>Transaksi Tagihan Tidak Tetap</h3>
+        <h3>Transaksi Tagihan Retasi</h3>
         @if($transaksiTidakTetap->count())
             <table>
                 <thead>

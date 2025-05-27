@@ -9,35 +9,33 @@ use Faker\Factory as Faker;
 
 class TambahWargaSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     *
-     * @return void
-     */
     public function run()
     {
         $faker = Faker::create('id_ID');
 
-        // Ambil daftar kelurahan dan jenis layanan
         $kelurahan = DB::table('kelurahan')->get();
         $jenis_layanan = DB::table('jenis_layanan')->get();
 
+        $kategoriRetasi = ['industri', 'umkm', 'event'];
         $dataWarga = [];
 
-        // Buat 10 data warga
         for ($i = 1; $i <= 30; $i++) {
             $kel = $kelurahan->random();
-            $jenis_retribusi = $i <= 15 ? 'tetap' : 'tidak_tetap'; //sesuaikan jumlah jenis_layanan tidak_tetap
 
-            // Filter jenis_layanan agar tidak termasuk id 4 (tidak_tetap)
-            $jenis_layanan_terfilter = $jenis_layanan->filter(function ($item) {
-                return $item->id != 4;
-            });
+            // 15 pertama kategori warga (tetap), sisanya kategori acak dari retasi
+            if ($i <= 15) {
+                $kategori = 'warga';
+                $jenis_retribusi = 'tetap';
+            } else {
+                $kategori = $kategoriRetasi[array_rand($kategoriRetasi)];
+                $jenis_retribusi = 'retasi';
+            }
 
-            $jenis_layanan_id = ($jenis_retribusi == 'tidak_tetap') ? 4 : $jenis_layanan_terfilter->random()->id;
+            $jenis_layanan_id = $jenis_layanan
+                ->where('nama_paket', $jenis_retribusi)
+                ->first()
+                ->id ?? null;
 
-
-            // Insert ke tabel pengguna dulu
             $penggunaId = DB::table('pengguna')->insertGetId([
                 'nama' => $faker->firstName . ' ' . $faker->lastName,
                 'email' => "warga{$i}@test.com",
@@ -46,15 +44,15 @@ class TambahWargaSeeder extends Seeder
                 'no_hp' => $faker->numerify('089515946334'),
                 'jenis_kelamin' => $faker->randomElement(['Laki-laki', 'Perempuan']),
                 'tanggal_lahir' => $faker->date(),
-                'role_id' => 5, // Role warga
+                'role_id' => 5,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
 
-            // Insert ke tabel warga
             $dataWarga[] = [
                 'NIK' => $faker->unique()->numerify('3505############'),
                 'pengguna_id' => $penggunaId,
+                'kategori_retribusi' => $kategori,
                 'jenis_retribusi' => $jenis_retribusi,
                 'jenis_layanan_id' => $jenis_layanan_id,
                 'kelurahan_id' => $kel->id,
@@ -63,7 +61,6 @@ class TambahWargaSeeder extends Seeder
             ];
         }
 
-        // Insert ke tabel warga
         DB::table('warga')->insert($dataWarga);
     }
 }

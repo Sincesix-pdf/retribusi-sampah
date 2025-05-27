@@ -47,7 +47,6 @@ class DataWargaController extends Controller
 
     public function store(Request $request)
     {
-
         $validatedData = $request->validate([
             'nama' => 'required|string|max:255',
             'email' => 'required|email:dns|unique:pengguna,email',
@@ -56,18 +55,16 @@ class DataWargaController extends Controller
             'jenis_kelamin' => 'required',
             'tanggal_lahir' => 'required|date',
             'NIK' => 'required|digits:16|numeric|unique:warga,NIK',
-            'jenis_retribusi' => 'required',
-            'jenis_layanan_id' => [
-                'required',
-                function ($attribute, $value, $fail) use ($request) {
-                    if ($request->jenis_retribusi === 'tetap' && $value == 4) {
-                        $fail('Jenis layanan tidak sesuai dengan jenis retribusi.');
-                    }
-                },
-            ],
+            'jenis_retribusi' => 'required|in:tetap,retasi',
             'kecamatan_id' => 'required|exists:kecamatan,id',
             'kelurahan_id' => 'required|exists:kelurahan,id',
         ]);
+
+        // Cari jenis_layanan_id sesuai jenis_retribusi
+        $jenisLayanan = JenisLayanan::whereRaw('LOWER(nama_paket) = ?', [strtolower($validatedData['jenis_retribusi'])])->first();
+        if (!$jenisLayanan) {
+            return back()->withErrors(['jenis_retribusi' => 'Jenis layanan tidak ditemukan untuk retribusi ini.'])->withInput();
+        }
 
         $pengguna = Pengguna::create([
             'nama' => $validatedData['nama'],
@@ -84,7 +81,7 @@ class DataWargaController extends Controller
             'NIK' => $validatedData['NIK'],
             'pengguna_id' => $pengguna->id,
             'jenis_retribusi' => $validatedData['jenis_retribusi'],
-            'jenis_layanan_id' => $validatedData['jenis_layanan_id'],
+            'jenis_layanan_id' => $jenisLayanan->id,
             'kelurahan_id' => $validatedData['kelurahan_id'],
         ]);
 
@@ -116,17 +113,16 @@ class DataWargaController extends Controller
             'no_hp' => 'required|string|max:15',
             'jenis_kelamin' => 'required|in:Laki-laki,Perempuan',
             'tanggal_lahir' => 'required|date',
-            'jenis_retribusi' => 'required',
-            'jenis_layanan_id' => [
-                'required',
-                function ($attribute, $value, $fail) use ($request) {
-                    if ($request->jenis_retribusi === 'tetap' && $value == 4) {
-                        $fail('Jenis layanan tidak sesuai dengan jenis retribusi.');
-                    }
-                },
-            ],
+            'kategori_retribusi' => 'required|in:warga,industri,umkm,event',
+            'jenis_retribusi' => 'required|in:tetap,retasi',
         ]);
 
+        // Cari jenis_layanan_id sesuai jenis_retribusi
+        $jenisLayanan = JenisLayanan::whereRaw('LOWER(nama_paket) = ?', [strtolower($validatedData['jenis_retribusi'])])->first();
+        if (!$jenisLayanan) {
+            return back()->withErrors(['jenis_retribusi' => 'Jenis layanan tidak ditemukan untuk retribusi ini.'])->withInput();
+        }
+        
         $pengguna->update([
             'nama' => $validatedData['nama'],
             'email' => $validatedData['email'],
@@ -137,8 +133,9 @@ class DataWargaController extends Controller
         ]);
 
         $warga->update([
+            'kategori_retribusi' => $validatedData['kategori_retribusi'],
             'jenis_retribusi' => $validatedData['jenis_retribusi'],
-            'jenis_layanan_id' => $validatedData['jenis_layanan_id'],
+            'jenis_layanan_id' => $jenisLayanan->id,
             'kelurahan_id' => $validatedData['kelurahan_id'],
         ]);
 

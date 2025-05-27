@@ -151,32 +151,34 @@ document.addEventListener("DOMContentLoaded", function () {
         jenisLayananSelect.addEventListener("change", updateJenisLayanan);
         updateJenisLayanan();
     }
-
-    // ==================== Perhitungan Tagihan Tidak Tetap ====================
-    const jenisTarifSelect = document.getElementById("jenisTarifSelect");
-    const volumeInput = document.getElementById("volumeInput");
-    const tarifInput = document.getElementById("tarifInput");
-    const totalInput = document.getElementById("totalInput");
-
-    function updateTotal() {
-        if (!jenisTarifSelect || !volumeInput || !tarifInput || !totalInput)
-            return;
-
-        const tarifPerKubik =
-            parseFloat(
-                jenisTarifSelect.options[jenisTarifSelect.selectedIndex]
-                    ?.dataset.tarif
-            ) || 0;
-        const volume = parseFloat(volumeInput.value) || 0;
-        tarifInput.value = tarifPerKubik;
-        totalInput.value = tarifPerKubik * volume;
-    }
-
-    if (jenisTarifSelect && volumeInput) {
-        jenisTarifSelect.addEventListener("change", updateTotal);
-        volumeInput.addEventListener("input", updateTotal);
-    }
 });
+
+// ==================== Perhitungan Tagihan Tidak Tetap ====================
+const wargaSelect = document.getElementById('wargaSelect');
+const volumeInput = document.getElementById('volumeInput');
+const tarifInput = document.getElementById('tarifInput');
+const totalInput = document.getElementById('totalInput');
+
+function updateTarif() {
+    if (!wargaSelect || !tarifInput) return;
+    const selected = wargaSelect.selectedOptions[0];
+    const tarif = selected ? selected.getAttribute('data-tarif') : 0;
+    tarifInput.value = tarif;
+    updateTotal();
+}
+
+function updateTotal() {
+    if (!tarifInput || !volumeInput || !totalInput) return;
+    const tarif = parseFloat(tarifInput.value) || 0;
+    const volume = parseFloat(volumeInput.value) || 0;
+    totalInput.value = tarif * volume;
+}
+
+if (wargaSelect && volumeInput && tarifInput && totalInput) {
+    wargaSelect.addEventListener('change', updateTarif);
+    volumeInput.addEventListener('input', updateTotal);
+    updateTarif(); // trigger awal
+}
 
 // ==================== Checkbox "Pilih Semua" ====================
 document.querySelectorAll("#checkAll").forEach((checkAllBox) => {

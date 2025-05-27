@@ -76,7 +76,15 @@
             Laporan Tagihan
             - {{ $bulan ? DateTime::createFromFormat('!m', $bulan)->format('F') : '' }} {{ $tahun }}
             @if (!empty($status))
-                - {{ ucfirst($status) }}
+                @php
+                    $statusLabel = match($status) {
+                        'settlement' => 'Lunas',
+                        'pending' => 'Belum Bayar',
+                        'menunggak' => 'Menunggak',
+                        default => ucfirst($status),
+                    };
+                @endphp
+                - {{ $statusLabel }}
             @endif
         </h2>
         <div style="margin-bottom: 18px; margin-top: 10px;">
@@ -139,7 +147,7 @@
         <div class="page-break"></div>
 
         {{-- Tagihan Tidak Tetap --}}
-        <h3>Tagihan Tidak Tetap</h3>
+        <h3>Tagihan Retasi</h3>
         @if($tagihanTidakTetap->count())
             <table>
                 <thead>

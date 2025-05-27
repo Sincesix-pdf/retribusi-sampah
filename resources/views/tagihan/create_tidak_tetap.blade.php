@@ -11,19 +11,8 @@
                     <label for="wargaSelect">Pilih Warga</label>
                     <select name="NIK" id="wargaSelect" class="form-control warga-select">
                         @foreach($warga as $w)
-                            <option value="{{ $w->NIK }}">
+                            <option value="{{ $w->NIK }}" data-tarif="{{ $w->jenisLayanan->tarif }}">
                                 {{ $w->NIK }} - {{ $w->pengguna->nama }}
-                            </option>
-                        @endforeach
-                    </select>
-
-
-                    <label for="jenisTarifSelect">Pilih Jenis Tarif</label>
-                    <select name="jenis_tarif" id="jenisTarifSelect" class="form-control">
-                        @foreach($tarif as $t)
-                            <option value="{{ $t->jenis_tarif }}" data-tarif="{{ $t->tarif_per_kubik }}">
-                                {{ ucfirst(str_replace('_', ' ', $t->jenis_tarif)) }} - Rp
-                                {{ number_format($t->tarif_per_kubik, 0, ',', '.') }} / m³
                             </option>
                         @endforeach
                     </select>

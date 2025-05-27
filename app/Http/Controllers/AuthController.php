@@ -71,7 +71,7 @@ class AuthController extends Controller
     {
         $jumlahWarga = Warga::count();
         $jumlahRetribusiTetap = Warga::where('jenis_retribusi', 'tetap')->count();
-        $jumlahRetribusiTidakTetap = Warga::where('jenis_retribusi', 'tidak_tetap')->count();
+        $jumlahRetribusiTidakTetap = Warga::where('jenis_retribusi', 'retasi')->count();
         $jumlahPetugas = Pengguna::whereIn('role_id', [1, 2, 3, 4])->count();
 
 

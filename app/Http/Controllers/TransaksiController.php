@@ -102,7 +102,7 @@ class TransaksiController extends Controller
         });
 
         $transaksiTidakTetap = $transaksi->filter(function ($t) {
-            return $t->tagihan && $t->tagihan->jenis_retribusi === 'tidak_tetap';
+            return $t->tagihan && $t->tagihan->jenis_retribusi === 'retasi';
         });
 
         // Statistik
@@ -189,11 +189,15 @@ class TransaksiController extends Controller
         });
 
         $transaksiTidakTetap = $transaksi->filter(function ($t) {
-            return $t->tagihan && $t->tagihan->jenis_retribusi === 'tidak_tetap';
+            return $t->tagihan && $t->tagihan->jenis_retribusi === 'retasi';
         });
 
-        // Total pembayaran hanya untuk status 'settlement'
-        $total_pembayaran = $transaksi->where('status', 'settlement')->sum('amount');
+        // Jika tidak ada transaksi di rentang tanggal, kosongkan data
+        if ($transaksiTetap->isEmpty() && $transaksiTidakTetap->isEmpty()) {
+            $total_pembayaran = 0;
+        } else {
+            $total_pembayaran = $transaksi->where('status', 'settlement')->sum('amount');
+        }
 
         $pdf = Pdf::loadView('transaksi.rekap_pdf', compact(
             'transaksiTetap',

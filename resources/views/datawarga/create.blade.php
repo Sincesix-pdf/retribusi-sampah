@@ -33,7 +33,8 @@
                         <option value="">Pilih Kecamatan</option>
                         @foreach($kecamatan as $kec)
                             <option value="{{ $kec->id }}" {{ old('kecamatan_id') == $kec->id ? 'selected' : '' }}>
-                                {{ $kec->nama }}</option>
+                                {{ $kec->nama }}
+                            </option>
                         @endforeach
                     </select>
 
@@ -69,25 +70,27 @@
                         <div class="text-danger">{{ $message }}</div>
                     @enderror
 
-                    <label>Jenis Retribusi:</label>
-                    <select name="jenis_retribusi" id="jenis_retribusi" class="form-control">
-                        <option value="tetap" {{ old('jenis_retribusi') == 'tetap' ? 'selected' : '' }}>Tetap</option>
-                        <option value="tidak_tetap" {{ old('jenis_retribusi') == 'tidak_tetap' ? 'selected' : '' }}>Tidak
-                            Tetap</option>
+                    <label>Kategori Retribusi:</label>
+                    <select name="kategori_retribusi" class="form-control" required>
+                        <option value="">Pilih Kategori</option>
+                        <option value="warga" {{ old('kategori_retribusi') == 'warga' ? 'selected' : '' }}>Warga</option>
+                        <option value="industri" {{ old('kategori_retribusi') == 'industri' ? 'selected' : '' }}>Industri
+                        </option>
+                        <option value="umkm" {{ old('kategori_retribusi') == 'umkm' ? 'selected' : '' }}>UMKM</option>
+                        <option value="event" {{ old('kategori_retribusi') == 'event' ? 'selected' : '' }}>Event</option>
                     </select>
 
-                    <label>Jenis Layanan:</label>
-                    <select name="jenis_layanan_id" id="jenis_layanan_id" class="form-control">
-                        <option value="">Pilih Jenis Layanan</option>
-                        @foreach($jenis_layanan as $jl)
-                            <option value="{{ $jl->id }}" {{ old('jenis_layanan_id') == $jl->id ? 'selected' : '' }}>
-                                {{ $jl->nama_paket }}
-                            </option>
-                        @endforeach
-                    </select>
-                    <small id="jenisLayananError" class="text-danger d-none">Jenis layanan tidak sesuai dengan jenis
-                        retribusi.</small>
-
+                    <label>Jenis Retribusi:</label><br>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="jenis_retribusi" id="jenis_tetap"
+                            value="tetap" {{ old('jenis_retribusi', 'tetap') == 'tetap' ? 'checked' : '' }} required>
+                        <label class="form-check-label" for="jenis_tetap">Tetap</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="jenis_retribusi" id="jenis_retasi"
+                            value="retasi" {{ old('jenis_retribusi') == 'retasi' ? 'checked' : '' }}>
+                        <label class="form-check-label" for="jenis_retasi">Retasi</label>
+                    </div>
                     <div class="mt-3">
                         <button type="submit" class="btn btn-primary">Simpan</button>
                         <a href="{{ route('datawarga.index') }}" class="btn btn-secondary">Kembali</a>

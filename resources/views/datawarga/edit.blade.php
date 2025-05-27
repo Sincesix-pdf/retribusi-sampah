@@ -24,26 +24,12 @@
                     <input type="text" name="nama" class="form-control" value="{{ $warga->pengguna->nama }}" required>
 
                     <label>Email:</label>
-                    <input type="email" name="email" class="form-control" value="{{ $warga->pengguna->email }}" required>
-
-                    <label>Password:</label>
-                    <div class="input-group">
-                        <input type="password" id="password" name="password" class="form-control">
-                        <span class="input-group-text" onclick="togglePassword('password', 'togglePasswordIcon1')" style="cursor: pointer;">
-                            <span id="togglePasswordIcon1" class="material-symbols-rounded">visibility</span>
-                        </span>
-                    </div>
-
-                    <label>Ulangi Password:</label>
-                    <div class="input-group">
-                        <input type="password" id="password_confirmation" name="password_confirmation" class="form-control">
-                        <span class="input-group-text" onclick="togglePassword('password_confirmation', 'togglePasswordIcon2')" style="cursor: pointer;">
-                            <span id="togglePasswordIcon2" class="material-symbols-rounded">visibility</span>
-                        </span>
-                    </div>
+                    <input type="email" name="email" class="form-control" value="{{ $warga->pengguna->email }}"
+                        required>
 
                     <label>Alamat:</label>
-                    <input type="text" name="alamat" class="form-control" value="{{ $warga->pengguna->alamat }}" required>
+                    <input type="text" name="alamat" class="form-control" value="{{ $warga->pengguna->alamat }}"
+                        required>
 
                     <label>Kecamatan:</label>
                     <select name="kecamatan_id" id="kecamatan_id" class="form-control">
@@ -55,7 +41,8 @@
                     </select>
 
                     <label>Kelurahan:</label>
-                    <select name="kelurahan_id" id="kelurahan_id" class="form-select" data-old="{{ $warga->kelurahan_id }}">
+                    <select name="kelurahan_id" id="kelurahan_id" class="form-select"
+                        data-old="{{ $warga->kelurahan_id }}">
                         <option value="">Semua Kelurahan</option>
                     </select>
 
@@ -64,32 +51,42 @@
 
                     <label>Jenis Kelamin:</label>
                     <select name="jenis_kelamin" class="form-control">
-                        <option value="Laki-laki" {{ $warga->pengguna->jenis_kelamin == 'Laki-laki' ? 'selected' : '' }}>Laki-laki</option>
-                        <option value="Perempuan" {{ $warga->pengguna->jenis_kelamin == 'Perempuan' ? 'selected' : '' }}>Perempuan</option>
+                        <option value="Laki-laki" {{ $warga->pengguna->jenis_kelamin == 'Laki-laki' ? 'selected' : '' }}>
+                            Laki-laki</option>
+                        <option value="Perempuan" {{ $warga->pengguna->jenis_kelamin == 'Perempuan' ? 'selected' : '' }}>
+                            Perempuan</option>
                     </select>
 
                     <label>Tanggal Lahir:</label>
-                    <input type="date" name="tanggal_lahir" class="form-control" value="{{ $warga->pengguna->tanggal_lahir }}" required>
+                    <input type="date" name="tanggal_lahir" class="form-control"
+                        value="{{ $warga->pengguna->tanggal_lahir }}" required>
 
                     <label>NIK:</label>
                     <input type="text" name="NIK" class="form-control" value="{{ $warga->NIK }}" readonly>
 
-                    <label>Jenis Retribusi:</label>
-                    <select name="jenis_retribusi" id="jenis_retribusi" class="form-control">
-                        <option value="tetap" {{ $warga->jenis_retribusi == 'tetap' ? 'selected' : '' }}>Tetap</option>
-                        <option value="tidak_tetap" {{ $warga->jenis_retribusi == 'tidak_tetap' ? 'selected' : '' }}>Tidak Tetap</option>
+                    <label>Kategori Retribusi Sampah:</label>
+                    <select name="kategori_retribusi" class="form-control" required>
+                        <option value="">Pilih Kategori</option>
+                        <option value="warga" {{ $warga->kategori_retribusi == 'warga' ? 'selected' : '' }}>Warga</option>
+                        <option value="industri" {{ $warga->kategori_retribusi == 'industri' ? 'selected' : '' }}>Industri
+                        </option>
+                        <option value="umkm" {{ $warga->kategori_retribusi == 'umkm' ? 'selected' : '' }}>UMKM</option>
+                        <option value="event" {{ $warga->kategori_retribusi == 'event' ? 'selected' : '' }}>Event</option>
                     </select>
 
-                    <label>Jenis Layanan:</label>
-                    <select name="jenis_layanan_id" id="jenis_layanan_id" class="form-control">
-                        <option value="">Pilih Jenis Layanan</option>
-                        @foreach($jenis_layanan as $layanan)
-                            <option value="{{ $layanan->id }}" {{ $warga->jenis_layanan_id == $layanan->id ? 'selected' : '' }}>
-                                {{ $layanan->nama_paket }}
-                            </option>
-                        @endforeach
-                    </select>
-                    <small id="jenisLayananError" class="text-danger d-none">Jenis layanan tidak sesuai dengan jenis retribusi.</small>
+                    <label>Jenis Retribusi:</label><br>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="jenis_retribusi" id="jenis_tetap"
+                            value="tetap" {{ $warga->jenis_retribusi == 'tetap' ? 'checked' : '' }} required>
+                        <label class="form-check-label" for="jenis_tetap">Tetap</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="jenis_retribusi" id="jenis_retasi"
+                            value="retasi" {{ $warga->jenis_retribusi == 'retasi' ? 'checked' : '' }}>
+                        <label class="form-check-label" for="jenis_retasi">Retasi</label>
+                    </div>
+                    <small id="jenisLayananError" class="text-danger d-none">Jenis layanan tidak sesuai dengan jenis
+                        retribusi.</small>
                     <div class="mt-3">
                         <button type="submit" class="btn btn-primary">Ubah</button>
                         <a href="{{ route('datawarga.index') }}" class="btn btn-secondary">Kembali</a>

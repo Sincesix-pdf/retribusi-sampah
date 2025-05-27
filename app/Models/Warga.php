@@ -17,6 +17,7 @@ class Warga extends Model
 
     protected $fillable = ['NIK', 
     'pengguna_id', 
+    'kategori_retribusi', 
     'jenis_retribusi', 
     'jenis_layanan_id', 
     'kelurahan_id'];

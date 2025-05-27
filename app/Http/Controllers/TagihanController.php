@@ -44,7 +44,7 @@ class TagihanController extends Controller
         $tanggal_tagihan = $request->input('tanggal_tagihan');
 
         // Filter tagihan tidak tetap berdasarkan status
-        $tagihanDiajukan = Tagihan::where('jenis_retribusi', 'tidak_tetap')
+        $tagihanDiajukan = Tagihan::where('jenis_retribusi', 'retasi')
             ->where('status', 'diajukan')
             ->when($tanggal_tagihan, function ($query) use ($tanggal_tagihan) {
                 return $query->whereDate('tanggal_tagihan', $tanggal_tagihan);
@@ -52,7 +52,7 @@ class TagihanController extends Controller
             ->with(['warga.pengguna', 'warga.jenisLayanan'])
             ->get();
 
-        $tagihanDisetujui = Tagihan::where('jenis_retribusi', 'tidak_tetap')
+        $tagihanDisetujui = Tagihan::where('jenis_retribusi', 'retasi')
             ->where('status', 'disetujui')
             ->when($tanggal_tagihan, function ($query) use ($tanggal_tagihan) {
                 return $query->whereDate('tanggal_tagihan', $tanggal_tagihan);
@@ -60,7 +60,7 @@ class TagihanController extends Controller
             ->with(['warga.pengguna', 'warga.jenisLayanan'])
             ->get();
 
-        $tagihanDitolak = Tagihan::where('jenis_retribusi', 'tidak_tetap')
+        $tagihanDitolak = Tagihan::where('jenis_retribusi', 'retasi')
             ->where('status', 'ditolak')
             ->when($tanggal_tagihan, function ($query) use ($tanggal_tagihan) {
                 return $query->whereDate('tanggal_tagihan', $tanggal_tagihan);
@@ -113,7 +113,7 @@ class TagihanController extends Controller
 
     public function createTidakTetap()
     {
-        $warga = Warga::where('jenis_retribusi', 'tidak_tetap')->get();
+        $warga = Warga::where('jenis_retribusi', 'retasi')->get();
         $tarif = TarifRetribusi::all();
         return view('tagihan.create_tidak_tetap', compact('warga', 'tarif'));
     }
@@ -132,7 +132,7 @@ class TagihanController extends Controller
         // Simpan tagihan baru dan langsung ajukan ke Kepala Dinas
         Tagihan::create([
             'NIK' => $request->NIK,
-            'jenis_retribusi' => 'tidak_tetap',
+            'jenis_retribusi' => 'retasi',
             'tarif' => $request->tarif,
             'volume' => $request->volume,
             'total_tagihan' => $total_tagihan,
@@ -140,9 +140,9 @@ class TagihanController extends Controller
             'status' => 'diajukan', // Langsung ubah status menjadi "diajukan"
         ]);
 
-        logAktivitas('Buat Tagihan Tidak Tetap', "Tagihan untuk NIK {$request->NIK} berhasil dibuat");
+        logAktivitas('Buat Tagihan Retasi', "Tagihan untuk NIK {$request->NIK} berhasil dibuat");
 
-        return redirect()->route('tagihan.index.tidak_tetap')->with('success', 'Tagihan Tidak Tetap Berhasil Dibuat dan Diajukan ke Kepala Dinas');
+        return redirect()->route('tagihan.index.tidak_tetap')->with('success', 'Tagihan Retasi Berhasil Dibuat dan Diajukan ke Kepala Dinas');
     }
 
     public function generateMidtransSnapUrl($tagihan)
@@ -210,7 +210,7 @@ class TagihanController extends Controller
 
         // Ambil data tagihan tidak tetap yang diajukan
         $tagihanTidakTetap = Tagihan::where('status', 'diajukan')
-            ->where('jenis_retribusi', 'tidak_tetap')
+            ->where('jenis_retribusi', 'retasi')
             ->with('warga.pengguna')
             ->paginate(10);
 
@@ -354,7 +354,7 @@ class TagihanController extends Controller
             ->get();
 
         // Ambil semua tagihan tidak tetap sesuai bulan & tahun jika ada
-        $tagihanTidakTetap = Tagihan::where('jenis_retribusi', 'tidak_tetap')
+        $tagihanTidakTetap = Tagihan::where('jenis_retribusi', 'retasi')
             ->when($bulan, function ($query) use ($bulan) {
                 $query->whereMonth('tanggal_tagihan', $bulan);
             })
@@ -396,7 +396,7 @@ class TagihanController extends Controller
         ));
     }
 
-    // laporan Transaksi (role keuangan)
+    // laporan tagihan (role keuangan)
     public function cetakLaporanTagihan(Request $request)
     {
         $bulan = $request->input('bulan');
@@ -405,31 +405,34 @@ class TagihanController extends Controller
         $tanggalMulai = $request->input('tanggal_mulai');
         $tanggalSelesai = $request->input('tanggal_selesai');
 
-        $status = match ($statusInput) {
-            'settlement' => 'lunas',
-            'pending' => 'belum bayar',
-            'menunggak' => 'menunggak',
-            default => null,
-        };
-
-        // Ambil semua tagihan tetap & tidak tetap
-        $tagihanTetap = Tagihan::with(['warga.pengguna'])
-            ->where('jenis_retribusi', 'tetap')
-            ->where('tahun', $tahun)
-            ->when($bulan, fn($q) => $q->where('bulan', $bulan))
-            ->get();
-
-        $tagihanTidakTetap = Tagihan::with(['warga.pengguna'])
-            ->where('jenis_retribusi', 'tidak_tetap')
-            ->when($bulan, fn($q) => $q->whereMonth('tanggal_tagihan', $bulan))
-            ->when($tahun, fn($q) => $q->whereYear('tanggal_tagihan', $tahun))
-            ->get();
-
-        // Ambil semua transaksi yang terkait tagihan di atas
-        $tagihanIds = $tagihanTetap->pluck('id')->merge($tagihanTidakTetap->pluck('id'))->unique()->toArray();
-
+        // Ambil semua transaksi yang terkait filter
         $transaksi = Transaksi::with(['tagihan.warga.pengguna'])
-            ->whereIn('tagihan_id', $tagihanIds)
+            ->when($tahun, function ($query) use ($tahun) {
+                $query->whereHas('tagihan', function ($query) use ($tahun) {
+                    $query->where(function ($q) use ($tahun) {
+                        $q->where('tahun', $tahun)
+                            ->orWhereYear('tanggal_tagihan', $tahun);
+                    });
+                });
+            })
+            ->when($bulan, function ($query) use ($bulan) {
+                $query->whereHas('tagihan', function ($query) use ($bulan) {
+                    $query->where(function ($q) use ($bulan) {
+                        $q->where('bulan', $bulan)
+                            ->orWhereMonth('tanggal_tagihan', $bulan);
+                    });
+                });
+            })
+            ->when($statusInput, function ($query) use ($statusInput) {
+                if ($statusInput === 'menunggak') {
+                    $query->where(function ($q) {
+                        $q->where('status', 'pending')
+                            ->whereRaw('created_at <= NOW() - INTERVAL 30 DAY');
+                    });
+                } else {
+                    $query->where('status', $statusInput);
+                }
+            })
             ->when($tanggalMulai, function ($query) use ($tanggalMulai) {
                 $query->whereDate('created_at', '>=', $tanggalMulai);
             })
@@ -443,7 +446,29 @@ class TagihanController extends Controller
                 return $t;
             });
 
+        // Ambil ID tagihan dari transaksi yang sudah difilter
+        $tagihanIds = $transaksi->pluck('tagihan_id')->unique();
+
+        // Tagihan Tetap yang terkait transaksi (filtered)
+        $tagihanTetap = Tagihan::whereIn('id', $tagihanIds)
+            ->where('jenis_retribusi', 'tetap')
+            ->with('warga.pengguna')
+            ->get();
+
+        // Tagihan Tidak Tetap (Retasi) yang terkait transaksi (filtered)
+        $tagihanTidakTetap = Tagihan::whereIn('id', $tagihanIds)
+            ->where('jenis_retribusi', 'retasi')
+            ->with('warga.pengguna')
+            ->get();
+
         $total_pembayaran = $transaksi->where('status', 'settlement')->sum('amount');
+
+        $status = match ($statusInput) {
+            'settlement' => 'lunas',
+            'pending' => 'belum bayar',
+            'menunggak' => 'menunggak',
+            default => null,
+        };
 
         logAktivitas(
             'Mencetak laporan tagihan',

@@ -46,10 +46,10 @@ class PenggunaSeeder extends Seeder
                 'role_id' => $roles['kepala_dinas']->id ?? null,
             ],
             [
-                'nama' => 'Pendataan User',
+                'nama' => 'Petugas Pendataan User',
                 'jenis_kelamin' => 'Perempuan',
                 'tanggal_lahir' => '1999-04-04',
-                'email' => 'pendataan@test.com',
+                'email' => 'petugaspendataan@test.com',
                 'alamat' => 'Jl. Kediri No. 4',
                 'no_hp' => '084444444444',
                 'password' => Hash::make('pendataan123'),

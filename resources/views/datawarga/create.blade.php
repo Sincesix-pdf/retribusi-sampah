@@ -2,7 +2,7 @@
     <div class="content-container pb-3">
         <div class="card custom-card">
             <div class="card-header custom-card-header">
-                <h5 class="mb-0">Tambah Warga</h5>
+                <h5 class="mb-0">Tambah WR</h5>
             </div>
             <div class="card-body">
 
@@ -78,7 +78,7 @@
                         </option>
                         <option value="umkm" {{ old('kategori_retribusi') == 'umkm' ? 'selected' : '' }}>UMKM</option>
                         <option value="event" {{ old('kategori_retribusi') == 'event' ? 'selected' : '' }}>Event</option>
-                    </select>
+                    </select><br>
 
                     <label>Jenis Retribusi:</label><br>
                     <div class="form-check form-check-inline">

@@ -162,12 +162,12 @@ class TransaksiController extends Controller
             })
             // Filter tanggal jika ada
             ->when($tanggalMulai, function ($query) use ($tanggalMulai) {
-                $query->whereDate('created_at', '>=', $tanggalMulai);
+                $query->whereDate('updated_at', '>=', $tanggalMulai);
             })
             ->when($tanggalSelesai, function ($query) use ($tanggalSelesai) {
-                $query->whereDate('created_at', '<=', $tanggalSelesai);
+                $query->whereDate('updated_at', '<=', $tanggalSelesai);
             })
-            ->orderBy('created_at', 'desc')
+            ->orderBy('updated_at', 'desc')
             ->get();
 
         // Menambahkan status menunggak
@@ -230,11 +230,23 @@ class TransaksiController extends Controller
         })
             ->orderBy('created_at', 'desc')
             ->get()
-            ->sortByDesc(fn($t) => $t->status == 'pending')
-            ->map(function ($t) {
-                $t->status_menunggak = $t->created_at->addDays(30)->lt(now()) && $t->status != 'settlement';
-                return $t;
-            });
+            ->sortByDesc(fn($t) => $t->status == 'pending');
+
+        // Tambahkan status_menunggak dan akumulasi_tunggakan
+        $transaksi = $transaksi->map(function ($t) use ($transaksi) {
+            $t->status_menunggak = $t->created_at->addDays(30)->lt(now()) && $t->status != 'settlement';
+            $nik = $t->tagihan->warga->NIK ?? null;
+            if ($nik) {
+                $t->akumulasi_tunggakan = $transaksi->filter(function ($item) use ($nik) {
+                    return ($item->tagihan->warga->NIK ?? null) == $nik
+                        && $item->created_at->addDays(30)->lt(now())
+                        && $item->status != 'settlement';
+                })->count();
+            } else {
+                $t->akumulasi_tunggakan = 0;
+            }
+            return $t;
+        });
 
         // Pakai helper
         $tunggakan = $this->hitungTunggakan($transaksi);
@@ -293,22 +305,8 @@ class TransaksiController extends Controller
         $warga = $transaksi->tagihan->warga;
         $no_hp = $warga->pengguna->no_hp;
         $nama = $warga->pengguna->nama;
-        $invoice = $transaksi->order_id;
-        $amount = number_format($transaksi->amount, 0, ',', '.');
-        $tanggal = Carbon::now('Asia/Jakarta')->translatedFormat('d F Y H:i:s');
 
-        $pesan = "
-============================
-        *BUKTI PEMBAYARAN*
-============================
-Invoice: *$invoice*
-Nama: *$nama*
-Jumlah: *Rp$amount*
-Tanggal: *$tanggal*
-============================
-Terima kasih! Pembayaran Anda telah berhasil. 
-Harap simpan bukti pembayaran ini.
-";
+        $pesan = "Halo *$nama*, pembayaran berhasil ✅\n\nUntuk cetak nota bisa kunjungi website kami di:\nhttps://loosely-content-bird.ngrok-free.app";
 
         Http::withHeaders(['Authorization' => $apiKey])
             ->post('https://api.fonnte.com/send', [
@@ -316,6 +314,7 @@ Harap simpan bukti pembayaran ini.
                 'message' => $pesan,
             ]);
     }
+
 
     public function sendReminder($id)
     {
@@ -511,7 +510,6 @@ Harap simpan bukti pembayaran ini.
         $bulan = $request->input('bulan');
         $tahun = $request->input('tahun', date('Y'));
 
-        // Ambil semua transaksi yang 'settlement' dan sudah dimuat relasinya
         $transaksi = Transaksi::with(['tagihan.warga'])
             ->where('status', 'settlement')
             ->whereHas('tagihan', function ($query) use ($tahun, $bulan) {
@@ -529,18 +527,21 @@ Harap simpan bukti pembayaran ini.
             })
             ->get();
 
-        // Pendapatan per bulan
+        // Pendapatan per bulan (hanya bulan yang ada data, urut naik)
         $perBulan = $transaksi->groupBy(function ($item) {
             $tagihan = $item->tagihan;
             if ($tagihan->tanggal_tagihan) {
-                return Carbon::parse($tagihan->tanggal_tagihan)->translatedFormat('F');
+                return (int) Carbon::parse($tagihan->tanggal_tagihan)->format('n');
             } elseif ($tagihan->bulan && $tagihan->tahun) {
-                return Carbon::createFromDate($tagihan->tahun, $tagihan->bulan, 1)->translatedFormat('F');
+                return (int) $tagihan->bulan;
             } else {
-                return 'Tidak Diketahui';
+                return null;
             }
-        })->map(function ($group) {
-            return $group->sum('amount');
+        })->filter(function ($group, $bulanNum) {
+            return $bulanNum !== null && $bulanNum > 0;
+        })->sortKeys()->mapWithKeys(function ($group, $bulanNum) {
+            $namaBulan = Carbon::create()->month($bulanNum)->translatedFormat('F');
+            return [$namaBulan => $group->sum('amount')];
         });
 
         // Pendapatan per jenis retribusi
@@ -550,19 +551,24 @@ Harap simpan bukti pembayaran ini.
             return $group->sum('amount');
         });
 
-        // Jumlah warga membayar per bulan
+        // Jumlah warga membayar per bulan (hanya bulan yang ada data, urut naik)
         $perWargaBayar = $transaksi->groupBy(function ($item) {
             $tagihan = $item->tagihan;
             if ($tagihan->tanggal_tagihan) {
-                return Carbon::parse($tagihan->tanggal_tagihan)->translatedFormat('F');
+                return (int) Carbon::parse($tagihan->tanggal_tagihan)->format('n');
             } elseif ($tagihan->bulan && $tagihan->tahun) {
-                return Carbon::createFromDate($tagihan->tahun, $tagihan->bulan, 1)->translatedFormat('F');
+                return (int) $tagihan->bulan;
             } else {
-                return 'Tidak Diketahui';
+                return null;
             }
-        })->map(function ($group) {
-            return $group->count(); // Jumlah transaksi
+        })->filter(function ($group, $bulanNum) {
+            return $bulanNum !== null && $bulanNum > 0;
+        })->sortKeys()->mapWithKeys(function ($group, $bulanNum) {
+            $namaBulan = Carbon::create()->month($bulanNum)->translatedFormat('F');
+            return [$namaBulan => $group->count()];
         });
+
+        logAktivitas("Melihat grafik pendatapan", "Melihat grafik pendapatan untuk bulan {$bulan} tahun {$tahun}");
 
         return view('grafik.grafik_pendapatan', compact(
             'perBulan',

@@ -11,7 +11,8 @@
                     @if ($jumlahTunggakan > 0)
                         <div class="alert alert-danger">
                             <strong>Perhatian!</strong> Anda memiliki {{ $jumlahTunggakan }} bulan tunggakan
-                            dengan total <strong>Rp{{ number_format($totalTunggakan, 0, ',', '.') }}</strong>. Segera melakukan pembayaran. 
+                            dengan total <strong>Rp{{ number_format($totalTunggakan, 0, ',', '.') }}</strong>. Segera melakukan
+                            pembayaran.
                             <a href="#"
                                 onclick="event.preventDefault(); document.getElementById('rincian-tunggakan').classList.toggle('d-none');"
                                 style="text-decoration: underline;">lihat rincian</a>
@@ -49,7 +50,12 @@
                                             @if ($t->status == 'settlement')
                                                 <span class="badge bg-success">Lunas</span>
                                             @elseif ($t->status_menunggak)
-                                                <span class="badge bg-danger">Menunggak</span>
+                                                <span class="badge bg-danger">
+                                                    Menunggak
+                                                    @if (!empty($t->akumulasi_tunggakan) && $t->akumulasi_tunggakan > 1)
+                                                        ({{ $t->akumulasi_tunggakan }} bulan)
+                                                    @endif
+                                                </span>
                                             @else
                                                 <span class="badge bg-warning">Belum Bayar</span>
                                             @endif

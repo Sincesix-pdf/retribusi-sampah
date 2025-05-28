@@ -434,12 +434,12 @@ class TagihanController extends Controller
                 }
             })
             ->when($tanggalMulai, function ($query) use ($tanggalMulai) {
-                $query->whereDate('created_at', '>=', $tanggalMulai);
+                $query->whereDate('updated_at', '>=', $tanggalMulai);
             })
             ->when($tanggalSelesai, function ($query) use ($tanggalSelesai) {
-                $query->whereDate('created_at', '<=', $tanggalSelesai);
+                $query->whereDate('updated_at', '<=', $tanggalSelesai);
             })
-            ->orderBy('created_at', 'desc')
+            ->orderBy('updated_at', 'desc')
             ->get()
             ->map(function ($t) {
                 $t->status_menunggak = $t->created_at->addDays(30)->lt(now()) && $t->status !== 'settlement';

@@ -156,6 +156,7 @@
                         <th>Tahun</th>
                         <th>Jumlah</th>
                         <th>Status</th>
+                        <th>Tanggal Bayar</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -177,6 +178,7 @@
                                     Belum Bayar
                                 @endif
                             </td>
+                            <td>{{ $trx->updated_at }}</td>
                         </tr>
                     @endforeach
                 </tbody>

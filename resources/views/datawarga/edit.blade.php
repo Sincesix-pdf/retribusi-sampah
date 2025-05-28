@@ -2,7 +2,7 @@
     <div class="content-container pb-3">
         <div class="card custom-card">
             <div class="card-header custom-card-header">
-                <h5 class="mb-0">Edit Warga</h5>
+                <h5 class="mb-0">Edit WR</h5>
             </div>
             <div class="card-body">
 
@@ -72,7 +72,7 @@
                         </option>
                         <option value="umkm" {{ $warga->kategori_retribusi == 'umkm' ? 'selected' : '' }}>UMKM</option>
                         <option value="event" {{ $warga->kategori_retribusi == 'event' ? 'selected' : '' }}>Event</option>
-                    </select>
+                    </select><br>
 
                     <label>Jenis Retribusi:</label><br>
                     <div class="form-check form-check-inline">
@@ -85,8 +85,6 @@
                             value="retasi" {{ $warga->jenis_retribusi == 'retasi' ? 'checked' : '' }}>
                         <label class="form-check-label" for="jenis_retasi">Retasi</label>
                     </div>
-                    <small id="jenisLayananError" class="text-danger d-none">Jenis layanan tidak sesuai dengan jenis
-                        retribusi.</small>
                     <div class="mt-3">
                         <button type="submit" class="btn btn-primary">Ubah</button>
                         <a href="{{ route('datawarga.index') }}" class="btn btn-secondary">Kembali</a>

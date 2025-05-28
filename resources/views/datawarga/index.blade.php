@@ -59,9 +59,7 @@
                                 <th>Kelurahan</th>
                                 <th>Kecamatan</th>
                                 <th>No HP</th>
-                                <th>Jenis Kelamin</th>
                                 <th>Kategori</th>
-                                <th>Jenis Retribusi</th>
                                 <th>Aksi</th>
                             </tr>
                         </thead>
@@ -75,9 +73,7 @@
                                     <td>{{ $w->kelurahan->nama ?? '-' }}</td>
                                     <td>{{ $w->kelurahan->kecamatan->nama ?? '-' }}</td>
                                     <td>{{ $w->pengguna->no_hp }}</td>
-                                    <td>{{ $w->pengguna->jenis_kelamin }}</td>
                                     <td>{{ ucwords(str_replace('_', ' ', $w->kategori_retribusi)) }}</td>
-                                    <td>{{ ucwords(str_replace('_', ' ', $w->jenis_retribusi)) }}</td>
                                     <td class="text-center">
                                         <a href="{{ route('datawarga.edit', $w->NIK) }}" class="btn btn-sm btn-primary">
                                             <i class="fas fa-edit"></i>

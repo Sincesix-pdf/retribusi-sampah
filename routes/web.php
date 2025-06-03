@@ -63,10 +63,7 @@ Route::middleware(['auth', 'role:pendataan'])->group(function () {
     Route::put('/pendataan/datawarga/{NIK}', [DataWargaController::class, 'update'])->name('datawarga.update');
 
     Route::delete('/pendataan/datawarga/{warga}', [DataWargaController::class, 'destroy'])->name('datawarga.destroy');
-    Route::get('/get-kelurahan', function (Request $request) {
-        $kelurahan = Kelurahan::where('kecamatan_id', $request->kecamatan_id)->get();
-        return response()->json($kelurahan);
-    });
+
 
     // Akses Kelola Tagihan
     // Index dan Create untuk Tagihan Tetap
@@ -108,6 +105,11 @@ Route::middleware(['auth', 'role:keuangan,warga'])->group(function () {
     Route::post('/transaksi/{id}/sendReminder', [TransaksiController::class, 'sendReminder'])->name('transaksi.sendReminder');
 });
 
+// get kelurahan
+Route::get('/get-kelurahan', function (Request $request) {
+    $kelurahan = Kelurahan::where('kecamatan_id', $request->kecamatan_id)->get();
+    return response()->json($kelurahan);
+});
 
 // route handle webhook ada di /routes/api.php
 

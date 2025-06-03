@@ -119,7 +119,7 @@
                                         <thead class="table-primary">
                                             <tr>
                                                 <th>No</th>
-                                                <th>Order ID</th>
+                                                <th>Invoice</th>
                                                 <th>Periode</th>
                                                 <th>NIK</th>
                                                 <th>Nama</th>
@@ -190,7 +190,7 @@
                                         <thead class="table-success">
                                             <tr>
                                                 <th>No</th>
-                                                <th>Order ID</th>
+                                                <th>Invoice</th>
                                                 <th>Tanggal Tagihan</th>
                                                 <th>NIK</th>
                                                 <th>Nama</th>
@@ -245,7 +245,8 @@
                 </div>
                 <div class="mt-3">
                     <!-- Tombol Cetak Laporan dengan Modal -->
-                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalCetakLaporan">
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                        data-bs-target="#modalCetakLaporan">
                         <i class="fa-solid fa-print"></i> Cetak Laporan
                     </button>
                 </div>
@@ -254,10 +255,12 @@
                 <div class="modal fade" id="modalCetakLaporan" tabindex="-1" aria-labelledby="modalCetakLaporanLabel"
                     aria-hidden="true">
                     <div class="modal-dialog">
-                        <form action="{{ route('transaksi.cetak') }}" method="GET" target="_blank" class="modal-content">
+                        <form action="{{ route('transaksi.cetak') }}" method="GET" target="_blank"
+                            class="modal-content">
                             <div class="modal-header">
                                 <h5 class="modal-title" id="modalCetakLaporanLabel">Filter Cetak Laporan</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
                                 <div class="mb-3">
@@ -298,10 +301,31 @@
                                         <option value="menunggak">Menunggak</option>
                                     </select>
                                 </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-print"></i> Cetak</button>
-                            </div>
+                                <div class="mb-3">
+                                    <label>Kecamatan:</label>
+                                    <select name="kecamatan_id" id="kecamatan_id" class="form-control">
+                                        <option value="">Pilih Kecamatan</option>
+                                        @foreach($kecamatan as $kec)
+                                            <option value="{{ $kec->id }}" {{ old('kecamatan_id') == $kec->id ? 'selected' : '' }}>
+                                                {{ $kec->nama }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+
+                                    <div class="mb-3">
+                                        <label for="kelurahan_id" class="form-label">Kelurahan</label>
+                                        <select name="kelurahan_id" id="kelurahan_id" class="form-select">
+                                            <option value="">Pilih Kelurahan</option>
+                                        </select>
+                                        @error('kelurahan_id')
+                                            <div class="text-danger">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-print"></i>
+                                        Cetak</button>
+                                </div>
                         </form>
                     </div>
                 </div>

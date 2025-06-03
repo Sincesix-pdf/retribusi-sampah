@@ -48,10 +48,14 @@
     <!-- SweetAlert2 CDN -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+    <!-- DatePicker -->
+     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
     <!-- Custom Scripts -->
     <script src="{{ asset('js/sidebar.js') }}"></script>
     <script src="{{ asset('js/script.js') }}"></script>
     <script src="{{ asset('js/chart.js') }}"></script>
+    
 </body>
 
 </html>

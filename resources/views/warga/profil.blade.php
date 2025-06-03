@@ -12,6 +12,8 @@
                 <hr>
                 <p>No HP: {{ Auth::user()->no_hp }}</p>
                 <hr>
+                <p>Kategori Retribusi: {{ ucwords(str_replace('_', ' ', Auth::user()->warga->kategori_retribusi)) }}</p>
+                <hr>
                 <p>Jenis retribusi: {{ ucwords(str_replace('_', ' ', Auth::user()->warga->jenis_retribusi)) }}</p>
             </div>
         </div>

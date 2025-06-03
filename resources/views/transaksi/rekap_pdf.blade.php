@@ -99,7 +99,7 @@
     <div class="wrap-border">
         {{-- HEADER RESMI --}}
         <div class="header">
-            <img src="{{ public_path('gambar/Logo.png') }}" style="filter: grayscale(100%);"
+            <img src="{{ public_path('gambar/logo_nota.png') }}" style="filter: grayscale(100%);"
                 alt="Logo Kabupaten Malang">
             <div style="margin-left: 10px;">
                 <div class="instansi">PEMERINTAH KABUPATEN MALANG<br>DINAS LINGKUNGAN HIDUP</div>
@@ -137,9 +137,24 @@
                     {{ \Carbon\Carbon::parse($tanggalSelesai)->format('d-m-Y') }}
                 </div>
             @endif
+
+            {{-- Tampilkan kecamatan dan kelurahan jika ada --}}
+            @if (!empty($kecamatan_id))
+                <div><strong>Kecamatan:</strong>
+                    {{ \App\Models\Kecamatan::find($kecamatan_id)?->nama ?? '-' }}
+                </div>
+            @endif
+
+            @if (!empty($kelurahan_id))
+                <div><strong>Kelurahan:</strong>
+                    {{ \App\Models\Kelurahan::find($kelurahan_id)?->nama ?? '-' }}
+                </div>
+            @endif
+
             <div><strong>Dicetak pada:</strong> {{ \Carbon\Carbon::now()->format('d-m-Y H:i:s') }}</div>
             <div><strong>Total Pemasukan:</strong> Rp{{ number_format($total_pembayaran, 0, ',', '.') }}</div>
         </div>
+
 
         {{-- Transaksi Tagihan Tetap --}}
         @php $no = 1; @endphp
@@ -149,9 +164,9 @@
                 <thead>
                     <tr>
                         <th>No</th>
-                        <th>Order ID</th>
+                        <th>Invoice</th>
                         <th>NIK</th>
-                        <th>Nama Warga</th>
+                        <th>Nama</th>
                         <th>Bulan</th>
                         <th>Tahun</th>
                         <th>Jumlah</th>
@@ -198,7 +213,7 @@
                 <thead>
                     <tr>
                         <th>No</th>
-                        <th>Order ID</th>
+                        <th>Invoice</th>
                         <th>Tanggal Tagihan</th>
                         <th>NIK</th>
                         <th>Nama</th>

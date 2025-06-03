@@ -58,7 +58,7 @@
     <div class="wrap-border">
         {{-- HEADER RESMI --}}
         <div class="header">
-            <img src="{{ public_path('gambar/Logo.png') }}" style="filter: grayscale(100%);" alt="Logo Kabupaten Malang">
+            <img src="{{ public_path('gambar/logo_nota.png') }}" style="filter: grayscale(100%);" alt="Logo Kabupaten Malang">
             <div style="margin-left: 10px;">
                 <div class="instansi">PEMERINTAH KABUPATEN MALANG<br>DINAS LINGKUNGAN HIDUP</div>
                 <div class="alamat">
@@ -103,7 +103,7 @@
                     <tr>
                         <th>No</th>
                         <th>NIK</th>
-                        <th>Nama Warga</th>
+                        <th>Nama</th>
                         <th>Bulan</th>
                         <th>Tahun</th>
                         <th>Jumlah</th>
@@ -154,7 +154,7 @@
                     <tr>
                         <th>No</th>
                         <th>NIK</th>
-                        <th>Nama Warga</th>
+                        <th>Nama</th>
                         <th>Tanggal Tagihan</th>
                         <th>Volume</th>
                         <th>Jumlah</th>

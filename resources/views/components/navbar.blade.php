@@ -38,9 +38,9 @@
                 <li class="nav-item">
                     <a href="{{ route('datawarga.index') }}" class="nav-link">
                         <span class="material-symbols-rounded">patient_list</span>
-                        <span class="nav-label">Kelola WR</span>
+                        <span class="nav-label">Kelola Wajib Retribusi</span>
                     </a>
-                    <span class="nav-tooltip">Kelola WR</span>
+                    <span class="nav-tooltip">Kelola Wajib Retribusi</span>
                 </li>
             @endif
 

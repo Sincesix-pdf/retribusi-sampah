@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Models\Kecamatan;
+use App\Models\Kelurahan;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -306,6 +308,9 @@ class TagihanController extends Controller
         $bulan = $request->input('bulan');
         $tahun = $request->input('tahun', date('Y'));
         $status = $request->input('status');
+        $kecamatan = Kecamatan::all();
+        $kecamatan_id = $request->input('kecamatan_id');
+        $kelurahan_id = $request->input('kelurahan_id');
 
         // Ambil semua transaksi dengan filter
         $transaksi = Transaksi::with(['tagihan.warga.pengguna'])
@@ -393,6 +398,7 @@ class TagihanController extends Controller
             'tagihanTidakTetap',
             'transaksi',
             'menunggak',
+            'kecamatan'
         ));
     }
 
@@ -404,6 +410,8 @@ class TagihanController extends Controller
         $statusInput = $request->input('status');
         $tanggalMulai = $request->input('tanggal_mulai');
         $tanggalSelesai = $request->input('tanggal_selesai');
+        $kecamatan_id = $request->input('kecamatan_id');
+        $kelurahan_id = $request->input('kelurahan_id');
 
         // Ambil semua transaksi yang terkait filter
         $transaksi = Transaksi::with(['tagihan.warga.pengguna'])
@@ -438,6 +446,16 @@ class TagihanController extends Controller
             })
             ->when($tanggalSelesai, function ($query) use ($tanggalSelesai) {
                 $query->whereDate('updated_at', '<=', $tanggalSelesai);
+            })
+             ->when($kecamatan_id, function ($query) use ($kecamatan_id) {
+                $query->whereHas('tagihan.warga.kelurahan', function ($q) use ($kecamatan_id) {
+                    $q->where('kecamatan_id', $kecamatan_id);
+                });
+            })
+            ->when($kelurahan_id, function ($query) use ($kelurahan_id) {
+                $query->whereHas('tagihan.warga', function ($q) use ($kelurahan_id) {
+                    $q->where('kelurahan_id', $kelurahan_id);
+                });
             })
             ->orderBy('updated_at', 'desc')
             ->get()
@@ -484,7 +502,14 @@ class TagihanController extends Controller
             'tahun',
             'status',
             'tanggalMulai',
-            'tanggalSelesai'
+            'tanggalSelesai',
+            'kecamatan_id',
+            'kelurahan_id'
         ))->setPaper('A4', 'landscape')->stream("Laporan_Tagihan_{$tahun}" . ($bulan ? "_$bulan" : "") . ".pdf");
+    }
+    public function getKelurahan($kecamatan_id)
+    {
+        $kelurahan = Kelurahan::where('kecamatan_id', $kecamatan_id)->get();
+        return response()->json($kelurahan);
     }
 }

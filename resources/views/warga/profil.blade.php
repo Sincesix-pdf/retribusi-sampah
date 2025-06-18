@@ -3,7 +3,7 @@
         {{-- Card Profil --}}
         <div class="card custom-card mb-4">
             <div class="card-header custom-card-header">
-                <h5 class="mb-0">Profil Warga</h5>
+                <h5 class="mb-0">Profil Wajib Retribusi</h5>
             </div>
             <div class="card-body">
                 <p>Nama: {{ Auth::user()->nama }}</p>

@@ -87,10 +87,28 @@
                 - {{ $statusLabel }}
             @endif
         </h2>
+
+        {{-- Info Laporan --}}
         <div style="margin-bottom: 18px; margin-top: 10px;">
             @if (!empty($tanggalMulai) && !empty($tanggalSelesai))
-                <div><strong>Periode:</strong> {{ \Carbon\Carbon::parse($tanggalMulai)->format('d-m-Y') }} s/d {{ \Carbon\Carbon::parse($tanggalSelesai)->format('d-m-Y') }}</div>
+                <div><strong>Periode:</strong> {{ \Carbon\Carbon::parse($tanggalMulai)->format('d-m-Y') }} s/d
+                    {{ \Carbon\Carbon::parse($tanggalSelesai)->format('d-m-Y') }}
+                </div>
             @endif
+
+            {{-- Tampilkan kecamatan dan kelurahan jika ada --}}
+            @if (!empty($kecamatan_id))
+                <div><strong>Kecamatan:</strong>
+                    {{ \App\Models\Kecamatan::find($kecamatan_id)?->nama ?? '-' }}
+                </div>
+            @endif
+
+            @if (!empty($kelurahan_id))
+                <div><strong>Kelurahan:</strong>
+                    {{ \App\Models\Kelurahan::find($kelurahan_id)?->nama ?? '-' }}
+                </div>
+            @endif
+
             <div><strong>Dicetak pada:</strong> {{ \Carbon\Carbon::now()->format('d-m-Y H:i:s') }}</div>
             <div><strong>Total Pemasukan:</strong> Rp{{ number_format($total_pembayaran, 0, ',', '.') }}</div>
         </div>
@@ -106,9 +124,9 @@
                         <th>Nama</th>
                         <th>Bulan</th>
                         <th>Tahun</th>
-                        <th>Jumlah</th>
                         <th>Status</th>
                         <th>Status Transaksi</th>
+                        <th>Jumlah</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -123,7 +141,6 @@
                             <td>{{ $t->warga->pengguna->nama ?? '-' }}</td>
                             <td>{{ $t->bulan ? date('F', mktime(0, 0, 0, $t->bulan, 1)) : '-' }}</td>
                             <td>{{ $t->tahun ?? '-' }}</td>
-                            <td>Rp{{ number_format($trx->amount ?? 0, 0, ',', '.') }}</td>
                             <td>{{ $t->status }}</td>
                             <td>
                                 @if ($trx && $trx->status == 'settlement')
@@ -136,6 +153,7 @@
                                     -
                                 @endif
                             </td>
+                            <td>Rp{{ number_format($trx->amount ?? 0, 0, ',', '.') }}</td>
                         </tr>
                     @endforeach
                 </tbody>
@@ -157,9 +175,9 @@
                         <th>Nama</th>
                         <th>Tanggal Tagihan</th>
                         <th>Volume</th>
-                        <th>Jumlah</th>
                         <th>Status</th>
                         <th>Status Transaksi</th>
+                        <th>Jumlah</th>
                     </tr>
                 </thead>
                 <tbody>

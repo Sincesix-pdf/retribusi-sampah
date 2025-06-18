@@ -262,6 +262,27 @@
                                         <option value="menunggak" {{ request('status') == 'menunggak' ? 'selected' : '' }}>Menunggak</option>
                                     </select>
                                 </div>
+                                <div class="mb-3">
+                                    <label>Kecamatan:</label>
+                                    <select name="kecamatan_id" id="kecamatan_id" class="form-control">
+                                        <option value="">Pilih Kecamatan</option>
+                                        @foreach($kecamatan as $kec)
+                                            <option value="{{ $kec->id }}" {{ old('kecamatan_id') == $kec->id ? 'selected' : '' }}>
+                                                {{ $kec->nama }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+
+                                    <div class="mb-3">
+                                        <label for="kelurahan_id" class="form-label">Kelurahan</label>
+                                        <select name="kelurahan_id" id="kelurahan_id" class="form-select">
+                                            <option value="">Pilih Kelurahan</option>
+                                        </select>
+                                        @error('kelurahan_id')
+                                            <div class="text-danger">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
                             </div>
                             <div class="modal-footer">
                                 <button type="submit" class="btn btn-primary"><i class="fa-solid fa-print"></i> Cetak</button>

@@ -256,10 +256,20 @@ class TransaksiController extends Controller
         // Pakai helper
         $tunggakan = $this->hitungTunggakan($transaksi);
 
+        // Pisahkan transaksi Tetap dan Tidak Tetap
+        $transaksiTetap = $transaksi->filter(function ($t) {
+            return $t->tagihan && $t->tagihan->jenis_retribusi === 'tetap';
+        });
+        $transaksiTidakTetap = $transaksi->filter(function ($t) {
+            return $t->tagihan && $t->tagihan->jenis_retribusi === 'retasi';
+        });
+
         logAktivitas('Melihat riwayat transaksi');
 
         return view('transaksi.history', [
             'transaksi' => $transaksi,
+            'transaksiTetap' => $transaksiTetap,
+            'transaksiTidakTetap' => $transaksiTidakTetap,
             'jumlahTunggakan' => $tunggakan['jumlahTunggakan'],
             'totalTunggakan' => $tunggakan['totalTunggakan'],
             'rincianTunggakan' => $tunggakan['rincianTunggakan'],
@@ -500,11 +510,25 @@ class TransaksiController extends Controller
             return redirect()->back()->with('error', 'Bukti hanya tersedia untuk transaksi yang berhasil.');
         }
 
-        $bulanTagihan = Carbon::create()->month((int) $transaksi->tagihan->bulan)->locale('id')->isoFormat('MMMM');
-        $tahunTagihan = $transaksi->tagihan->tahun;
+        $jenisRetribusi = $transaksi->tagihan->jenis_retribusi ?? 'tetap';
+        $bulanTagihan = null;
+        $tahunTagihan = null;
+        $volume = null;
 
+        if ($jenisRetribusi === 'tetap') {
+            $bulanTagihan = \Carbon\Carbon::create()->month((int) $transaksi->tagihan->bulan)->locale('id')->isoFormat('MMMM');
+            $tahunTagihan = $transaksi->tagihan->tahun;
+        } else {
+            $volume = $transaksi->tagihan->volume;
+        }
 
-        $pdf = Pdf::loadView('transaksi.nota', compact(['transaksi', 'bulanTagihan', 'tahunTagihan']))->setPaper([0, 0, 595, 382]);
+        $pdf = Pdf::loadView('transaksi.nota', compact([
+            'transaksi',
+            'bulanTagihan',
+            'tahunTagihan',
+            'jenisRetribusi',
+            'volume'
+        ]))->setPaper([0, 0, 595, 382]);
 
         return $pdf->stream("Bukti-Pembayaran-{$transaksi->order_id}.pdf");
     }

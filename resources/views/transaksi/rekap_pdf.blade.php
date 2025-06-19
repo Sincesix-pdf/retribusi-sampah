@@ -131,34 +131,26 @@
         </h2>
 
         {{-- Info Laporan --}}
-        <div style="margin-bottom: 18px; margin-top: 10px; display: flex; justify-content: space-between; align-items: flex-start;">
-            <div>
+        <div
+            style="margin-bottom: 18px; margin-top: 10px; display: flex; justify-content: space-between; align-items: flex-start;">
+            <ul style="list-style: none; margin: 0; padding: 0; font-size: 13px;">
                 @if (!empty($tanggalMulai) && !empty($tanggalSelesai))
-                    <div><strong>Periode:</strong> {{ \Carbon\Carbon::parse($tanggalMulai)->format('d-m-Y') }} s/d
-                        {{ \Carbon\Carbon::parse($tanggalSelesai)->format('d-m-Y') }}
-                    </div>
+                    <li>Rentang: {{ \Carbon\Carbon::parse($tanggalMulai)->format('d-m-Y') }} s/d
+                        {{ \Carbon\Carbon::parse($tanggalSelesai)->format('d-m-Y') }}</li>
                 @endif
-
-                {{-- Tampilkan kecamatan dan kelurahan jika ada --}}
                 @if (!empty($kecamatan_id))
-                    <div><strong>Kecamatan:</strong>
-                        {{ \App\Models\Kecamatan::find($kecamatan_id)?->nama ?? '-' }}
-                    </div>
+                    <li>Kecamatan: {{ \App\Models\Kecamatan::find($kecamatan_id)?->nama ?? '-' }}</li>
                 @endif
-
                 @if (!empty($kelurahan_id))
-                    <div><strong>Kelurahan:</strong>
-                        {{ \App\Models\Kelurahan::find($kelurahan_id)?->nama ?? '-' }}
-                    </div>
+                    <li>Kelurahan: {{ \App\Models\Kelurahan::find($kelurahan_id)?->nama ?? '-' }}</li>
                 @endif
-
-                <div><strong>Dicetak pada:</strong> {{ \Carbon\Carbon::now()->format('d-m-Y H:i:s') }}</div>
-            </div>
+                <li>Dicetak: {{ \Carbon\Carbon::now()->format('d-m-Y H:i:s') }}</li>
+            </ul>
             <div style="text-align: right; min-width: 180px;">
-                <strong>Total Pemasukan:</strong> Rp{{ number_format($total_pembayaran, 0, ',', '.') }}
+                <span style="font-weight: bold; font-size: 15px;">Total:
+                    Rp{{ number_format($total_pembayaran, 0, ',', '.') }}</span>
             </div>
         </div>
-
 
         {{-- Transaksi Tagihan Tetap --}}
         @php $no = 1; @endphp
@@ -196,7 +188,13 @@
                                     Belum Bayar
                                 @endif
                             </td>
-                            <td>{{ $trx->updated_at }}</td>
+                            <td>
+                                @if ($trx->status == 'settlement')
+                                    {{ $trx->updated_at->format('d-m-Y H:i') }}
+                                @else
+                                    -
+                                @endif
+                            </td>
                             <td>Rp{{ number_format($trx->amount, 0, ',', '.') }}</td>
                         </tr>
                     @endforeach
@@ -245,7 +243,13 @@
                                     Belum Bayar
                                 @endif
                             </td>
-                            <td>{{ $trx->updated_at }}</td>
+                            <td>
+                                @if ($trx->status == 'settlement')
+                                    {{ $trx->updated_at->format('d-m-Y H:i') }}
+                                @else
+                                    -
+                                @endif
+                            </td>
                             <td>Rp{{ number_format($trx->amount, 0, ',', '.') }}</td>
                         </tr>
                     @endforeach

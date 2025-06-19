@@ -125,7 +125,7 @@
                                                 <th>Nama</th>
                                                 <th>Jumlah</th>
                                                 <th>Status</th>
-                                                <th>Tanggal</th>
+                                                <th>Tanggal Bayar</th>
                                                 <th>Aksi</th>
                                             </tr>
                                         </thead>
@@ -154,7 +154,13 @@
                                                             <span class="badge bg-warning">Belum Bayar</span>
                                                         @endif
                                                     </td>
-                                                    <td>{{ $t->updated_at->format('d-m-Y H:i') }}</td>
+                                                    <td>
+                                                        @if ($t->status == 'settlement')
+                                                            {{ $t->updated_at->format('d-m-Y H:i') }}
+                                                        @else
+                                                            -
+                                                        @endif
+                                                    </td>
                                                     <td>
                                                         @if ($t->status == 'pending')
                                                             <form action="{{ route('transaksi.sendReminder', $t->id) }}"
@@ -197,7 +203,7 @@
                                                 <th>Volume</th>
                                                 <th>Jumlah</th>
                                                 <th>Status</th>
-                                                <th>Tanggal</th>
+                                                <th>Tanggal Bayar</th>
                                                 <th>Aksi</th>
                                             </tr>
                                         </thead>
@@ -220,7 +226,13 @@
                                                             <span class="badge bg-warning">Belum Bayar</span>
                                                         @endif
                                                     </td>
-                                                    <td>{{ $t->updated_at->format('d-m-Y H:i') }}</td>
+                                                    <td>
+                                                        @if ($t->status == 'settlement')
+                                                            {{ $t->updated_at->format('d-m-Y H:i') }}
+                                                        @else
+                                                            -
+                                                        @endif
+                                                    </td>
                                                     <td>
                                                         @if ($t->status == 'pending')
                                                             <form action="{{ route('transaksi.sendReminder', $t->id) }}"
@@ -263,35 +275,47 @@
                                     aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
-                                <div class="mb-3">
-                                    <label for="tanggal_mulai" class="form-label">Dari Tanggal</label>
-                                    <input type="date" class="form-control" name="tanggal_mulai" id="tanggal_mulai">
-                                </div>
-                                <div class="mb-3">
-                                    <label for="tanggal_selesai" class="form-label">Sampai Tanggal</label>
-                                    <input type="date" class="form-control" name="tanggal_selesai" id="tanggal_selesai">
-                                </div>
-                                <div class="mb-3">
-                                    <label for="bulan" class="form-label">Bulan</label>
-                                    <select name="bulan" id="bulan" class="form-select">
-                                        <option value="">Semua Bulan</option>
-                                        @foreach (range(1, 12) as $m)
-                                            <option value="{{ $m }}" {{ request('bulan') == $m ? 'selected' : '' }}>
-                                                {{ date('F', mktime(0, 0, 0, $m, 1)) }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="tahun" class="form-label">Tahun</label>
-                                    <select name="tahun" id="tahun" class="form-select">
-                                        @foreach (range(2023, date('Y')) as $y)
-                                            <option value="{{ $y }}" {{ request('tahun', date('Y')) == $y ? 'selected' : '' }}>
-                                                {{ $y }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
+                                <fieldset class="mb-3 pb-2 border rounded px-3">
+                                    <legend class="float-none w-auto px-2" style="">
+                                        Rentang Pembayaran
+                                    </legend>
+                                    <div class="row">
+                                        <div class="col-6 mb-2">
+                                            <input type="date" class="form-control" name="tanggal_mulai"
+                                                placeholder="Dari Tanggal">
+                                        </div>
+                                        <div class="col-6 mb-2">
+                                            <input type="date" class="form-control" name="tanggal_selesai"
+                                                placeholder="Sampai Tanggal">
+                                        </div>
+                                    </div>
+                                </fieldset>
+                                <fieldset class="mb-3 pb-2 border rounded px-3">
+                                    <legend class="float-none w-auto px-2" style="">
+                                        Periode Pembayaran
+                                    </legend>
+                                    <div class="row">
+                                        <div class="col-6 mb-2">
+                                            <select name="bulan" class="form-select">
+                                                <option value="">Semua Bulan</option>
+                                                @foreach (range(1, 12) as $m)
+                                                    <option value="{{ $m }}" {{ request('bulan') == $m ? 'selected' : '' }}>
+                                                        {{ date('F', mktime(0, 0, 0, $m, 1)) }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div class="col-6 mb-2">
+                                            <select name="tahun" class="form-select">
+                                                @foreach (range(2023, date('Y')) as $y)
+                                                    <option value="{{ $y }}" {{ request('tahun', date('Y')) == $y ? 'selected' : '' }}>
+                                                        {{ $y }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </div>
+                                </fieldset>
                                 <div class="mb-3">
                                     <label for="status" class="form-label">Status Pembayaran</label>
                                     <select name="status" id="status" class="form-select">
@@ -301,17 +325,21 @@
                                         <option value="menunggak">Menunggak</option>
                                     </select>
                                 </div>
-                                <div class="mb-3">
-                                    <label>Kecamatan:</label>
-                                    <select name="kecamatan_id" id="kecamatan_id" class="form-control">
-                                        <option value="">Pilih Kecamatan</option>
-                                        @foreach($kecamatan as $kec)
-                                            <option value="{{ $kec->id }}" {{ old('kecamatan_id') == $kec->id ? 'selected' : '' }}>
-                                                {{ $kec->nama }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-
+                                <fieldset class="mb-3 pb-2 border rounded px-3">
+                                    <legend class="float-none w-auto px-2">
+                                        Wilayah
+                                    </legend>
+                                    <div class="mb-3">
+                                        <label for="kecamatan_id" class="form-label">Kecamatan</label>
+                                        <select name="kecamatan_id" id="kecamatan_id" class="form-control">
+                                            <option value="">Pilih Kecamatan</option>
+                                            @foreach($kecamatan as $kec)
+                                                <option value="{{ $kec->id }}" {{ old('kecamatan_id') == $kec->id ? 'selected' : '' }}>
+                                                    {{ $kec->nama }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
                                     <div class="mb-3">
                                         <label for="kelurahan_id" class="form-label">Kelurahan</label>
                                         <select name="kelurahan_id" id="kelurahan_id" class="form-select">
@@ -321,7 +349,7 @@
                                             <div class="text-danger">{{ $message }}</div>
                                         @enderror
                                     </div>
-                                </div>
+                                </fieldset>
                                 <div class="modal-footer">
                                     <button type="submit" class="btn btn-primary"><i class="fa-solid fa-print"></i>
                                         Cetak</button>

@@ -110,11 +110,14 @@ class TransaksiController extends Controller
         });
 
         // Statistik
+        $totalTransaksi = $transaksi->count();
         $sudahBayar = $transaksi->where('status', 'settlement')->count();
-        $belumBayar = $transaksi->where('status', 'pending')->count();
+        $belumBayar = $transaksi->filter(function ($t) {
+            $t->status_menunggak = $t->created_at->addDays(30)->lt(now()) && $t->status !== 'settlement';
+            return $t->status === 'pending' && !$t->status_menunggak;
+        })->count();
         $menunggak = $transaksi->where('status_menunggak', true)->count();
         $totalPembayaran = $transaksi->where('status', 'settlement')->sum('amount');
-        $totalTransaksi = Transaksi::where('status', 'settlement')->count();
 
         // Hitung tunggakan
         $tunggakan = $this->hitungTunggakan($transaksi);
@@ -330,7 +333,6 @@ class TransaksiController extends Controller
             ]);
     }
 
-
     public function sendReminder($id)
     {
         $transaksi = Transaksi::with('tagihan.warga.pengguna')->findOrFail($id);
@@ -448,6 +450,46 @@ class TransaksiController extends Controller
         } else {
             return redirect()->back()->with('error', 'Gagal mengirim pengingat.');
         }
+    }
+
+    public function sendReminderMenunggak()
+    {
+        // Ambil semua transaksi pending
+        $transaksiPending = Transaksi::with('tagihan.warga.pengguna')
+            ->where('status', 'pending')
+            ->get();
+
+        // Filter manual transaksi yang menunggak (created_at lebih dari 30 hari)
+        $transaksiMenunggak = $transaksiPending->filter(function ($transaksi) {
+            return $transaksi->created_at->addDays(30)->lt(now());
+        });
+
+        // Loop dan kirim pengingat satu-satu
+        foreach ($transaksiMenunggak as $transaksi) {
+            $this->sendReminder($transaksi->id);
+        }
+
+        logAktivitas('Mengirim pengingat tunggakan secara massal');
+        return back()->with('success', 'Pengingat berhasil dikirim ke semua warga yang menunggak.');
+    }
+
+    public function sendReminderPending()
+    {
+        $transaksiPending = Transaksi::with('tagihan.warga.pengguna')
+            ->where('status', 'pending')
+            ->get()
+            ->filter(function ($t) {
+                // Hitung status menunggak
+                $t->status_menunggak = $t->created_at->addDays(30)->lt(now()) && $t->status !== 'settlement';
+                return !$t->status_menunggak;
+            });
+
+        foreach ($transaksiPending as $transaksi) {
+            $this->sendReminder($transaksi->id);
+        }
+
+        logAktivitas('Mengirim pengingat ke semua transaksi pending (belum menunggak)');
+        return back()->with('success', 'Pengingat berhasil dikirim ke semua warga yang belum membayar.');
     }
 
     // bayar di web

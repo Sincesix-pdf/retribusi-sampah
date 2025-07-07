@@ -29,12 +29,9 @@
         @if ($role == 'kepala_dinas')
             <div class="content-container pb-3">
                 <div class="card custom-card">
-                    <div class="card-header custom-card-header">
-                        <h5 class="mb-0">Rincian Transaksi</h5>
-                    </div>
                     <div class="card-body">
                         {{-- Form Filter Bulan, Tahun, Status --}}
-                        <form action="{{ route('transaksi.index') }}" method="GET" class="mb-3">
+                        <form action="{{ route('kepala_dinas.index') }}" method="GET" class="mb-3">
                             <div class="row g-3">
                                 <div class="col-md-2">
                                     <label for="bulan" class="form-label">Pilih Bulan:</label>

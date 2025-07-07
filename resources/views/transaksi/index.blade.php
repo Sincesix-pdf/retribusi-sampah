@@ -52,6 +52,15 @@
                 {{-- Statistik Pembayaran --}}
                 <div class="row mb-4">
                     <div class="col-12 col-sm-6 col-md-3 mb-3">
+                        <div class="card text-white shadow-sm bg-primary">
+                            <div class="card-body">
+                                <h5 class="card-title">Jumlah Tagihan</h5>
+                                <h2>{{ $totalTransaksi }} Tagihan</h2>
+                                <p class="mb-0">Total tagihan diterbitkan</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-sm-6 col-md-3 mb-3">
                         <div class="card text-white card-custom shadow-sm" style="background-color: #4cae4f;">
                             <div class="card-body">
                                 <h5 class="card-title">Sudah Bayar</h5>
@@ -83,10 +92,26 @@
                             <div class="card-body">
                                 <h5 class="card-title">Total Pendapatan</h5>
                                 <h2>Rp{{ number_format($totalPembayaran, 0, ',', '.') }}</h2>
-                                <p class="mb-0">Dari {{ $totalTransaksi }} Pembayaran</p>
+                                <p class="mb-0">Dari {{ $sudahBayar }} Pembayaran</p>
                             </div>
                         </div>
                     </div>
+                </div>
+
+                {{-- Tombol Kirim Pengingat Tunggakan dan Belum Bayar --}}
+                <div class="d-flex justify-content-end gap-3 mb-3">
+                    <form action="{{ route('transaksi.sendReminderMenunggak') }}" method="POST">
+                        @csrf
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-bell"></i> Kirim Pengingat Tunggakan
+                        </button>
+                    </form>
+                    <form action="{{ route('transaksi.sendReminderPending') }}" method="POST">
+                        @csrf
+                        <button type="submit" class="btn btn-warning">
+                            <i class="fas fa-clock"></i> Kirim Pengingat Belum Bayar
+                        </button>
+                    </form>
                 </div>
 
                 {{-- Tab Navigasi Transaksi --}}
@@ -126,7 +151,6 @@
                                                 <th>Jumlah</th>
                                                 <th>Status</th>
                                                 <th>Tanggal Bayar</th>
-                                                <th>Aksi</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -161,19 +185,6 @@
                                                             -
                                                         @endif
                                                     </td>
-                                                    <td>
-                                                        @if ($t->status == 'pending')
-                                                            <form action="{{ route('transaksi.sendReminder', $t->id) }}"
-                                                                method="POST" class="d-inline">
-                                                                @csrf
-                                                                <button type="submit" class="btn btn-sm btn-danger">
-                                                                    <i class="fas fa-bell"></i>
-                                                                </button>
-                                                            </form>
-                                                        @else
-                                                            <span class="text-muted">-</span>
-                                                        @endif
-                                                    </td>
                                                 </tr>
                                             @endforeach
                                         </tbody>
@@ -204,7 +215,6 @@
                                                 <th>Jumlah</th>
                                                 <th>Status</th>
                                                 <th>Tanggal Bayar</th>
-                                                <th>Aksi</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -231,19 +241,6 @@
                                                             {{ $t->updated_at->format('d-m-Y H:i') }}
                                                         @else
                                                             -
-                                                        @endif
-                                                    </td>
-                                                    <td>
-                                                        @if ($t->status == 'pending')
-                                                            <form action="{{ route('transaksi.sendReminder', $t->id) }}"
-                                                                method="POST" class="d-inline">
-                                                                @csrf
-                                                                <button type="submit" class="btn btn-sm btn-danger">
-                                                                    <i class="fas fa-bell"></i>
-                                                                </button>
-                                                            </form>
-                                                        @else
-                                                            <span class="text-muted">-</span>
                                                         @endif
                                                     </td>
                                                 </tr>

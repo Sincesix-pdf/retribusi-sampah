@@ -139,13 +139,14 @@ class AuthController extends Controller
         });
 
         // Statistik
+        $totalTransaksi = $transaksi->count();
         $sudahBayar = $transaksi->where('status', 'settlement')->count();
-        $belumBayar = $transaksi->where('status', 'pending')->count();
+        $belumBayar = $transaksi->filter(function ($t) {
+            $t->status_menunggak = $t->created_at->addDays(30)->lt(now()) && $t->status !== 'settlement';
+            return $t->status === 'pending' && !$t->status_menunggak;
+        })->count();
         $menunggak = $transaksi->where('status_menunggak', true)->count();
         $totalPembayaran = $transaksi->where('status', 'settlement')->sum('amount');
-
-        // Transaksi settlement global (semua yang sudah dirilis / punya tagihan)
-        $totalTransaksi = $transaksi->count();
 
         // Menambahkan status menunggak dan akumulasi tunggakan per NIK
         $transaksi = $transaksi->map(function ($t) use ($transaksi) {
@@ -164,7 +165,7 @@ class AuthController extends Controller
             }
             return $t;
         });
-        
+
         // Hitung tunggakan
         $tunggakan = $this->hitungTunggakan($transaksi);
 

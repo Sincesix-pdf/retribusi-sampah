@@ -597,12 +597,27 @@ class TransaksiController extends Controller
             return [$namaBulan => $group->count()];
         });
 
+        // Kategori: Jumlah yang membayar dan total nominal bayar
+        $perKategori = $transaksi->groupBy(function ($item) {
+            return $item->tagihan->warga->kategori_retribusi ?? 'Tidak Diketahui';
+        })->map(function ($group) {
+            return [
+                'jumlah_bayar' => $group->count(),
+                'total_bayar' => $group->sum('amount'),
+            ];
+        });
+
+        // Akumulasi total semua yang telah dibayar
+        $totalSemuaBayar = $perKategori->sum('total_bayar');
+
         logAktivitas("Melihat grafik pendatapan", "Melihat grafik pendapatan untuk bulan {$bulan} tahun {$tahun}");
 
         return view('grafik.grafik_pendapatan', compact(
             'perBulan',
             'perJenis',
-            'perWargaBayar'
+            'perWargaBayar',
+            'perKategori',
+            'totalSemuaBayar'
         ));
     }
     public function grafikPersebaran(Request $request)

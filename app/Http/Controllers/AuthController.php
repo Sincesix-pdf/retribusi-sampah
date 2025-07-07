@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Transaksi;
 use App\Models\Warga;
 use App\Models\Pengguna;
 use Illuminate\Http\Request;
@@ -67,6 +68,28 @@ class AuthController extends Controller
         return redirect('/login')->with('success', 'Anda telah logout.');
     }
 
+    private function hitungTunggakan($transaksi)
+    {
+        $tunggakan = $transaksi->filter(function ($t) {
+            return $t->created_at->addDays(30)->lt(now()) && $t->status != 'settlement';
+        });
+
+        $jumlahTunggakan = $tunggakan->count();
+        $totalTunggakan = $tunggakan->sum('amount');
+        $rincianTunggakan = $tunggakan->map(function ($t) {
+            if ($t->tagihan && $t->tagihan->bulan && $t->tagihan->tahun) {
+                return date('F Y', mktime(0, 0, 0, $t->tagihan->bulan, 1, $t->tagihan->tahun));
+            }
+            return 'Periode Tidak Diketahui';
+        })->values();
+
+        return [
+            'jumlahTunggakan' => $jumlahTunggakan,
+            'totalTunggakan' => $totalTunggakan,
+            'rincianTunggakan' => $rincianTunggakan,
+        ];
+    }
+
     public function dashboard(Request $request)
     {
         $jumlahWarga = Warga::count();
@@ -74,17 +97,99 @@ class AuthController extends Controller
         $jumlahRetribusiTidakTetap = Warga::where('jenis_retribusi', 'retasi')->count();
         $jumlahPetugas = Pengguna::whereIn('role_id', [1, 2, 3, 4])->count();
 
-
         $role = Auth::user()->role->nama_role;
+
+        $bulan = $request->input('bulan');
+        $tahun = $request->input('tahun', date('Y'));
+
+        // Ambil semua transaksi dengan tagihan yang sesuai filter
+        $transaksi = Transaksi::with('tagihan.warga')
+            ->whereHas('tagihan', function ($query) use ($tahun, $bulan) {
+                $query->when($tahun, function ($q) use ($tahun) {
+                    $q->where(function ($subQ) use ($tahun) {
+                        $subQ->where('tahun', $tahun)
+                            ->orWhereYear('tanggal_tagihan', $tahun);
+                    });
+                })
+                    ->when($bulan, function ($q) use ($bulan) {
+                        $q->where(function ($subQ) use ($bulan) {
+                            $subQ->where('bulan', $bulan)
+                                ->orWhereMonth('tanggal_tagihan', $bulan);
+                        });
+                    });
+            })
+            ->get();
+
+        // Tambahin flag status_menunggak
+        $transaksi = $transaksi->map(function ($t) use ($transaksi) {
+            $t->status_menunggak = $t->created_at->addDays(30)->lt(now()) && $t->status !== 'settlement';
+            return $t;
+        });
+
+        // Warga yang punya tagihan (unik berdasarkan NIK)
+        $wargaDenganTagihan = $transaksi->pluck('tagihan.warga.NIK')->unique()->count();
+
+        // Pisahkan transaksi Tetap dan Tidak Tetap
+        $transaksiTetap = $transaksi->filter(function ($t) {
+            return $t->tagihan && $t->tagihan->jenis_retribusi === 'tetap';
+        });
+
+        $transaksiTidakTetap = $transaksi->filter(function ($t) {
+            return $t->tagihan && $t->tagihan->jenis_retribusi === 'retasi';
+        });
+
+        // Statistik
+        $sudahBayar = $transaksi->where('status', 'settlement')->count();
+        $belumBayar = $transaksi->where('status', 'pending')->count();
+        $menunggak = $transaksi->where('status_menunggak', true)->count();
+        $totalPembayaran = $transaksi->where('status', 'settlement')->sum('amount');
+
+        // Transaksi settlement global (semua yang sudah dirilis / punya tagihan)
+        $totalTransaksi = $transaksi->count();
+
+        // Menambahkan status menunggak dan akumulasi tunggakan per NIK
+        $transaksi = $transaksi->map(function ($t) use ($transaksi) {
+            $t->status_menunggak = $t->created_at->addDays(30)->lt(now()) && $t->status !== 'settlement';
+
+            // Hitung akumulasi tunggakan untuk NIK yang sama
+            $nik = $t->tagihan->warga->NIK ?? null;
+            if ($nik) {
+                $t->akumulasi_tunggakan = $transaksi->filter(function ($item) use ($nik) {
+                    return ($item->tagihan->warga->NIK ?? null) == $nik
+                        && $item->created_at->addDays(30)->lt(now())
+                        && $item->status !== 'settlement';
+                })->count();
+            } else {
+                $t->akumulasi_tunggakan = 0;
+            }
+            return $t;
+        });
+        
+        // Hitung tunggakan
+        $tunggakan = $this->hitungTunggakan($transaksi);
 
         return view('dashboard', compact(
             'jumlahWarga',
             'jumlahRetribusiTetap',
             'jumlahRetribusiTidakTetap',
             'jumlahPetugas',
-            'role'
+            'role',
+            'bulan',
+            'tahun',
+            'wargaDenganTagihan',
+            'sudahBayar',
+            'belumBayar',
+            'menunggak',
+            'tunggakan',
+            'totalPembayaran',
+            'totalTransaksi',
+            'transaksiTetap',
+            'transaksiTidakTetap'
         ));
     }
+
+
+
 
     public function warga()
     {

@@ -256,7 +256,7 @@
                 </tbody>
             </table>
         @else
-            <p>Tidak ada transaksi tagihan tidak tetap yang sesuai.</p>
+            <p>Tidak ada transaksi tagihan retasi yang sesuai.</p>
         @endif
 
         {{-- FOOTER RESMI (hanya di halaman terakhir) --}}

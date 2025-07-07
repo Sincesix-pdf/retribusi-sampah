@@ -210,7 +210,7 @@
                 </tbody>
             </table>
         @else
-            <p>Tagihan Tidak Tetap: Tidak ada data yang sesuai.</p>
+            <p>Tidak ada tagihan retasi yang sesuai.</p>
         @endif
 
         {{-- FOOTER RESMI --}}

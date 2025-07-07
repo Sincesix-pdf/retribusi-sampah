@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Http;
 use Illuminate\Http\Request;
 use App\Models\Pengguna;
 use App\Models\Kecamatan;
@@ -87,6 +88,13 @@ class DataWargaController extends Controller
 
         logAktivitas('Tambah warga', 'Menambahkan warga dengan NIK: ' . $validatedData['NIK']);
 
+        // Kirim notif password via WA
+        try {
+            $this->sendPassNotif($pengguna);
+        } catch (\Exception $e) {
+            \Log::error('Gagal kirim notifikasi password default: ' . $e->getMessage());
+        }
+
         return redirect()->route('datawarga.index')->with('success', 'Warga berhasil ditambahkan!');
     }
     public function edit($NIK)
@@ -122,7 +130,7 @@ class DataWargaController extends Controller
         if (!$jenisLayanan) {
             return back()->withErrors(['jenis_retribusi' => 'Jenis layanan tidak ditemukan untuk retribusi ini.'])->withInput();
         }
-        
+
         $pengguna->update([
             'nama' => $validatedData['nama'],
             'email' => $validatedData['email'],
@@ -160,4 +168,20 @@ class DataWargaController extends Controller
         $kelurahan = Kelurahan::where('kecamatan_id', $kecamatan_id)->get();
         return response()->json($kelurahan);
     }
+
+    private function sendPassNotif($pengguna)
+    {
+        $apiKey = env('FONNTE_API_KEY');
+        $no_hp = $pengguna->no_hp;
+        $nama = $pengguna->nama;
+
+        $pesan = "Halo *$nama*, akun anda berhasil dibuat.\n\nPassword default anda adalah *warga123*.\n\nSegera login dan ubah password anda di website:\nhttps://loosely-content-bird.ngrok-free.app";
+
+        Http::withHeaders(['Authorization' => $apiKey])
+            ->post('https://api.fonnte.com/send', [
+                'target' => $no_hp,
+                'message' => $pesan,
+            ]);
+    }
+
 }

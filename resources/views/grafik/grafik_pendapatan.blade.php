@@ -94,6 +94,47 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Chart 4: Total Tagihan per Kategori Warga -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card custom-card h-100">
+                                <div class="card-header bg-white text-secondary">
+                                    <h5 class="mb-0">Kategori Warga Membayar</h5>
+                                </div>
+                                <div class="card-body table-responsive">
+                                    <table class="table table-bordered align-middle text-center">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Kategori</th>
+                                                <th>Jumlah Membayar</th>
+                                                <th>Total Bayar</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @forelse ($perKategori as $kategori => $data)
+                                                <tr>
+                                                    <td>{{ ucfirst($kategori) }}</td>
+                                                    <td>{{ $data['jumlah_bayar'] }}</td>
+                                                    <td>Rp{{ number_format($data['total_bayar'], 0, ',', '.') }}</td>
+                                                </tr>
+                                            @empty
+                                                <tr>
+                                                    <td colspan="3">Tidak ada data</td>
+                                                </tr>
+                                            @endforelse
+                                        </tbody>
+
+                                        <tfoot>
+                                            <tr class="table-light fw-bold">
+                                                <td colspan="2">Total Semua</td>
+                                                <td>Rp{{ number_format($totalSemuaBayar, 0, ',', '.') }}</td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
 
@@ -105,7 +146,7 @@
                     window.labelsJenis = {!! json_encode($perJenis->keys()) !!};
                     window.dataJenis = {!! json_encode($perJenis->values()) !!};
                     window.labelsWarga = {!! json_encode($perWargaBayar->keys()) !!};
-    window.dataWarga = {!! json_encode($perWargaBayar->values()) !!};
+                    window.dataWarga = {!! json_encode($perWargaBayar->values()) !!};
                 </script>
                 <script src="{{ asset('js/chart.js') }}"></script>
             </div>
